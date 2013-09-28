@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Test</title>
+   
+    <script src="/js/knot.js"></script>
+    <script src="/js/knot.types.js"></script>
+    <script src="/js/knot.ext.js"></script>
+
+    <style type="text/css">
+        .selected {
+            background-color:lemonchiffon;
+            color:black;
+        }
+        .unselected {
+            background-color:#333333;
+            color:white;
+        }
+        .errorMessage {
+            color:red;
+        }
+
+        #dataList {
+            width:200px;
+            height:400px;
+            float:left;
+            margin:10px;
+
+            overflow-x:hidden;
+            overflow-y:auto;
+
+            border:1px solid gray;
+        }
+            #dataList > div {
+                padding:5px;
+                border:1px solid gray;
+                margin:5px;
+            }
+
+
+        #editArea {
+            width:500px;
+            height:400px;
+
+            padding:5px;
+            text-align:left;
+
+            float:left;
+        }            
+
+            #editArea input {
+                width:150px;
+                text-align:left;
+                margin:5px;
+            }
+            #editArea select {
+                width:150px;
+                text-align:left;
+                margin:5px;
+            }
+
+            #editArea .fieldTitle {
+                width:50px;
+                display:inline-block;
+                text-align:right;
+            }
+                
+    </style>
+
+    <script>
+        if(!window.alert)
+            window.alert = function () { };
+
+        var model = {list:[]};
+
+        function validate() {
+            var errMessage = Knot.validate(document.body);
+            if (errMessage) {
+                alert(errMessage);
+                return false;
+            }
+            return true;
+        }
+        function onNew() {
+            if (!validate())
+                return;
+            var n = {};
+            Knot.addToArray(model.list, n);            
+            selectData(n);                        
+        }
+
+        function onRemove() {            
+            if (model.selected) {
+                var index = model.list.indexOf(model.selected);
+                Knot.removeFromArray(model.list, model.selected);
+                if (model.list.length > 0) {
+                    selectData(model.list[Math.min(model.list.length - 1, index)], true);
+                }
+                else {
+                    Knot.setValue(model, "selected", null);
+                }
+            }            
+        }
+
+        function onload() {
+            Knot.tie(document.body, model);
+            Knot.registerOnValidatingError(function (msg, node) {
+                setTimeout(function () {
+                    alert(msg);
+                    if (node.focus)
+                        node.focus();
+                }, 1);
+            });
+        }
+
+        function selectData(data, ignoreValidating) {
+            if (!ignoreValidating && !validate())
+                return;
+            Knot.setValue(data, "isSelected", true);
+            Knot.setValue(model, "selected", data);
+            
+            for (var i = 0; i < model.list.length; i++) {
+                if (model.list[i] != data) {
+                    Knot.setValue(model.list[i], "isSelected", false);                    
+                }
+            }
+        }
+
+        function onItemCreated(data, item) {
+            item.onclick = function () {
+                selectData(data);
+            }
+        }
+        
+
+        var boolToClassConverter = Knot.Converters.createBoolToValue("selected", "unselected");
+        var enableControl = Knot.Converters.createBoolToValue(false, true);
+        var visibleControl = Knot.Converters.createBoolToValue("", "none");
+        var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
+        var checkInteger = Knot.Validators.createInteger("Must be integer");
+        var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
+
+    </script>
+</head>
+<body onload="onload();">
+    <h2>Knot.js Example</h2>
+    <div>
+    <div id="dataList" knots="foreach:*list" knotEvents="onItemCreated:onItemCreated">
+        <div knots="class:*isSelected=>boolToClassConverter">
+            name:<span knots="text:*name"></span>
+            <hr/>            
+            age:<span knots="text:*age"></span>,
+            sex:<span knots="text:*sex"></span>
+        </div>
+    </div>
+    <div id="editArea">
+        <div>
+            <div class="fieldTitle">Name:</div>
+            <input type="text"
+                knots="value:*selected.name=!mustNotNull, disabled:*selected=>enableControl"/> 
+            <span class="errorMessage" knots="style:{display:!selected.name=>visibleControl},text:!selected.name"></span>
+        </div>
+        <div>
+            <div class="fieldTitle">Age:</div>
+            <input type="text" 
+                knots="value:*selected.age=!mustNotNull&checkInteger&ageRange, disabled:*selected=>enableControl" /> 
+            <span class="errorMessage" knots="style:{display:!selected.age=>visibleControl},text:!selected.age"></span>
+        </div>
+        <div>
+            <div class="fieldTitle">Sex:</div>
+            <select knots="selected:*selected.sex,disabled:*selected=>enableControl">
+                <option>Male</option>
+                <option>Female</option>
+                <option>Indeterminate</option>
+            </select>
+        </div>
+        
+        <p>
+        <button onclick="onNew();">New</button>        
+
+        <button knots="disabled:*selected=>enableControl" onclick="onRemove()">Delete</button>
+                </p>
+    </div>
+    </div>
+</body>
+</html>
