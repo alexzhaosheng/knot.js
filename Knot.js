@@ -452,27 +452,31 @@
     }
     
     function validateValue(knotInfo, valueName, value) {
-        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {
+        var data = knotInfo.dataContext;
+        var path = knotInfo.options.binding[valueName];
+        while (path.indexOf(".") >= 0 && data) {
+            data = data[path.substr(0, path.indexOf("."))];
+            path = path.substr(path.indexOf(".") + 1);
+        }
+        if (!data)
+            return;
+
+        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {            
+
+
             var validator = getObjectInGlobalSpace(knotInfo.options.validators[valueName][i]);
             if (!validator) {
                 throw new Error("Failed to find validator by path:" + knotInfo.options.validators[valueName][i]);
             }
             var errMessage;
             try {
-                errMessage = validator(value);
+                errMessage = validator(value, data);
             }
             catch (err) {
                 errMessage = err.message;
             }
-
-            var data = knotInfo.dataContext;
-            var path = knotInfo.options.binding[valueName];
-            while (path.indexOf(".") >= 0 && data) {
-                data = data[path.substr(0, path.indexOf("."))];
-                path = path.substr(path.indexOf(".") + 1);
-            }
-            if (data)
-                setErrorInfo(data, path, errMessage);
+            
+            setErrorInfo(data, path, errMessage);
             if (errMessage) {                
                 for (var i = 0; i < _onValidatingErrorCallbacks.length; i++) {
                     _onValidatingErrorCallbacks[i](errMessage, knotInfo.node);
