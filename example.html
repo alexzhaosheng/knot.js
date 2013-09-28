@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <title>Test</title>
    
-    <script src="/js/knot.js"></script>
-    <script src="/js/knot.types.js"></script>
-    <script src="/js/knot.ext.js"></script>
+    <script src="js/knot.js"></script>
+    <script src="js/knot.types.js"></script>
+    <script src="js/knot.ext.js"></script>
 
     <style type="text/css">
         .selected {
@@ -14,8 +14,8 @@
             color:black;
         }
         .unselected {
-            background-color:#333333;
-            color:white;
+            background-color:white;
+            color:black;
         }
         .errorMessage {
             color:red;
@@ -106,8 +106,7 @@
         function onload() {
             Knot.tie(document.body, model);
             Knot.registerOnValidatingError(function (msg, node) {
-                setTimeout(function () {
-                    alert(msg);
+                setTimeout(function () {                    
                     if (node.focus)
                         node.focus();
                 }, 1);
@@ -140,7 +139,16 @@
         var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
         var checkInteger = Knot.Validators.createInteger("Must be integer");
         var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
-
+        
+        var duplicatedName = function (value, data) {
+            for (var i = 0; i < model.list.length; i++) {
+                if (model.list[i] == data)
+                    continue;
+                if (model.list[i].name == value) {
+                    return value + " already exists!";
+                }
+            }
+        }
     </script>
 </head>
 <body onload="onload();">
@@ -158,7 +166,7 @@
         <div>
             <div class="fieldTitle">Name:</div>
             <input type="text"
-                knots="value:*selected.name=!mustNotNull, disabled:*selected=>enableControl"/> 
+                knots="value:*selected.name=!mustNotNull&duplicatedName, disabled:*selected=>enableControl"/> 
             <span class="errorMessage" knots="style:{display:!selected.name=>visibleControl},text:!selected.name"></span>
         </div>
         <div>
