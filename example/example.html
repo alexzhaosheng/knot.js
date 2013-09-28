@@ -3,10 +3,10 @@
 <head>
     <meta charset="utf-8" />
     <title>Test</title>
-   
-    <script src="js/knot.js"></script>
-    <script src="js/knot.types.js"></script>
-    <script src="js/knot.ext.js"></script>
+
+    <script src="../src/knot.js"></script>
+    <script src="../src/knot.types.js"></script>
+    <script src="../src/knot.ext.js"></script>
 
     <style type="text/css">
         .selected {
@@ -32,11 +32,11 @@
 
             border:1px solid gray;
         }
-            #dataList > div {
-                padding:5px;
-                border:1px solid gray;
-                margin:5px;
-            }
+        #dataList > div {
+            padding:5px;
+            border:1px solid gray;
+            margin:5px;
+        }
 
 
         #editArea {
@@ -47,25 +47,25 @@
             text-align:left;
 
             float:left;
-        }            
+        }
 
-            #editArea input {
-                width:150px;
-                text-align:left;
-                margin:5px;
-            }
-            #editArea select {
-                width:150px;
-                text-align:left;
-                margin:5px;
-            }
+        #editArea input {
+            width:150px;
+            text-align:left;
+            margin:5px;
+        }
+        #editArea select {
+            width:150px;
+            text-align:left;
+            margin:5px;
+        }
 
-            #editArea .fieldTitle {
-                width:50px;
-                display:inline-block;
-                text-align:right;
-            }
-                
+        #editArea .fieldTitle {
+            width:50px;
+            display:inline-block;
+            text-align:right;
+        }
+
     </style>
 
     <script>
@@ -85,12 +85,12 @@
         function onNew() {
             if (!validate())
                 return;
-            var n = {};
-            Knot.addToArray(model.list, n);            
-            selectData(n);                        
+            var n = {sex:"Male"};
+            Knot.addToArray(model.list, n);
+            selectData(n);
         }
 
-        function onRemove() {            
+        function onRemove() {
             if (model.selected) {
                 var index = model.list.indexOf(model.selected);
                 Knot.removeFromArray(model.list, model.selected);
@@ -100,13 +100,13 @@
                 else {
                     Knot.setValue(model, "selected", null);
                 }
-            }            
+            }
         }
 
         function onload() {
-            Knot.tie(document.body, model);
+            Knot.tie();
             Knot.registerOnValidatingError(function (msg, node) {
-                setTimeout(function () {                    
+                setTimeout(function () {
                     if (node.focus)
                         node.focus();
                 }, 1);
@@ -118,10 +118,10 @@
                 return;
             Knot.setValue(data, "isSelected", true);
             Knot.setValue(model, "selected", data);
-            
+
             for (var i = 0; i < model.list.length; i++) {
                 if (model.list[i] != data) {
-                    Knot.setValue(model.list[i], "isSelected", false);                    
+                    Knot.setValue(model.list[i], "isSelected", false);
                 }
             }
         }
@@ -131,7 +131,7 @@
                 selectData(data);
             }
         }
-        
+
 
         var boolToClassConverter = Knot.Converters.createBoolToValue("selected", "unselected");
         var enableControl = Knot.Converters.createBoolToValue(false, true);
@@ -139,7 +139,7 @@
         var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
         var checkInteger = Knot.Validators.createInteger("Must be integer");
         var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
-        
+        var sexToTitle = Knot.Converters.createKeysToValues(["Male", "Female"], ["Mr.", "Miss."]);
         var duplicatedName = function (value, data) {
             for (var i = 0; i < model.list.length; i++) {
                 if (model.list[i] == data)
@@ -149,30 +149,32 @@
                 }
             }
         }
+
+        var countries = ["USA", "Japan", "China", "Australia"];
     </script>
 </head>
-<body onload="onload();">
-    <h2>Knot.js Example</h2>
-    <div>
+<body onload="onload();" knotDataContext="/model">
+<h2>Knot.js Example</h2>
+<div>
     <div id="dataList" knots="foreach:*list" knotEvents="onItemCreated:onItemCreated">
         <div knots="class:*isSelected=>boolToClassConverter">
-            name:<span knots="text:*name"></span>
-            <hr/>            
-            age:<span knots="text:*age"></span>,
-            sex:<span knots="text:*sex"></span>
+            <span knots="text:*sex=>sexToTitle"> </span><span knots="text:*name"></span>
+            <hr/>
+            Age:<span knots="text:*age"></span>,
+            From:<span knots="text:*from"></span>
         </div>
     </div>
     <div id="editArea">
         <div>
             <div class="fieldTitle">Name:</div>
             <input type="text"
-                knots="value:*selected.name=!mustNotNull&duplicatedName, disabled:*selected=>enableControl"/> 
+                   knots="value:*selected.name=!mustNotNull&duplicatedName, disabled:*selected=>enableControl"/>
             <span class="errorMessage" knots="style:{display:!selected.name=>visibleControl},text:!selected.name"></span>
         </div>
         <div>
             <div class="fieldTitle">Age:</div>
-            <input type="text" 
-                knots="value:*selected.age=!mustNotNull&checkInteger&ageRange, disabled:*selected=>enableControl" /> 
+            <input type="text"
+                   knots="value:*selected.age=!mustNotNull&checkInteger&ageRange, disabled:*selected=>enableControl" />
             <span class="errorMessage" knots="style:{display:!selected.age=>visibleControl},text:!selected.age"></span>
         </div>
         <div>
@@ -180,16 +182,21 @@
             <select knots="selected:*selected.sex,disabled:*selected=>enableControl">
                 <option>Male</option>
                 <option>Female</option>
-                <option>Indeterminate</option>
             </select>
         </div>
-        
-        <p>
-        <button onclick="onNew();">New</button>        
+        <div>
+            <div class="fieldTitle">From:</div>
+            <select knots="selected:*selected.from,disabled:*selected=>enableControl,foreach:/countries">
+                <option knots="text:--self"></option>
+            </select>
+        </div>
 
-        <button knots="disabled:*selected=>enableControl" onclick="onRemove()">Delete</button>
-                </p>
+        <p>
+            <button onclick="onNew();">New</button>
+
+            <button knots="disabled:*selected=>enableControl" onclick="onRemove()">Delete</button>
+        </p>
     </div>
-    </div>
+</div>
 </body>
 </html>

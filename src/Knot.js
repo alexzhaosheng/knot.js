@@ -1,6 +1,6 @@
 /*!
  * knot.js core
- * 
+ * www.knotjs.com
  * Copyright 2013 Sheng(Alex) Zhao 
  * Released under the MIT license 
  * 
@@ -10,7 +10,7 @@
     if (!root)
         root = window;
 
-    
+
     /////////////////////////////////////
     // Utility functions
     /////////////////////////////////////
@@ -36,7 +36,7 @@
         return undefined;
     }
 
-    function getObjectInGlobalSpace(path) {
+    function getObjectInGlobalScope(path) {
         var arr = path.split(".");
         var o = window;
         for (var i = 0 ; i < arr.length; i++) {
@@ -73,13 +73,13 @@
         if (!attachedInfo.changedCallbacks) {
             attachedInfo.changedCallbacks = [];
         }
-                
+
         attachedInfo.changedCallbacks.push({ knotInfo: knotInfo, callback: callback });
     }
     function unregisterValueChangedCallback(data, knotInfo) {
         var attachedInfo = getAttachedInfo(data);
         if (!attachedInfo.changedCallbacks)
-            return;       
+            return;
         for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
             if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {
                 attachedInfo.changedCallbacks.splice(i, 1);
@@ -96,7 +96,7 @@
         var attachedInfo = getAttachedInfo(data);
         if (attachedInfo.changedCallbacks) {
             for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
-                if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {                    
+                if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {
                     return true;
                 }
             }
@@ -134,18 +134,18 @@
         }
     }
     function getErrorInfo(data, property){
-        var attachedInfo = getAttachedInfo(data);        
+        var attachedInfo = getAttachedInfo(data);
         if (!attachedInfo.validating)
             return null;
         return attachedInfo.validating.currentErrorMessages[property];
     }
     function registerOnErrorCallback(data, knotInfo, callback) {
         var attachedInfo = getAttachedInfo(data);
-        
+
         if (!attachedInfo.validating) {
             attachedInfo.validating = {callbacks:[], currentErrorMessages:[]};
-        }             
-        
+        }
+
         attachedInfo.validating.callbacks.push({ knotInfo: knotInfo, callback: callback });
     }
     function unregisterOnErrorCallback(data, knotInfo) {
@@ -178,7 +178,7 @@
         }
         return false;
     }
-       
+
 
     ///////////////////////////////////////////////////////
     // Knot types
@@ -209,33 +209,20 @@
         return JSON.parse(option);
     }
     function parseDetailedOptions(optionName, detailedOptions, valueConverters, validators) {
-        var vcS = detailedOptions.indexOf("=>");
-        var vlS = detailedOptions.indexOf("=!");
-
-        var vcE = (vlS > vcS ? vlS : detailedOptions.length) - 1;
-        var vlE = (vcS > vlS ? vcS : detailedOptions.length) - 1;
-
-        var pE
-        if (vcS > 0 && vlS > 0)
-            pE = Math.max(vcS, vlS)
-        else
-            pE = Math.max(vcS, vlS) - 1;
-        if (pE < 0)
-            return detailedOptions;
-        
-        if (vcS >= 0) 
-            valueConverters[optionName] = detailedOptions.substr(vcS + 2, vcE - vcS - 1);
-        
-        if (vlS >= 0)
-            validators[optionName] = detailedOptions.substr(vlS + 2, vlE - vlS-1).split("&");
-        
-        return detailedOptions.substr(0, pE+1);
+        var arr = detailedOptions.split("=");
+        for (var i = 1; i < arr.length; i++) {
+            if (arr[i][0] == ">")
+                valueConverters[optionName] = arr[i].substr(1);
+            if (arr[i][0] == "!")
+                validators[optionName] = arr[i].substr(1).split("&");
+        }
+        return arr[0];
     }
 
     function parseOptions(node) {
         var options = {};
         var att = node.getAttribute("knots");
-        if (att) {           
+        if (att) {
             var bindingOptions = parseOptionToJSON(att);
             if (bindingOptions.style) {
                 var v = bindingOptions.style;
@@ -246,12 +233,12 @@
             }
             options.binding = bindingOptions;
 
-            var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {};            
-            for (var p in options.binding) {                
+            var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {};
+            for (var p in options.binding) {
                 var v = options.binding[p];
                 if (v[0] == "*") {
                     twoWayBinding[p] = true;
-                    v = v.substr(1);                    
+                    v = v.substr(1);
                 }
                 if (v[0] == "!") {
                     bindingToError[p] = true;
@@ -259,7 +246,7 @@
                     v = v.substr(1);
                 }
 
-                options.binding[p] = parseDetailedOptions(p, v, valueConverters, validators);                   
+                options.binding[p] = parseDetailedOptions(p, v, valueConverters, validators);
             }
             if(!isEmptyObj(valueConverters))
                 options.valueConverters = valueConverters;
@@ -274,7 +261,10 @@
         if (node.getAttribute("knotEvents")) {
             options.events = parseOptionToJSON(node.getAttribute("knotEvents"));
         }
-        
+        if (node.getAttribute("knotDataContext")) {
+            options.dataContextPath = node.getAttribute("knotDataContext");
+        }
+
         return options;
     }
 
@@ -296,11 +286,11 @@
             if (node.children.length == index)
                 node.appendChild(child);
             else
-                node.insertBefore(child, node.children[index]);            
+                node.insertBefore(child, node.children[index]);
         }
 
         var node = knotInfo.node;
-            
+
         for (var i = 0; i < items.length; i++) {
             var ele = findChild(node, items[i]);
             if (ele) {
@@ -314,23 +304,23 @@
                 knotInfo.childrenInfo.push(tie(n, items[i]));
                 addChildTo(node, n, i);
                 if (knotInfo.options.events && knotInfo.options.events.onItemCreated) {
-                    var callback = getObjectInGlobalSpace(knotInfo.options.events.onItemCreated);
+                    var callback = getObjectInGlobalScope(knotInfo.options.events.onItemCreated);
                     if (!callback)
                         throw new Error("Failed to find event handler with name:" + knotInfo.options.events.onItemCreated);
                     callback(items[i], n);
                 }
-            }                              
+            }
         }
 
         for (var i = node.children.length - 1; i >= items.length; i--) {
-            var n = node.children[i];                        
+            var n = node.children[i];
             knotInfo.childrenInfo.splice(knotInfo.childrenInfo.indexOf(n.__knotInfo), 1);
             untie(n);
             node.removeChild(n);
         }
     }
-    
-    function applyKnots(knotInfo) {        
+
+    function applyKnots(knotInfo) {
         if (knotInfo.options.twoWayBinding)
             setupDataNotification(knotInfo);
 
@@ -338,24 +328,24 @@
             //foreach is treaded as a special knot
             if (valueName == "foreach")
                 continue;
-            
+
             updateDisplay(knotInfo, valueName);
-        }        
+        }
     }
     function updateDisplay(knotInfo, valueName) {
         var path = knotInfo.options.binding[valueName];
-                   
+
         var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
         if (!knotType) {
             throw new Error("Failed to find the proper knot type!");
-        }       
-        
-       
-        knotType.setValue(knotInfo.node, valueName, getDataValue(knotInfo, valueName));        
+        }
+
+
+        knotType.setValue(knotInfo.node, valueName, getDataValue(knotInfo, valueName));
     }
 
     function setupDataNotification(knotInfo) {
-        var data = knotInfo.dataContext;        
+        var data = knotInfo.dataContext;
         for (var valueName in knotInfo.options.twoWayBinding) {
             if (valueName == "foreach")
                 continue;
@@ -379,23 +369,23 @@
                                     }
                                 }
                             });
-                        })();                        
+                        })();
                     }
                     continue;
                 }
             }
 
-            
+
             var pathSections = knotInfo.options.binding[valueName].split(".");
-            var path = "";        
+            var path = "";
             for (var i = 0; i < pathSections.length; i++) {
                 var curData = knotInfo.dataContext;
                 if (path != ""){
-                    curData = knotInfo.dataContext[path]                    
+                    curData = knotInfo.dataContext[path]
                 }
                 if (!curData)
                     break;
-               
+
                 if (!hasRegisteredValuChangedCallback(curData, knotInfo)) {
                     (function () {
                         var curPath = path;
@@ -419,21 +409,21 @@
                             }
                         });
                     })();
-                }              
+                }
 
                 if(path != "")
                     path += ".";
                 path += pathSections[i];
-            }   
-            
+            }
+
             var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
             if (knotType.isEditingSupported(knotInfo.node.tagName, valueName)) {
                 setupNodeMonitering(knotInfo, knotType, valueName);
-            } 
-        }                    
+            }
+        }
     }
 
-    function setupNodeMonitering(knotInfo, knotType, valueName) {       
+    function setupNodeMonitering(knotInfo, knotType, valueName) {
         if (!knotInfo.nodeMonitoringInfo) {
             knotInfo.nodeMonitoringInfo = {};
         }
@@ -448,9 +438,9 @@
                 setDataValue(knotInfo, valueName, newValue);
             };
             knotType.monitorChange(knotInfo.node, valueName, knotInfo.nodeMonitoringInfo[valueName]);
-        }        
+        }
     }
-    
+
     function validateValue(knotInfo, valueName, value) {
         var data = knotInfo.dataContext;
         var path = knotInfo.options.binding[valueName];
@@ -461,10 +451,10 @@
         if (!data)
             return;
 
-        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {            
+        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {
 
 
-            var validator = getObjectInGlobalSpace(knotInfo.options.validators[valueName][i]);
+            var validator = getObjectInGlobalScope(knotInfo.options.validators[valueName][i]);
             if (!validator) {
                 throw new Error("Failed to find validator by path:" + knotInfo.options.validators[valueName][i]);
             }
@@ -475,9 +465,9 @@
             catch (err) {
                 errMessage = err.message;
             }
-            
+
             setErrorInfo(data, path, errMessage);
-            if (errMessage) {                
+            if (errMessage) {
                 for (var i = 0; i < _onValidatingErrorCallbacks.length; i++) {
                     _onValidatingErrorCallbacks[i](errMessage, knotInfo.node);
                 }
@@ -491,21 +481,30 @@
     function getDataValue(knotInfo, valueName) {
         var path =knotInfo.options.binding[valueName];
 
-        var value;        
-        if (knotInfo.options.bindingToError && knotInfo.options.bindingToError[valueName]) {            
+        var root = knotInfo.dataContext;
+        if (path[0] == "/") {
+            root = window;
+            path = path.substr(1);
+        }
+        if (path == "--self")
+            return knotInfo.dataContext;
+
+
+        var value;
+        if (knotInfo.options.bindingToError && knotInfo.options.bindingToError[valueName]) {
             var arr = path.split(".");
             var propertyName = arr[arr.length - 1];
             var objectPath = path.substr(0, path.length - propertyName.length-1);
-            var dataToBinding = getValueOnPath(knotInfo.dataContext, objectPath);
+            var dataToBinding = getValueOnPath(root, objectPath);
             value = getErrorInfo(dataToBinding, propertyName);
         }
         else{
-            value = getValueOnPath(knotInfo.dataContext, path);
+            value = getValueOnPath(root, path);
         }
 
-               
+
         if (knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
-            var converter = getObjectInGlobalSpace(knotInfo.options.valueConverters[valueName]);
+            var converter = getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
             if (!converter)
                 throw new Error("Failed to find converter with name:" + knotInfo.options.valueConverters[valueName]);
             if (converter.to) {
@@ -519,9 +518,18 @@
     function setDataValue(knotInfo, valueName, value) {
         if (!knotInfo.dataContext)
             return;
+        var root = knotInfo.dataContext;
         var path = knotInfo.options.binding[valueName]
+
+        if (path[0] == "/") {
+            root = window;
+            path = path.substr(1);
+        }
+        if (path == "--self")
+            return knotInfo.dataContext;
+
         if (knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
-            var converter = getObjectInGlobalSpace(knotInfo.options.valueConverters[valueName]);
+            var converter = getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
             if (!converter)
                 throw new Error("Failed to find converter with name:" + knotInfo.options.valueConverters[valueName]);
             if (converter.from) {
@@ -529,39 +537,43 @@
             }
         }
 
-        var data = knotInfo.dataContext;
+        var data = root;
         while (path.indexOf(".") >= 0 && data) {
             data= data[path.substr(0, path.indexOf("."))];
             path = path.substr(path.indexOf(".") + 1);
         }
         if(data){
-            data[path] = value;            
-        }               
+            data[path] = value;
+        }
         if(data)
             notifyDataChanged(data, path);
     }
 
-    function findDataSource(option) {
-        var res = null;
-        if (option.selector) {
-            res= document.querySelector(option.selector);
-        }
-        if (!res) {
-            throw new Error("Can't find data source!");
-        }
-        return res;
-    }
-
     function tie(docNode, dataContext) {
+        if(!docNode)
+            docNode = document.body;
         if (docNode.__knotInfo) {
             untie(docNode);
         }
-        var info = { node: docNode, dataContext: dataContext, childrenInfo: [] };
+        var info = { node: docNode, childrenInfo: [] };
         docNode.__knotInfo = info;
 
         info.options = parseOptions(docNode);
+        if(info.options.dataContextPath){
+            var root = dataContext;
+            var path = info.options.dataContextPath;
+            if(path[0] == "/"){
+                root = window;
+                path = path.substr(1);
+            }
+            if(!root)
+                root = window;
+            dataContext = getValueOnPath(root, path);
+        }
+        info.dataContext = dataContext;
+
         if (info.options.binding) {
-            if (info.options.binding.foreach) {                             
+            if (info.options.binding.foreach) {
                 var foreach = getDataValue(info, "foreach");
                 if (foreach != null) {
                     if (!(foreach instanceof Array)) {
@@ -576,7 +588,7 @@
 
                     syncItems(info, foreach);
                     applyKnots(info);
-                        
+
                     if (info.options.twoWayBinding && info.options.twoWayBinding.foreach) {
                         info.foreachArrayChangeCallback = function () { syncItems(info, foreach); };
                         registerValueChangedCallback(foreach, info, info.foreachArrayChangeCallback);
@@ -591,7 +603,7 @@
             }
             return info;
         }
-           
+
         for (var i = 0; i < docNode.children.length; i++) {
             info.childrenInfo.push(tie(docNode.children[i], dataContext));
         }
@@ -604,9 +616,9 @@
 
     function removeKnot(knotInfo) {
         for (var valueName in knotInfo.options.binding) {
-            
+
             var path = knotInfo.options.binding[valueName];
-           
+
             //foreach has been processed outside
             if (valueName == "foreach")
                 continue;
@@ -638,7 +650,7 @@
                 if (!curData)
                     break;
 
-                unregisterValueChangedCallback(curData, knotInfo);               
+                unregisterValueChangedCallback(curData, knotInfo);
 
                 if (path != "")
                     path += ".";
@@ -658,7 +670,7 @@
         var info = docNode.__knotInfo;
         if (!info)
             return;
-        
+
         if (info.options.binding && info.options.binding.foreach) {
             var foreach = getDataValue(info, "foreach");
             if (foreach != null && info.foreachArrayChangeCallback) {
@@ -673,7 +685,7 @@
         }
 
         removeKnot(info);
-        delete docNode.__knotInfo;        
+        delete docNode.__knotInfo;
     }
 
 
@@ -696,7 +708,7 @@
                 if (errorMessage)
                     return errorMessage;
             }
-        }        
+        }
 
         if (info.childrenInfo) {
             for (var i = 0; i < info.childrenInfo.length; i++) {
@@ -707,10 +719,10 @@
         }
         return;
     }
-   
 
 
-    root.Knot = {              
+
+    root.Knot = {
         tie: tie,
         untie: untie,
         validate:validate,
