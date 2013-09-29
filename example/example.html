@@ -4,9 +4,9 @@
     <meta charset="utf-8" />
     <title>Test</title>
 
-    <script src="../src/knot.js"></script>
-    <script src="../src/knot.types.js"></script>
-    <script src="../src/knot.ext.js"></script>
+    <script src="../src/Knot.js"></script>
+    <script src="../src/Knot.types.js"></script>
+    <script src="../src/Knot.ext.js"></script>
 
     <style type="text/css">
         .selected {
@@ -69,42 +69,18 @@
     </style>
 
     <script>
-        if(!window.alert)
-            window.alert = function () { };
+        //this is the model. it has two properties:
+        //list: the array of the data. the list is bound with this property
+        //selected: current selected data. the editing controls are bound with thie property
+        //it is associated to Knot by dataContext attribute on "body" element
+        var model = {list:[], selected:null};
 
-        var model = {list:[]};
-
-        function validate() {
-            var errMessage = Knot.validate(document.body);
-            if (errMessage) {
-                alert(errMessage);
-                return false;
-            }
-            return true;
-        }
-        function onNew() {
-            if (!validate())
-                return;
-            var n = {sex:"Male"};
-            Knot.addToArray(model.list, n);
-            selectData(n);
-        }
-
-        function onRemove() {
-            if (model.selected) {
-                var index = model.list.indexOf(model.selected);
-                Knot.removeFromArray(model.list, model.selected);
-                if (model.list.length > 0) {
-                    selectData(model.list[Math.min(model.list.length - 1, index)], true);
-                }
-                else {
-                    Knot.setValue(model, "selected", null);
-                }
-            }
-        }
-
-        function onload() {
+        //here is everything start
+        function onLoad() {
+            //tie a knot! done!!
             Knot.tie();
+
+            //when validating fails, set focus to the failed element.
             Knot.registerOnValidatingError(function (msg, node) {
                 setTimeout(function () {
                     if (node.focus)
@@ -113,6 +89,44 @@
             });
         }
 
+
+        //call this function to validate all data. it is called when model.selected is changed.
+        function validate() {
+            var errMessage = Knot.validate(document.body);
+            if (errMessage) {
+                alert(errMessage);
+                return false;
+            }
+            return true;
+        }
+        //event handler of "new" button
+        function onNew() {
+            if (!validate())
+                return;
+            //set default sex to "Male"
+            var n = {sex:"Male"};
+            //call Knot.addToArray, so that UI will refresh automatically
+            Knot.addToArray(model.list, n);
+            selectData(n);
+        }
+
+        //event handler of "remove" button
+        function onRemove() {
+            if (model.selected) {
+                var index = model.list.indexOf(model.selected);
+                Knot.removeFromArray(model.list, model.selected);
+                if (model.list.length > 0) {
+                    selectData(model.list[Math.min(model.list.length - 1, index)], true);
+                }
+                else {
+                    //Use Knot.setValue to update data, so the UI will refresh
+                    Knot.setValue(model, "selected", null);
+                }
+            }
+        }
+
+        //set the data to current selected data.
+        //setting "model.selected" to update the edit controls, setting "isSelected" to update css on list items
         function selectData(data, ignoreValidating) {
             if (!ignoreValidating && !validate())
                 return;
@@ -126,16 +140,23 @@
             }
         }
 
+        //when any items are created in list, this is called. and we hook the onclick event to the
+        //new item, so that we can switch selection to it when it is clicked.
+        //it is associate to Knot by the "knotEvent" attribute in html.
         function onItemCreated(data, item) {
             item.onclick = function () {
                 selectData(data);
             }
         }
 
-
+        //these converters are used to change the values on data to anything you want them on html. You can create your own, it is super easy!
+        //they are associate to Knot by "=>" mark in html
         var boolToClassConverter = Knot.Converters.createBoolToValue("selected", "unselected");
         var enableControl = Knot.Converters.createBoolToValue(false, true);
         var visibleControl = Knot.Converters.createBoolToValue("", "none");
+
+        //these validators are used to validate the inputted value. the last one(duplicatedName) is used to check whether these's another one
+        //with the same name. You can see how simple it is.
         var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
         var checkInteger = Knot.Validators.createInteger("Must be integer");
         var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
@@ -150,10 +171,11 @@
             }
         }
 
+        //options for the "From" select
         var countries = ["USA", "Japan", "China", "Australia"];
     </script>
 </head>
-<body onload="onload();" knotDataContext="/model">
+<body onload="onLoad();" knotDataContext="/model">
 <h2>Knot.js Example</h2>
 <div>
     <div id="dataList" knots="foreach:*list" knotEvents="onItemCreated:onItemCreated">
