@@ -99,7 +99,6 @@
 
         #editArea input[type="text"] [0]{
             value:*selected.name =!mustNotNull & duplicatedName;
-            disabled:*selected=>enableControl
         }
         #editArea .errorMessage [0]{
             style:{
@@ -110,7 +109,6 @@
 
         #editArea input[type="text"] [1]{
             value:*selected.age =!mustNotNull & checkInteger&ageRange;
-            disabled:*selected=>enableControl
         }
         #editArea .errorMessage [1]{
             style:
@@ -122,21 +120,20 @@
 
         #editArea select [0]{
             selected:*selected.sex;
-            disabled:*selected=>enableControl
         }
         #editArea select [1]{
             selected:*selected.from;
-            disabled:*selected=>enableControl;
             foreach:/countries
+        }
+
+        .disableWhenNoSelection{
+            disabled:*/model.selected=>enableControl;
         }
 
         #selectFromOptionTemplate{
             text:--self
         }
 
-        #buttonRemove{
-            disabled:*selected=>enableControl
-        }
     </script>
 
     <script>
@@ -273,24 +270,24 @@
     <div id="editArea">
         <div>
             <div class="fieldTitle">Name:</div>
-            <input type="text"/>
+            <input class="disableWhenNoSelection" type="text"/>
             <span class="errorMessage"></span>
         </div>
         <div>
             <div class="fieldTitle">Age:</div>
-            <input type="text"/>
+            <input class="disableWhenNoSelection" type="text"/>
             <span class="errorMessage"></span>
         </div>
         <div>
             <div class="fieldTitle">Sex:</div>
-            <select>
+            <select class="disableWhenNoSelection">
                 <option>Male</option>
                 <option>Female</option>
             </select>
         </div>
         <div>
             <div class="fieldTitle">From:</div>
-            <select>
+            <select class="disableWhenNoSelection">
                 <option id="selectFromOptionTemplate"></option>
             </select>
         </div>
@@ -298,7 +295,7 @@
         <p>
             <button onclick="onNew();">New</button>
 
-            <button id="buttonRemove" onclick="onRemove()">Delete</button>
+            <button class="disableWhenNoSelection" onclick="onRemove()">Delete</button>
         </p>
     </div>
 </div>

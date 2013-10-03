@@ -55,7 +55,13 @@
             var path =knotInfo.options.binding[valueName];
             //var arr = path.split("=");
             //path = arr[0];
-            var fullPath = knotInfo.contextPath + "." + path;
+            var fullPath;
+            if(path[0] == "/"){
+                fullPath = path;
+            }
+            else{
+                fullPath = knotInfo.contextPath + "." + path;
+            }
 
             var key = valueName;
             if(knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]){

@@ -27,7 +27,11 @@
 
     function getValueOnPath(rootData, path) {
         var data = rootData;
-        while (path.indexOf(".") >= 0 && rootData) {
+        if(path[0] == "/"){
+            data= window;
+            path = path.substr(1);
+        }
+        while (path.indexOf(".") >= 0 && data) {
             data = data[path.substr(0, path.indexOf("."))];
             path = path.substr(path.indexOf(".") + 1);
         }
@@ -452,7 +456,7 @@
             for (var i = 0; i < pathSections.length; i++) {
                 var curData = knotInfo.dataContext;
                 if (path != ""){
-                    curData = knotInfo.dataContext[path]
+                    curData =getValueOnPath(knotInfo.dataContext, path)
                 }
                 if (!curData)
                     break;
@@ -467,6 +471,13 @@
 
                             for (var p in knotInfo.options.twoWayBinding) {
                                 var path = knotInfo.options.binding[p];
+
+                                //if the property is obtained from global scope, need to
+                                //remove the first section to get the relative path
+                                if(path[0] == "/"){
+                                    path = path.substr(path.indexOf(".")+1);
+                                }
+
                                 if(path.length < fullPath.length){
                                     continue;
                                 }
@@ -845,13 +856,13 @@
                 throw new Error("No element matches the selector:" + selector);
             if(seq>=0){
                 if(elements[seq])
-                    elements[seq].__knot_cbs_options = options;
+                    elements[seq].__knot_cbs_options = (elements[seq].__knot_cbs_options?(elements[seq].__knot_cbs_options+";"+  options) :options);
                 else
                     throw new Error("No element exists at this index. selector:" + selector);
             }
             else{
                 for(var i= 0; i< elements.length; i++){
-                    elements[i].__knot_cbs_options = options;
+                    elements[i].__knot_cbs_options = (elements[i].__knot_cbs_options?(elements[i].__knot_cbs_options+";"+  options) :options)
                 }
             }
 
