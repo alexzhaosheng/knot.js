@@ -66,6 +66,7 @@
             if ((valueName == "text") ||
                 startWith(valueName, "style-") ||
                 (valueName == "class") ||
+                (valueName == "src") ||
                 (valueName == "disabled")
                ) {
                 return true;
@@ -88,6 +89,9 @@
             }
             else if (valueName == "disabled") {
                 element.disabled = (typeof (value) == "undefined" ? true : value);
+            }
+            else if(valueName == "src"){
+                element.src = value;
             }
         }
     }

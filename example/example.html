@@ -7,6 +7,7 @@
     <script src="../src/Knot.js"></script>
     <script src="../src/Knot.types.js"></script>
     <script src="../src/Knot.ext.js"></script>
+    <script src="../src/Knot.debug.js"></script>
 
     <style type="text/css">
         .selected {
@@ -65,8 +66,90 @@
             display:inline-block;
             text-align:right;
         }
-
     </style>
+
+
+    <script type="text/cbs">
+        body{
+            knotDataContext:/model
+        }
+
+        #dataList{
+            foreach:*list;
+            @itemCreated:onItemCreated;
+        }
+
+        #dataList>div{
+            class:*isSelected=>boolToClassConverter;
+        }
+
+        #dataList>div span [0]{
+            text:*sex=>sexToTitle
+        }
+        #spanName{
+            text:*name
+        }
+        #spanAge{
+            text:*age
+        }
+        #spanFrom{
+            text:*from
+        }
+
+
+        #editArea input[type="text"] [0]{
+            value:*selected.name =!mustNotNull & duplicatedName;
+            disabled:*selected=>enableControl
+        }
+        #editArea .errorMessage [0]{
+            style:{
+                display:!selected.name=>visibleControl
+                };
+            text:!selected.name
+        }
+
+        #editArea input[type="text"] [1]{
+            value:*selected.age =!mustNotNull & checkInteger&ageRange;
+            disabled:*selected=>enableControl
+        }
+        #editArea .errorMessage [1]{
+            style:
+                {
+                    display:!selected.age=>visibleControl
+                };
+            text:!selected.age
+        }
+
+        #editArea select [0]{
+            selected:*selected.sex;
+            disabled:*selected=>enableControl
+        }
+        #editArea select [1]{
+            selected:*selected.from;
+            disabled:*selected=>enableControl;
+            foreach:/countries
+        }
+
+        #selectFromOptionTemplate{
+            text:--self
+        }
+
+        #buttonRemove{
+            disabled:*selected=>enableControl
+        }
+    </script>
+
+    <script>
+        function doTest(){
+            var blocks = document.querySelectorAll("script");
+            var p = document.querySelectorAll("#dataList>div:first-child");
+            if(!p)
+                alert("faild");
+            else
+                alert("succ!");
+        }
+    </script>
+
 
     <script>
         //this is the model. it has two properties:
@@ -77,6 +160,7 @@
 
         //here is everything start
         function onLoad() {
+
             //tie a knot! done!!
             Knot.tie();
 
@@ -175,48 +259,46 @@
         var countries = ["USA", "Japan", "China", "Australia"];
     </script>
 </head>
-<body onload="onLoad();" knotDataContext="/model">
+<body onload="onLoad();">
 <h2>Knot.js Example</h2>
 <div>
-    <div id="dataList" knots="foreach:*list" knotEvents="onItemCreated:onItemCreated">
-        <div knots="class:*isSelected=>boolToClassConverter">
-            <span knots="text:*sex=>sexToTitle"> </span><span knots="text:*name"></span>
+    <div id="dataList">
+        <div>
+            <span id="spanTitle"> </span><span id="spanName"></span>
             <hr/>
-            Age:<span knots="text:*age"></span>,
-            From:<span knots="text:*from"></span>
+            Age:<span id="spanAge"></span>,
+            From:<span id="spanFrom"></span>
         </div>
     </div>
     <div id="editArea">
         <div>
             <div class="fieldTitle">Name:</div>
-            <input type="text"
-                   knots="value:*selected.name=!mustNotNull&duplicatedName, disabled:*selected=>enableControl"/>
-            <span class="errorMessage" knots="style:{display:!selected.name=>visibleControl},text:!selected.name"></span>
+            <input type="text"/>
+            <span class="errorMessage"></span>
         </div>
         <div>
             <div class="fieldTitle">Age:</div>
-            <input type="text"
-                   knots="value:*selected.age=!mustNotNull&checkInteger&ageRange, disabled:*selected=>enableControl" />
-            <span class="errorMessage" knots="style:{display:!selected.age=>visibleControl},text:!selected.age"></span>
+            <input type="text"/>
+            <span class="errorMessage"></span>
         </div>
         <div>
             <div class="fieldTitle">Sex:</div>
-            <select knots="selected:*selected.sex,disabled:*selected=>enableControl">
+            <select>
                 <option>Male</option>
                 <option>Female</option>
             </select>
         </div>
         <div>
             <div class="fieldTitle">From:</div>
-            <select knots="selected:*selected.from,disabled:*selected=>enableControl,foreach:/countries">
-                <option knots="text:--self"></option>
+            <select>
+                <option id="selectFromOptionTemplate"></option>
             </select>
         </div>
 
         <p>
             <button onclick="onNew();">New</button>
 
-            <button knots="disabled:*selected=>enableControl" onclick="onRemove()">Delete</button>
+            <button id="buttonRemove" onclick="onRemove()">Delete</button>
         </p>
     </div>
 </div>

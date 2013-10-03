@@ -45,6 +45,48 @@
         return o;
     }
 
+    function getBlockInfo(str, startIndex, startMark, endMark){
+        var info = {start:-1, end:-1};
+        info.start = str.indexOf(startMark, startIndex);
+        if(info.start<0)
+            return null;
+
+        var ct = 0;
+        var pos = info.start+1;
+        while(true){
+            var ns = str.indexOf(startMark, pos);
+            var ne = str.indexOf(endMark, pos);
+            if(ne<0)
+                break;
+            if(ns<0 || ne < ns){
+                if(ct==0){
+                    info.end = ne;
+                    break;
+                }
+                else{
+                    ct--;
+                }
+                pos = ne+1;
+            }
+            else{
+                ct++;
+                pos = ns+1;
+            }
+        }
+        if(info.start >=0 && info.end>=0)
+            return info;
+        else{
+            return null;
+        }
+    }
+
+    /////////////////////////////////////
+    //mock debugger. will be replaced if debugger is actived
+    ////////////////////////////////////
+    var knotDebugger = {
+        debug:function(knotInfo, valueName, status){}
+    }
+
     /////////////////////////////////////
     // Attached data management
     /////////////////////////////////////
@@ -205,8 +247,13 @@
             return {};
         option = option.replace(/\s/g, "");
         option = "{" + option + "}";
-        option = option.replace(/:/g, '":"').replace(/,/g, '","').replace(/}/g, '"}').replace(/{/g, '{"').replace(/"{/g, "{").replace(/}"/g, "}");
-        return JSON.parse(option);
+        option = option.replace(/;/g,",").replace(/:/g, '":"').replace(/,/g, '","').replace(/}/g, '"}').replace(/{/g, '{"').replace(/"{/g, "{").replace(/}"/g, "}");
+        try{
+            return JSON.parse(option);
+        }
+        catch(err){
+            throw new Error("Parse option failed:" +option + " message:"+err.message);
+        }
     }
     function parseDetailedOptions(optionName, detailedOptions, valueConverters, validators) {
         var arr = detailedOptions.split("=");
@@ -222,6 +269,15 @@
     function parseOptions(node) {
         var options = {};
         var att = node.getAttribute("knots");
+        if(node.__knot_cbs_options){
+            if(att){
+                att += ";" + node.__knot_cbs_options;
+            }
+            else{
+                att=node.__knot_cbs_options;
+            }
+        }
+
         if (att) {
             var bindingOptions = parseOptionToJSON(att);
             if (bindingOptions.style) {
@@ -231,22 +287,29 @@
                     bindingOptions["style-" + s] = v[s];
                 }
             }
-            options.binding = bindingOptions;
-
-            var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {};
-            for (var p in options.binding) {
-                var v = options.binding[p];
-                if (v[0] == "*") {
-                    twoWayBinding[p] = true;
-                    v = v.substr(1);
+            var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {}, events={};
+            for (var p in bindingOptions) {
+                if(p[0] == "@"){
+                    events[p.substr(1)] = bindingOptions[p];
+                    delete bindingOptions[p];
                 }
-                if (v[0] == "!") {
-                    bindingToError[p] = true;
-                    twoWayBinding[p] = true;
-                    v = v.substr(1);
+                else if(p== "knotDataContext"){
+                    options.dataContextPath = bindingOptions[p];
+                    delete bindingOptions[p];
                 }
-
-                options.binding[p] = parseDetailedOptions(p, v, valueConverters, validators);
+                else{
+                    var v = bindingOptions[p];
+                    if (v[0] == "*") {
+                        twoWayBinding[p] = true;
+                        v = v.substr(1);
+                    }
+                    if (v[0] == "!") {
+                        bindingToError[p] = true;
+                        twoWayBinding[p] = true;
+                        v = v.substr(1);
+                    }
+                    bindingOptions[p] = parseDetailedOptions(p, v, valueConverters, validators);
+                }
             }
             if(!isEmptyObj(valueConverters))
                 options.valueConverters = valueConverters;
@@ -256,21 +319,30 @@
                 options.bindingToError = bindingToError;
             if (!isEmptyObj(validators))
                 options.validators = validators;
+            if(!isEmptyObj(events)){
+                options.events = events;
+            }
+            if(!isEmptyObj(bindingOptions))
+                options.binding = bindingOptions;
         }
-
-        if (node.getAttribute("knotEvents")) {
-            options.events = parseOptionToJSON(node.getAttribute("knotEvents"));
-        }
-        if (node.getAttribute("knotDataContext")) {
-            options.dataContextPath = node.getAttribute("knotDataContext");
-        }
-
         return options;
     }
 
     ///////////////////////////////////////////////////////////
     // core
     ///////////////////////////////////////////////////////////
+
+    function cloneTemplateNode(node){
+        var setAttachedData = function(n, c){
+            c.__knot_cbs_options = n.__knot_cbs_options;
+            for(var i=0; i< n.children.length; i++)
+                setAttachedData(n.children[i], c.children[i]);
+        }
+
+        var cloned = node.cloneNode(true);
+        setAttachedData(node, cloned);
+        return cloned;
+    }
 
     //synchronise the items between array and dom node children, create new, remove old and change order.
     function syncItems(knotInfo, items) {
@@ -290,7 +362,7 @@
         }
 
         var node = knotInfo.node;
-
+        var contextPath = knotInfo.contextPath + "." + knotInfo.options.binding["foreach"];
         for (var i = 0; i < items.length; i++) {
             var ele = findChild(node, items[i]);
             if (ele) {
@@ -300,13 +372,13 @@
                 }
             }
             else {
-                var n = node.knotItemTemplate.cloneNode(true);
-                knotInfo.childrenInfo.push(tie(n, items[i]));
+                var n = cloneTemplateNode(node.knotItemTemplate);
+                knotInfo.childrenInfo.push(tie(n, items[i], contextPath+".["+i+"]"));
                 addChildTo(node, n, i);
-                if (knotInfo.options.events && knotInfo.options.events.onItemCreated) {
-                    var callback = getObjectInGlobalScope(knotInfo.options.events.onItemCreated);
+                if (knotInfo.options.events && knotInfo.options.events.itemCreated) {
+                    var callback = getObjectInGlobalScope(knotInfo.options.events.itemCreated);
                     if (!callback)
-                        throw new Error("Failed to find event handler with name:" + knotInfo.options.events.onItemCreated);
+                        throw new Error("Failed to find event handler with name:" + knotInfo.options.events.itemCreated);
                     callback(items[i], n);
                 }
             }
@@ -359,8 +431,6 @@
                 if (dataToBinding) {
                     if (!hasRegisteredOnErrorCallback(dataToBinding)) {
                         (function () {
-                            var curValueName = valueName, curObjectPath = curObjectPath, curProperty = propertyName;
-
                             registerOnErrorCallback(dataToBinding, knotInfo, function (property) {
                                 for (var v in knotInfo.options.bindingToError) {
                                     if (knotInfo.options.binding[v].substr(0, objectPath.length) == objectPath) {
@@ -369,6 +439,7 @@
                                     }
                                 }
                             });
+                            knotDebugger.debug(knotInfo,valueName, "setup");
                         })();
                     }
                     continue;
@@ -502,7 +573,6 @@
             value = getValueOnPath(root, path);
         }
 
-
         if (knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
             var converter = getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
             if (!converter)
@@ -511,6 +581,8 @@
                 value = converter.to(value);
             }
         }
+
+        knotDebugger.debug(knotInfo, valueName, "get: " + (value instanceof Array? "{array:("+value.length+")}":value));
 
         return value;
     }
@@ -544,18 +616,27 @@
         }
         if(data){
             data[path] = value;
+            knotDebugger.debug(knotInfo, valueName, "set:" + value);
         }
         if(data)
             notifyDataChanged(data, path);
     }
 
-    function tie(docNode, dataContext) {
+    var _isInitialized = false;
+    function tie(docNode, dataContext, contextPath) {
+        if(!_isInitialized){
+            cbsInit();
+            _isInitialized = true;
+        }
+
         if(!docNode)
             docNode = document.body;
         if (docNode.__knotInfo) {
             untie(docNode);
         }
-        var info = { node: docNode, childrenInfo: [] };
+        if(!contextPath)
+            contextPath = "/";
+        var info = { node: docNode, childrenInfo: [], contextPath: contextPath };
         docNode.__knotInfo = info;
 
         info.options = parseOptions(docNode);
@@ -564,7 +645,12 @@
             var path = info.options.dataContextPath;
             if(path[0] == "/"){
                 root = window;
+                contextPath = info.contextPath = path;
                 path = path.substr(1);
+            }
+            else{
+                info.contextPath += "." + path;
+                contextPath = info.contextPath;
             }
             if(!root)
                 root = window;
@@ -597,7 +683,7 @@
             }
             else {
                 for (var i = 0; i < docNode.children.length; i++) {
-                    tie(docNode.children[i], dataContext);
+                    tie(docNode.children[i], dataContext, contextPath);
                 }
                 applyKnots(info);
             }
@@ -605,14 +691,10 @@
         }
 
         for (var i = 0; i < docNode.children.length; i++) {
-            info.childrenInfo.push(tie(docNode.children[i], dataContext));
+            info.childrenInfo.push(tie(docNode.children[i], dataContext, contextPath));
         }
         return info;
     }
-
-
-
-
 
     function removeKnot(knotInfo) {
         for (var valueName in knotInfo.options.binding) {
@@ -721,7 +803,66 @@
     }
 
 
+    /////////////////////////////////
+    //CBS handling
+    ////////////////////////////////
+    function cbsInit(){
+        var blocks = document.querySelectorAll("script");
+        for(var i =0; i< blocks.length; i++){
+            if(blocks[i].type == "text/cbs"){
+                applyCBS(blocks[i].innerText);
+            }
+        }
+    }
+    function applyCBS(cbs){
+        var parsePos = 0;
+        cbs = cbs.replace(/\r/g," ").replace(/\n/g, " ");
+        while(true){
+            var block = getBlockInfo(cbs, parsePos, "{", "}");
+            if(!block)
+                return;
 
+            var options = trim(cbs.substr(block.start+1, block.end-block.start-1));
+            options = options.replace(/;/g, ",");
+            if(options[options.length-1] == ",")
+                options = options.substr(0, options.length-1);
+
+            var selector = trim(cbs.substr(parsePos, block.start-parsePos));
+            var seq = -1;
+            if(selector[selector.lastIndexOf("[")-1] == " "){
+                if(selector[selector.length-1] != "]"){
+                    throw new Error("Unknown cbs selector " + selector);
+                }
+                seq = Number(selector.substr(selector.lastIndexOf("[")+1, selector.length - selector.lastIndexOf("[")-2));
+                if(isNaN(seq)){
+                    throw new Error("Unknown cbs selector " + selector);
+                }
+
+                selector = selector.substr(0, selector.lastIndexOf("["));
+            }
+            var elements = document.querySelectorAll(selector);
+            if(elements.length == 0)
+                throw new Error("No element matches the selector:" + selector);
+            if(seq>=0){
+                if(elements[seq])
+                    elements[seq].__knot_cbs_options = options;
+                else
+                    throw new Error("No element exists at this index. selector:" + selector);
+            }
+            else{
+                for(var i= 0; i< elements.length; i++){
+                    elements[i].__knot_cbs_options = options;
+                }
+            }
+
+            parsePos = block.end +1;
+        }
+    }
+
+
+    ////////////////////////////
+    //export
+    ////////////////////////////
     root.Knot = {
         tie: tie,
         untie: untie,
@@ -731,7 +872,7 @@
         registerOnValidatingError: function(errorCallback){
             _onValidatingErrorCallbacks.push(errorCallback);
         },
-        unregisterOnErrorValidatingError: function (errorCallback) {
+        unregisterOnValidatingError: function (errorCallback) {
             _onValidatingErrorCallbacks.splice(_onValidatingErrorCallbacks.indexOf(errorCallback), 1);
         },
 
@@ -747,6 +888,10 @@
         removeFromArray: function (array, data) {
             array.splice(array.indexOf(data), 1);
             notifyDataChanged(array);
+        },
+
+        __registerKnotDebugger: function(dbg){
+            knotDebugger = dbg;
         }
     }
 })();
