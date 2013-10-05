@@ -49,12 +49,13 @@
         },
         monitorChange: function (element, valueName, callback) {
             element.addEventListener("change", callback);
+            return callback;
         },
         stopMonitoring: function (element, valueName, callback) {
             element.removeEventListener("change", callback);
         }
     }
-    knot.registerKnotType(CommInput);
+    knot.registerKnotExtension(CommInput, "knot_type");
 
 
     function startWith(str, subStr){
@@ -95,6 +96,24 @@
             }
         }
     }
-    knot.registerKnotType(CommonSetOnlyKnots);
+    knot.registerKnotExtension(CommonSetOnlyKnots, "knot_type");
+
+
+
+    var DomEventActions = {
+        isSupported: function (tagName, action) {
+            return true;
+        },
+
+        prepareAction:function(node, action, callback){
+            node.addEventListener(action, callback);
+            return callback;
+        },
+
+        releaseAction: function(node, action, callback){
+            node.removeEventListener(action, callback);
+        }
+    }
+    knot.registerKnotExtension(DomEventActions, "knot_action");
   
 })(Knot);

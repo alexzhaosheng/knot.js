@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Test</title>
+
+<script src="../src/Knot.js"></script>
+<script src="../src/Knot.extensions.js"></script>
+<script src="../src/Knot.utilities.js"></script>
+<script src="../src/Knot.debug.js"></script>
+
+<style type="text/css">
+    .selected {
+        background-color:lemonchiffon;
+        color:black;
+    }
+    .unselected {
+        background-color:white;
+        color:black;
+    }
+    .errorMessage {
+        color:red;
+    }
+
+    #treeArea{
+        width:200px;
+        height:400px;
+        float:left;
+
+    }
+    #treeArea button{
+        width:20px;
+        height:20px;
+        padding: 0px;
+        line-height: 18px;
+        border: solid 1px gray;
+        background-color: white;
+
+        margin:2px 10px;
+    }
+    #treeArea input{
+        width:100px;
+        height:15px;
+        margin: 10px 0px 2px 10px;
+    }
+    #treeView{
+        border: 1px solid gray;
+        height:327px;
+        margin:0px 10px 10px 10px;
+        overflow: auto;
+    }
+    #treeItem{
+        cursor: pointer;
+    }
+    #treeItem button{
+        width:16px;
+        height: 16px;
+        line-height: 14px;
+
+    }
+    #treeItem>div:last-child{
+        margin-left: 15px;
+    }
+
+
+    #peopleList {
+        width:200px;
+        height:350px;
+        float:left;
+        margin:10px;
+
+        overflow-x:hidden;
+        overflow-y:auto;
+
+        border:1px solid gray;
+    }
+    #peopleList > div {
+        padding:5px;
+        border:1px solid gray;
+        margin:5px;
+    }
+
+
+    #editArea {
+        width:500px;
+        height:400px;
+
+        padding:5px;
+        text-align:left;
+
+        float:left;
+    }
+
+    #editArea input {
+        width:150px;
+        text-align:left;
+        margin:5px;
+    }
+    #editArea select {
+        width:150px;
+        text-align:left;
+        margin:5px;
+    }
+
+    #editArea .fieldTitle {
+        width:50px;
+        display:inline-block;
+        text-align:right;
+    }
+</style>
+
+<script type="text/cbs">
+    body{
+        knotDataContext:/model
+    }
+
+    #treeView{
+        foreach:*categories =>treeItem;
+    }
+    #treeItem>div:first-child{
+        class:*isSelected=>boolToClassConverter;
+        @click: onTreeItemClicked;
+    }
+    #treeItem>div:first-child span{
+        text:*title
+    }
+
+    #treeItem>div:last-child{
+        foreach: *children =>treeItem;
+        style-display: *isExpanded =>visibleControl
+    }
+
+    #treeItem button {
+        text: *isExpanded =>boolToExpandSymbol;
+        style-opacity: *children.length =>boolToOpacity;
+        disabled: *children.length =>enableControl;
+        @click: onExpandButtonClicked
+    }
+
+    .disableWhenNoCategorySelected{
+        disabled: */model.selectedCategory=>enableControl;
+    }
+
+    #textCategoryTitle{
+        value: */model.selectedCategory.title =!mustNotNull;
+    }
+
+
+    #peopleList{
+        foreach:*selectedCategory.peopleList;
+    }
+
+    #peopleList>div{
+        class:*isSelected=>boolToClassConverter;
+        @click:onPeopleClicked
+    }
+
+    #peopleList>div span [0]{
+        text:*sex=>sexToTitle
+    }
+    #spanName{
+        text:*name
+    }
+    #spanAge{
+        text:*age
+    }
+    #spanFrom{
+        text:*from
+    }
+
+
+    #editArea input[type="text"] [0]{
+        value:*selectedPeople.name =!mustNotNull & duplicatedName;
+    }
+    #editArea .errorMessage [0]{
+        style:{
+            display:!selectedPeople.name=>visibleControl
+        };
+        text:!selectedPeople.name
+    }
+
+    #editArea input[type="text"] [1]{
+        value:*selectedPeople.age =!mustNotNull & checkInteger&ageRange;
+    }
+    #editArea .errorMessage [1]{
+        style:
+        {
+            display:!selectedPeople.age=>visibleControl
+        };
+        text:!selectedPeople.age
+    }
+
+    #editArea select [0]{
+        selected:*selectedPeople.sex;
+    }
+    #editArea select [1]{
+        selected:*selectedPeople.from;
+        foreach:/countries
+    }
+
+    .disableWhenNoSelection{
+        disabled:*/model.selectedPeople=>enableControl;
+    }
+
+    #selectFromOptionTemplate{
+        text:--self
+    }
+
+</script>
+
+<script>
+
+    var model = {
+        categories:[
+            {title:"test", children:[], peopleList:[], isExpanded:true, parent:model}
+        ],
+        selectedCategory:null,
+        selectedPeople:null};
+
+    //here is everything start
+    function onLoad() {
+
+        //tie a knot! done!!
+        Knot.tie();
+
+        //when validating fails, set focus to the failed element.
+        Knot.registerOnValidatingError(function (msg, node) {
+            setTimeout(function () {
+                if (node.focus)
+                    node.focus();
+            }, 1);
+        });
+    }
+
+    function deselectTreeData(data, children){
+        for (var i = 0; i < children.length; i++) {
+            if (children[i] != data) {
+                Knot.setValue(children[i], "isSelected", false);
+            }
+            if(children[i].children){
+                deselectTreeData(data, children[i].children);
+            }
+        }
+    }
+
+    function onExpandButtonClicked(){
+        Knot.setValue(this, "isExpanded", !this.isExpanded)
+    }
+    function onTreeItemClicked(){
+        Knot.setValue(this, "isSelected", true);
+        Knot.setValue(model, "selectedCategory", this);
+        if(this.peopleList.length>0)
+            selectPeople(this.peopleList[0]);
+        else
+            Knot.setValue(model, "selectedPeople");
+        deselectTreeData(this, model.categories);
+    }
+
+    function addCategory(){
+        if(!validate())
+            return;
+        var cate = model.selectedCategory;
+        if(!cate)
+            cate = model;
+        var newCate = {title: "new", isExpanded:true, peopleList:[], parent:model.selectedCategory};
+        if(!cate.children)
+            Knot.setValue(cate, "children", []);
+        Knot.addToArray(cate.children, newCate);
+    }
+
+    function removeCategory(){
+        if(!model.selectedCategory)
+            return;
+
+        Knot.removeFromArray(model.selectedCategory.parent.children, model.selectedCategory);
+        Knot.setValue(model.selectedCategory, null);
+        Knot.setValue(model.selectedPeople, null);
+    }
+
+    //call this function to validate all data. it is called when model.selected is changed.
+    function validate() {
+        var errMessage = Knot.validate(document.body);
+        if (errMessage) {
+            alert(errMessage);
+            return false;
+        }
+        return true;
+    }
+    //event handler of "new" button
+    function onNewPeople() {
+        if (!validate())
+            return;
+        //set default sex to "Male"
+        var n = {sex:"Male"};
+        //call Knot.addToArray, so that UI will refresh automatically
+        Knot.addToArray(model.selectedCategory.peopleList, n);
+        selectPeople(n);
+    }
+
+    //event handler of "remove" button
+    function onRemovePeople() {
+        if (model.selectedPeople) {
+            var index = model.selectedCategory.peopleList.indexOf(model.selectedPeople);
+            Knot.removeFromArray(model.selectedCategory.peopleList, model.selectedPeople);
+            if (model.selectedCategory.peopleList.length > 0) {
+                selectPeople(model.selectedCategory.peopleList[Math.min(model.selectedCategory.peopleList.length - 1, index)], true);
+            }
+            else {
+                //Use Knot.setValue to update data, so the UI will refresh
+                Knot.setValue(model, "selectedPeople", null);
+            }
+        }
+    }
+
+    //set the data to current selected data.
+    //setting "model.selected" to update the edit controls, setting "isSelected" to update css on peopleList items
+    function selectPeople(data, ignoreValidating) {
+        if (!ignoreValidating && !validate())
+            return;
+        Knot.setValue(data, "isSelected", true);
+        Knot.setValue(model, "selectedPeople", data);
+
+        for (var i = 0; i < model.selectedCategory.peopleList.length; i++) {
+            if (model.selectedCategory.peopleList[i] != data) {
+                Knot.setValue(model.selectedCategory.peopleList[i], "isSelected", false);
+            }
+        }
+    }
+
+    function onPeopleClicked() {
+        selectPeople(this);
+    }
+
+    //these converters are used to change the values on data to anything you want them on html. You can create your own, it is super easy!
+    //they are associate to Knot by "=>" mark in html
+    var boolToClassConverter = Knot.Converters.createBoolToValue("selected", "unselected");
+    var enableControl = Knot.Converters.createBoolToValue(false, true);
+    var visibleControl = Knot.Converters.createBoolToValue("", "none");
+
+    //these validators are used to validate the inputted value. the last one(duplicatedName) is used to check whether these's another one
+    //with the same name. You can see how simple it is.
+    var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
+    var checkInteger = Knot.Validators.createInteger("Must be integer");
+    var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
+    var sexToTitle = Knot.Converters.createKeysToValues(["Male", "Female"], ["Mr.", "Miss."]);
+    var duplicatedName = function (value, data) {
+        for (var i = 0; i < model.selectedCategory.peopleList.length; i++) {
+            if (model.selectedCategory.peopleList[i] == data)
+                continue;
+            if (model.selectedCategory.peopleList[i].name == value) {
+                return value + " already exists!";
+            }
+        }
+    }
+
+    var boolToExpandSymbol = Knot.Converters.createBoolToValue("-", "+");
+    var boolToOpacity = Knot.Converters.createBoolToValue(1, 0);
+
+    //options for the "From" select
+    var countries = ["USA", "Japan", "China", "Australia"];
+</script>
+</head>
+<body onload="onLoad();">
+<h2>Knot.js Example</h2>
+<div>
+    <div id="treeArea">
+        <div>Group</div>
+        <input id="textCategoryTitle" class="disableWhenNoCategorySelected"/>
+        <div id="treeView">
+            <div id="treeItem">
+                <div><button>+</button><span></span></div>
+                <div></div>
+            </div>
+        </div>
+        <div>
+            <button onclick="addCategory()" class="disableWhenNoCategorySelected">+</button>
+            <button onclick="removeCategory()" class="disableWhenNoCategorySelected">-</button></div>
+    </div>
+    <div id="peopleListArea">
+        <div>People</div>
+        <div id="peopleList">
+            <div>
+                <span id="spanTitle"> </span><span id="spanName"></span>
+                <hr/>
+                Age:<span id="spanAge"></span>,
+                From:<span id="spanFrom"></span>
+            </div>
+        </div>
+    </div>
+    <div id="editArea">
+        <div>
+            <div class="fieldTitle">Name:</div>
+            <input class="disableWhenNoSelection" type="text"/>
+            <span class="errorMessage"></span>
+        </div>
+        <div>
+            <div class="fieldTitle">Age:</div>
+            <input class="disableWhenNoSelection" type="text"/>
+            <span class="errorMessage"></span>
+        </div>
+        <div>
+            <div class="fieldTitle">Sex:</div>
+            <select class="disableWhenNoSelection">
+                <option>Male</option>
+                <option>Female</option>
+            </select>
+        </div>
+        <div>
+            <div class="fieldTitle">From:</div>
+            <select class="disableWhenNoSelection">
+                <option id="selectFromOptionTemplate"></option>
+            </select>
+        </div>
+
+        <p>
+            <button class="disableWhenNoCategorySelected" onclick="onNewPeople();">New</button>
+
+            <button class="disableWhenNoSelection" onclick="onRemovePeople()">Delete</button>
+        </p>
+    </div>
+</div>
+</body>
+</html>

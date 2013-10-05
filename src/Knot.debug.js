@@ -79,7 +79,20 @@
 
             if(!debugInfo[fullPath])
                 debugInfo[fullPath] = {};
-            debugInfo[fullPath][key] = status;
+            if(!debugInfo[fullPath][key])
+                debugInfo[fullPath][key] =[]
+
+            var isSet = false;
+            for(var i= 0; i< debugInfo[fullPath][key].length; i++){
+                if(debugInfo[fullPath][key][i].knotInfo == knotInfo){
+                    debugInfo[fullPath][key][i].status = status;
+                    debugInfo[fullPath][key][i].time = new Date();
+                    isSet = true;
+                }
+            }
+            if(!isSet){
+                debugInfo[fullPath][key].push({status:status, knotInfo:knotInfo, time:new Date()})
+            }
 
             this.isChanged = true;
         },
@@ -135,18 +148,31 @@
                 parentDiv.appendChild(detail);
                 var msg = "";
                 for(var valueName in debugInfo[arr[i]]){
+                    var purValueName = valueName;
+                    var additionalInfo = "";
                     if(valueName.indexOf("=")>0){
-                        var purValueName = valueName.substr(0, valueName.indexOf("="));
-                        var additionalInfo = valueName.substr(valueName.indexOf("="));
-                        msg += purValueName + " = [" + debugInfo[arr[i]][valueName] + "]    " + additionalInfo + "<br/>";
+                       purValueName = valueName.substr(0, valueName.indexOf("="));
+                       additionalInfo = valueName.substr(valueName.indexOf("="));
                     }
-                    else{
-                        msg += valueName + " = [" + debugInfo[arr[i]][valueName] +"]";
+                    for(var n =0; n< debugInfo[arr[i]][valueName].length; n++){
+                        var s = debugInfo[arr[i]][valueName][n];
+                        msg += purValueName + " = [" + s.status + "]    " + additionalInfo + "   (" + getNodeDes(s.knotInfo) + " @"+ getShortTime(s.time) +")<br/>";
                     }
                 }
                 detail.innerHTML = msg;
             }
         }
+    }
+
+    function getNodeDes(info){
+        var de = info.node.tagName;
+        if(info.node.id){
+            de += " id:" + info.node.id;
+        }
+        return de;
+    }
+    function getShortTime(t){
+        return t.getHours() + ":"+ t.getMinutes() + ":" + t.getSeconds() + " " + t.getMilliseconds();
     }
 
     function getCookie(c_name)
