@@ -43,7 +43,13 @@
                 return data[path];
             return undefined;
         },
+
+
         getObjectInGlobalScope: function(path) {
+            if(path.substr(0, "--knot--globalFunc-".length) == "--knot--globalFunc-"){
+                var id = Number(path.substr("--knot--globalFunc-".length));
+                return this._knotGlobalFunction[id];
+            }
             var arr = path.split(".");
             var o = window;
             for (var i = 0 ; i < arr.length; i++) {
@@ -51,6 +57,12 @@
             }
             return o;
         },
+        _knotGlobalFunction: [],
+        registerKnotGlobalFunction: function(func){
+            this._knotGlobalFunction.push(func);
+            return "--knot--globalFunc-"+ (this._knotGlobalFunction.length-1);
+        },
+
 
         getBlockInfo: function(str, startIndex, startMark, endMark){
             var info = {start:-1, end:-1};
@@ -356,6 +368,7 @@
         applyCBS: function(cbs){
             var parsePos = 0;
             cbs = cbs.replace(/\r/g," ").replace(/\n/g, " ");
+            cbs = OptionParser.processEmbeddedFunction(cbs);
             while(true){
                 var block = Utility.getBlockInfo(cbs, parsePos, "{", "}");
                 if(!block)
@@ -407,6 +420,27 @@
     // Parse options
     ///////////////////////////////////////////////////////
     var OptionParser = {
+        processEmbeddedFunction: function(options){
+            var pos = 0;
+            while(true){
+                var info = Utility.getBlockInfo(options, pos, "${<<", ">>}");
+                if(!info)
+                    return options;
+
+                var funcStr = options.substr(info.start + 4, info.end-info.start - 4);
+                funcStr = "(function(){" + funcStr + "})";
+                try{
+                    var func = eval(funcStr)
+                }
+                catch(err){
+                    throw new Error("Parse embedded function failed. message:" + err.message + "function:" + funcStr);
+                }
+                var funcName = "$" + Utility.registerKnotGlobalFunction(func);
+                options = [options.substr(0, info.start), funcName, options.substr(info.end+3)].join("");
+
+                pos = info.end+3;
+            }
+        },
         parseOptionToJSON: function(option) {
             if (!option)
                 return {};
@@ -437,6 +471,9 @@
             }
             var options = {};
             var att = node.getAttribute("binding");
+            if(att){
+                att = this.processEmbeddedFunction(att);
+            }
             if(node.__knot_cbs_options){
                 if(att){
                     att += ";" + node.__knot_cbs_options;
@@ -763,10 +800,45 @@
         return false;
     }
 
+    function monitorData(curData, curPath, knotInfo){
+        DataMonitor.register(curData, knotInfo, function (propertyName) {
+            var fullPath = propertyName;
+            if (curPath != ""){
+                if(propertyName)
+                    fullPath = curPath + "." + propertyName;
+                else
+                    fullPath = curPath;
+            }
+
+            for (var p in knotInfo.options.twoWayBinding) {
+                var path = knotInfo.options.binding[p];
+                if(path[0] == "$" || path=="--self"){
+                    updateDisplay(knotInfo, p);
+                    continue;
+                }
+                //if the property is obtained from global scope, need to
+                //remove the first section to get the relative path
+                if(path[0] == "/"){
+                    path = path.substr(path.indexOf(".")+1);
+                }
+
+                if(path.length < fullPath.length){
+                    continue;
+                }
+                else if (fullPath == path.substr(0, fullPath.length)) {
+                    setupDataNotification(knotInfo);
+                    updateDisplay(knotInfo, p);
+                }
+            }
+        });
+    }
 
     function setupDataNotification(knotInfo) {
-        var data = knotInfo.dataContext;
         for (var valueName in knotInfo.options.twoWayBinding) {
+            if(knotInfo.options.binding[valueName][0] == "$"){
+                monitorData(knotInfo.dataContext, "", knotInfo);
+            }
+
             if (knotInfo.options.bindingToError && knotInfo.options.bindingToError[valueName]) {
                 if(setupErrorNotification(knotInfo, valueName))
                     continue;
@@ -786,36 +858,7 @@
                     break;
 
                 if (!DataMonitor.hasRegistered(curData, knotInfo)) {
-                    (function () {
-                        var curPath = path;
-                        DataMonitor.register(curData, knotInfo, function (propertyName) {
-                            var fullPath = propertyName;
-                            if (curPath != ""){
-                                if(propertyName)
-                                    fullPath = curPath + "." + propertyName;
-                                else
-                                    fullPath = curPath;
-                            }
-
-                            for (var p in knotInfo.options.twoWayBinding) {
-                                var path = knotInfo.options.binding[p];
-
-                                //if the property is obtained from global scope, need to
-                                //remove the first section to get the relative path
-                                if(path[0] == "/"){
-                                    path = path.substr(path.indexOf(".")+1);
-                                }
-
-                                if(path.length < fullPath.length){
-                                    continue;
-                                }
-                                else if (fullPath == path.substr(0, fullPath.length)) {
-                                    setupDataNotification(knotInfo);
-                                    updateDisplay(knotInfo, p);
-                                }
-                            }
-                        });
-                    })();
+                    monitorData(curData, path, knotInfo);
                 }
 
                 if(path != "")
@@ -891,6 +934,14 @@
 
     function getDataValue(knotInfo, valueName) {
         var path =knotInfo.options.binding[valueName];
+
+        if(path[0] == "$"){
+            var func = Utility.getObjectInGlobalScope(path.substr(1));
+            if(!func){
+                throw new Error("Can't find custom knot function! function name: " + path.substr(1));
+            }
+            return func.apply(knotInfo.dataContext, knotInfo.node);
+        }
 
         var root = knotInfo.dataContext;
         if (path[0] == "/") {

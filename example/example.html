@@ -79,7 +79,12 @@
         }
 
         #peopleInfoTemplate{
-            class:*isSelected=>boolToClassConverter;
+            class: *${<<
+                if(this.isSelected)
+                    return "selected";
+                else
+                    return "unselected";
+            >>};
             @click: listSelection;
             isTemplate:true
         }
@@ -141,14 +146,13 @@
     </script>
 
     <script>
-        function doTest(){
-            var blocks = document.querySelectorAll("script");
-            var p = document.querySelectorAll("#dataList>div:first-child");
-            if(!p)
-                alert("faild");
+        function getSelectionClass(){
+            if(this.isSelected)
+                return "selected";
             else
-                alert("succ!");
+                return "unselected";
         }
+
     </script>
 
 
