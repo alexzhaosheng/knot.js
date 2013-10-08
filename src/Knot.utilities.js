@@ -24,13 +24,17 @@
                 }
             };
         },
-        createKeysToValues: function (keys, values) {
+        createKeysToValues: function (keyValues) {
             return {
                 to: function (v) {
-                    return values[keys.indexOf(v)];
+                    v = (v==null? v: v.toString());
+                    return keyValues[v];
                 },
                 from: function (v) {
-                    return keys[values.indexOf(v)];
+                    v = (v==null? v: v.toString());
+                    for(var p in keyValues)
+                        if(keyValues[p] == v)
+                            return p;
                 }
             }
         }
@@ -40,6 +44,8 @@
 
     Knot.Validators = {
         createNotNull: function (errorMessage) {
+            if(!errorMessage)
+                throw new Error("Error message must not be null!");
             return function (value) {
                 if (value == "" || !value)
                     return errorMessage;
@@ -47,6 +53,8 @@
             };
         },
         createInteger: function (errorMessage) {
+            if(!errorMessage)
+                throw new Error("Error message must not be null!");
             return function (value) {
                 if (!value || value == "")
                     return null;
@@ -56,6 +64,8 @@
             }
         },
         createGreaterOrEqalThan: function (valueToCompare, errorMessage) {
+            if(!errorMessage)
+                throw new Error("Error message must not be null!");
             return function (value) {
                 if (!value || value == "")
                     return null;
@@ -67,6 +77,8 @@
             };
         },
         createLessOrEqalThan: function (valueToCompare, errorMessage) {
+            if(!errorMessage)
+                throw new Error("Error message must not be null!");
             return function (value) {
                 if (!value || value == "")
                     return null;
@@ -78,6 +90,8 @@
             };
         },
         createValueRange: function (min, max, errorMessage) {
+            if(!errorMessage)
+                throw new Error("Error message must not be null!");
             return function (value) {
                 if (!value || value == "")
                     return null;
@@ -86,6 +100,19 @@
                     return errorMessage;
                 }
                 return null;
+            };
+        }
+    }
+
+    Knot.Collection = {
+        createSelectionHelper: function(model, nameOfSelectedOnModel, collection, nameOfIsSelectedOnItem){
+            return function(){
+                Knot.setValue(this, nameOfIsSelectedOnItem, true);
+                Knot.setValue(model, nameOfSelectedOnModel, this);
+                for(var i=0; i<collection.length; i++){
+                    if(collection[i] != this)
+                        Knot.setValue(collection[i], nameOfIsSelectedOnItem, false);
+                }
             };
         }
     }

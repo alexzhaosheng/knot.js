@@ -71,19 +71,20 @@
 
     <script type="text/cbs">
         body{
-            knotDataContext:/model
+            dataContext:/model
         }
 
         #dataList{
-            foreach:*list;
-            @itemCreated:onItemCreated;
+            foreach:*list =>peopleInfoTemplate;
         }
 
-        #dataList>div{
+        #peopleInfoTemplate{
             class:*isSelected=>boolToClassConverter;
+            @click: listSelection;
+            isTemplate:true
         }
 
-        #dataList>div span [0]{
+        #peopleInfoTemplate span [0]{
             text:*sex=>sexToTitle
         }
         #spanName{
@@ -134,6 +135,9 @@
             text:--self
         }
 
+        #selectedPeopleInfo{
+            content:*selected =>peopleInfoTemplate;
+        }
     </script>
 
     <script>
@@ -241,7 +245,7 @@
         var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
         var checkInteger = Knot.Validators.createInteger("Must be integer");
         var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
-        var sexToTitle = Knot.Converters.createKeysToValues(["Male", "Female"], ["Mr.", "Miss."]);
+        var sexToTitle = Knot.Converters.createKeysToValues({"Male":"Mr.", "Female":"Miss."});
         var duplicatedName = function (value, data) {
             for (var i = 0; i < model.list.length; i++) {
                 if (model.list[i] == data)
@@ -254,18 +258,20 @@
 
         //options for the "From" select
         var countries = ["USA", "Japan", "China", "Australia"];
+
+        var listSelection = Knot.Collection.createSelectionHelper(model, "selected", model.list, "isSelected");
     </script>
 </head>
 <body onload="onLoad();">
 <h2>Knot.js Example</h2>
 <div>
+    <div id="peopleInfoTemplate">
+        <span id="spanTitle"> </span><span id="spanName"></span>
+        <hr/>
+        Age:<span id="spanAge"></span>,
+        From:<span id="spanFrom"></span>
+    </div>
     <div id="dataList">
-        <div>
-            <span id="spanTitle"> </span><span id="spanName"></span>
-            <hr/>
-            Age:<span id="spanAge"></span>,
-            From:<span id="spanFrom"></span>
-        </div>
     </div>
     <div id="editArea">
         <div>
@@ -297,6 +303,8 @@
 
             <button class="disableWhenNoSelection" onclick="onRemove()">Delete</button>
         </p>
+
+        <div id="selectedPeopleInfo"></div>
     </div>
 </div>
 </body>

@@ -14,73 +14,77 @@
     /////////////////////////////////////
     // Utility functions
     /////////////////////////////////////
-    function isEmptyObj(obj) {
-        for (var p in obj) {
-            return false;
-        }
-        return true;
-    }
+    var Utility ={
+        isEmptyObj: function(obj) {
+            for (var p in obj) {
+                return false;
+            }
+            return true;
+        },
 
-    function trim(s) {
-        return s.replace(/^\s+|\s+$/g, "");
-    }
+        trim: function (s) {
+            return s.replace(/^\s+|\s+$/g, "");
+        },
 
-    function getValueOnPath(rootData, path) {
-        var data = rootData;
-        if(path[0] == "/"){
-            data= window;
-            path = path.substr(1);
-        }
-        while (path.indexOf(".") >= 0 && data) {
-            data = data[path.substr(0, path.indexOf("."))];
-            path = path.substr(path.indexOf(".") + 1);
-        }
-        if (data)
-            return data[path];
-        return undefined;
-    }
+        getValueOnPath: function(rootData, path) {
+            if(path =="")
+                return rootData;
 
-    function getObjectInGlobalScope(path) {
-        var arr = path.split(".");
-        var o = window;
-        for (var i = 0 ; i < arr.length; i++) {
-            o = o[arr[i]];
-        }
-        return o;
-    }
+            var data = rootData;
+            if(path[0] == "/"){
+                data= window;
+                path = path.substr(1);
+            }
+            while (path.indexOf(".") >= 0 && data) {
+                data = data[path.substr(0, path.indexOf("."))];
+                path = path.substr(path.indexOf(".") + 1);
+            }
+            if (data)
+                return data[path];
+            return undefined;
+        },
+        getObjectInGlobalScope: function(path) {
+            var arr = path.split(".");
+            var o = window;
+            for (var i = 0 ; i < arr.length; i++) {
+                o = o[arr[i]];
+            }
+            return o;
+        },
 
-    function getBlockInfo(str, startIndex, startMark, endMark){
-        var info = {start:-1, end:-1};
-        info.start = str.indexOf(startMark, startIndex);
-        if(info.start<0)
-            return null;
+        getBlockInfo: function(str, startIndex, startMark, endMark){
+            var info = {start:-1, end:-1};
+            info.start = str.indexOf(startMark, startIndex);
+            if(info.start<0)
+                return null;
 
-        var ct = 0;
-        var pos = info.start+1;
-        while(true){
-            var ns = str.indexOf(startMark, pos);
-            var ne = str.indexOf(endMark, pos);
-            if(ne<0)
-                break;
-            if(ns<0 || ne < ns){
-                if(ct==0){
-                    info.end = ne;
+            var ct = 0;
+            var pos = info.start+1;
+            while(true){
+                var ns = str.indexOf(startMark, pos);
+                var ne = str.indexOf(endMark, pos);
+                if(ne<0)
                     break;
+                if(ns<0 || ne < ns){
+                    if(ct==0){
+                        info.end = ne;
+                        break;
+                    }
+                    else{
+                        ct--;
+                    }
+                    pos = ne+1;
                 }
                 else{
-                    ct--;
+                    ct++;
+                    pos = ns+1;
                 }
-                pos = ne+1;
             }
+            if(info.start >=0 && info.end>=0)
+                return info;
             else{
-                ct++;
-                pos = ns+1;
+                return null;
             }
-        }
-        if(info.start >=0 && info.end>=0)
-            return info;
-        else{
-            return null;
         }
     }
 
@@ -94,66 +98,71 @@
     /////////////////////////////////////
     // Attached data management
     /////////////////////////////////////
-    var _dataInMonitoring = [];
-    var _attachedInfoOfData = [];
-    function getAttachedInfo(data) {
-        if (_dataInMonitoring.indexOf(data) < 0) {
-            _dataInMonitoring.push(data);
-            _attachedInfoOfData[_dataInMonitoring.indexOf(data)] = {};
+    var AttachedData = {
+        _dataInMonitoring: [],
+        _attachedInfoOfData: [],
+        getAttachedInfo: function(data) {
+            if (this._dataInMonitoring.indexOf(data) < 0) {
+                this._dataInMonitoring.push(data);
+                this._attachedInfoOfData[this._dataInMonitoring.indexOf(data)] = {};
+            }
+            return this._attachedInfoOfData[this._dataInMonitoring.indexOf(data)];
+        },
+        releaseAttachedInfo: function(data) {
+            var index = this._dataInMonitoring.indexOf(data);
+            if (index >= 0) {
+                delete this._dataInMonitoring[index];
+                delete this._attachedInfoOfData[index];
+            }
         }
-        return _attachedInfoOfData[_dataInMonitoring.indexOf(data)];
-    }
-    function releaseAttachedInfo(data) {
-        var index = _dataInMonitoring.indexOf(data);
-        if (index >= 0) {
-            delete _dataInMonitoring[index];
-            delete _attachedInfoOfData[index];
-        }
-    }
+    };
+
 
     ///////////////////////////////////////////////////////
     // Value changed callbacks management
     ///////////////////////////////////////////////////////
-    function registerValueChangedCallback(data, knotInfo, callback) {
-        var attachedInfo = getAttachedInfo(data);
-        if (!attachedInfo.changedCallbacks) {
-            attachedInfo.changedCallbacks = [];
-        }
-
-        attachedInfo.changedCallbacks.push({ knotInfo: knotInfo, callback: callback });
-    }
-    function unregisterValueChangedCallback(data, knotInfo) {
-        var attachedInfo = getAttachedInfo(data);
-        if (!attachedInfo.changedCallbacks)
-            return;
-        for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
-            if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {
-                attachedInfo.changedCallbacks.splice(i, 1);
-                break;
+    var DataMonitor = {
+        register: function(data, knotInfo, callback) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (!attachedInfo.changedCallbacks) {
+                attachedInfo.changedCallbacks = [];
             }
-        }
-        if (attachedInfo.changedCallbacks.length == 0) {
-            delete attachedInfo.changedCallbacks;
-            if(isEmptyObj(attachedInfo))
-                releaseAttachedInfo(data);
-        }
-    }
-    function hasRegisteredValuChangedCallback(data, knotInfo) {
-        var attachedInfo = getAttachedInfo(data);
-        if (attachedInfo.changedCallbacks) {
+
+            attachedInfo.changedCallbacks.push({ knotInfo: knotInfo, callback: callback });
+        },
+        unregister: function(data, knotInfo) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (!attachedInfo.changedCallbacks)
+                return;
             for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
                 if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {
-                    return true;
+                    attachedInfo.changedCallbacks.splice(i, 1);
+                    break;
                 }
             }
-        }
-        return false;
-    }
-    function notifyDataChanged(data, propertyName) {
-        var attachedInfo = getAttachedInfo(data);
-        if (attachedInfo.changedCallbacks) {
-            for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
-                attachedInfo.changedCallbacks[i].callback(propertyName);
+            if (attachedInfo.changedCallbacks.length == 0) {
+                delete attachedInfo.changedCallbacks;
+                if(Utility.isEmptyObj(attachedInfo))
+                    AttachedData.releaseAttachedInfo(data);
+            }
+        },
+        hasRegistered: function(data, knotInfo) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (attachedInfo.changedCallbacks) {
+                for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
+                    if (attachedInfo.changedCallbacks[i].knotInfo == knotInfo) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        },
+        notifyDataChanged: function(data, propertyName) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (attachedInfo.changedCallbacks) {
+                for (var i = 0; i < attachedInfo.changedCallbacks.length; i++) {
+                    attachedInfo.changedCallbacks[i].callback(propertyName);
+                }
             }
         }
     }
@@ -162,267 +171,338 @@
     ///////////////////////////////////////////////////////
     // Validating management
     ///////////////////////////////////////////////////////
-    var _onValidatingErrorCallbacks = [];
+    var Validating = {
+        onValidatingErrorCallbacks: [],
 
-    function setErrorInfo(data, property, errorMessage) {
-        var attachedInfo = getAttachedInfo(data);
-        //if nobody is lisening, simple ignore
-        if (!attachedInfo.validating)
-            return;
+        setError: function(data, property, errorMessage) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            //if nobody is lisening, simple ignore
+            if (!attachedInfo.validating)
+                return;
 
 
-        if (!attachedInfo.validating.currentErrorMessages[property] && !errorMessage)
-            return;
+            if (!attachedInfo.validating.currentErrorMessages[property] && !errorMessage)
+                return;
 
-        attachedInfo.validating.currentErrorMessages[property] = errorMessage;
-        for (var i = 0; i < attachedInfo.validating.callbacks.length; i++) {
-            attachedInfo.validating.callbacks[i].callback(property);
-        }
-    }
-    function getErrorInfo(data, property){
-        var attachedInfo = getAttachedInfo(data);
-        if (!attachedInfo.validating)
-            return null;
-        return attachedInfo.validating.currentErrorMessages[property];
-    }
-    function registerOnErrorCallback(data, knotInfo, callback) {
-        var attachedInfo = getAttachedInfo(data);
-
-        if (!attachedInfo.validating) {
-            attachedInfo.validating = {callbacks:[], currentErrorMessages:[]};
-        }
-
-        attachedInfo.validating.callbacks.push({ knotInfo: knotInfo, callback: callback });
-    }
-    function unregisterOnErrorCallback(data, knotInfo) {
-        var attachedInfo = getAttachedInfo(data);
-        if (!attachedInfo.validating)
-            return;
-        for (var i = 0; i < attachedInfo.validating.callbacks.length; i++) {
-            if (attachedInfo.validating.callbacks[i].knotInfo == knotInfo) {
-                attachedInfo.validating.callbacks.splice(i, 1);
-                break;
+            attachedInfo.validating.currentErrorMessages[property] = errorMessage;
+            for (var i = 0; i < attachedInfo.validating.callbacks.length; i++) {
+                attachedInfo.validating.callbacks[i].callback(property);
             }
-        }
-        if (attachedInfo.validating.callbacks.length == 0) {
-            delete attachedInfo.validating;
-            if (isEmptyObj(attachedInfo))
-                releaseAttachedInfo(data);
-        }
-    }
-    function hasRegisteredOnErrorCallback(data, knotInfo) {
-        var attachedInfo = getAttachedInfo(data);
-        if (!attachedInfo.validating) {
-            return false;
-        }
-        if (attachedInfo.validating.callbacks) {
+        },
+        getError: function(data, property){
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (!attachedInfo.validating)
+                return null;
+            return attachedInfo.validating.currentErrorMessages[property];
+        },
+        registerOnError: function(data, knotInfo, callback) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+
+            if (!attachedInfo.validating) {
+                attachedInfo.validating = {callbacks:[], currentErrorMessages:[]};
+            }
+
+            attachedInfo.validating.callbacks.push({ knotInfo: knotInfo, callback: callback });
+        },
+        unregisterOnError: function(data, knotInfo) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (!attachedInfo.validating)
+                return;
             for (var i = 0; i < attachedInfo.validating.callbacks.length; i++) {
                 if (attachedInfo.validating.callbacks[i].knotInfo == knotInfo) {
-                    return true;
+                    attachedInfo.validating.callbacks.splice(i, 1);
+                    break;
                 }
             }
+            if (attachedInfo.validating.callbacks.length == 0) {
+                delete attachedInfo.validating;
+                if (Utility.isEmptyObj(attachedInfo))
+                    AttachedData.releaseAttachedInfo(data);
+            }
+        },
+        hasRegisteredOnError: function(data, knotInfo) {
+            var attachedInfo = AttachedData.getAttachedInfo(data);
+            if (!attachedInfo.validating) {
+                return false;
+            }
+            if (attachedInfo.validating.callbacks) {
+                for (var i = 0; i < attachedInfo.validating.callbacks.length; i++) {
+                    if (attachedInfo.validating.callbacks[i].knotInfo == knotInfo) {
+                        return true;
+                    }
+                }
+            }
+            return false;
         }
-        return false;
-    }
-
+    };
 
     ///////////////////////////////////////////////////////
     // Knot extensions
     ///////////////////////////////////////////////////////
-    var _knotTypes = [];
-    var _actions = [];
+    var Extension = {
+        _knotTypes:[],
+        _actions: [],
 
-    function registerKnotExtension(ext, type) {
-        //always insert the extensions to the first. So that the extensions that registered lately
-        //would overwrite the previous ones.
-        if(type == "knot_type")
-            _knotTypes.splice(0, 0, ext);
-        if(type == "knot_action")
-            _actions.splice(0, 0, ext);
-    }
-    function findProperKnotType(tagName, valueName) {
-        for (var i = 0; i < _knotTypes.length; i++) {
-            if (_knotTypes[i].isSupported(tagName, valueName)) {
-                return _knotTypes[i];
+        register: function(ext, type) {
+            //always insert the extensions to the first. So that the extensions that registered lately
+            //would overwrite the previous ones.
+            if(type == "knot_type")
+                this._knotTypes.splice(0, 0, ext);
+            if(type == "knot_action")
+                this._actions.splice(0, 0, ext);
+        },
+        findProperKnotType: function(tagName, valueName) {
+            for (var i = 0; i < this._knotTypes.length; i++) {
+                if (this._knotTypes[i].isSupported(tagName, valueName)) {
+                    return this._knotTypes[i];
+                }
             }
+            throw new Error("Failed to find knot type! tag:" + tagName + " binding type:" + valueName);
+        },
+
+        findProperActionType: function(tagName, actionName) {
+            for (var i = 0; i < this._actions.length; i++) {
+                if (this._actions[i].isSupported(tagName, actionName)) {
+                    return this._actions[i];
+                }
+            }
+            return null;
         }
-        return null;
     }
 
-    function findProperActionType(tagName, actionName) {
-        for (var i = 0; i < _actions.length; i++) {
-            if (_actions[i].isSupported(tagName, actionName)) {
-                return _actions[i];
-            }
-        }
-        return null;
-    }
 
 
     /////////////////////////////////
     //CBS handling
     ////////////////////////////////
-    function removeComments(text){
-        var pos;
-        while((pos = text.indexOf("/*")) >= 0){
-            var np = text.indexOf("*/", pos);
-            text = text.substr(0, pos) +text.substr(np + 2);
-        }
-
-        var lines = text.split("\n");
-        var res = "";
-        for(var i = 0; i< lines.length; i++){
-            var sl = lines[i].split("\r");
-            for(var j= 0; j < sl.length; j++){
-                if(trim(sl[j]).substr(0, 2) == "//"){
-                    continue;
-                }
-                res += sl[j];
+    var CBS = {
+        removeComments: function(text){
+            var pos;
+            while((pos = text.indexOf("/*")) >= 0){
+                var np = text.indexOf("*/", pos);
+                text = text.substr(0, pos) +text.substr(np + 2);
             }
-        }
-        return res;
-    }
 
-    function cbsInit(){
-        var blocks = document.querySelectorAll("script");
-        for(var i =0; i< blocks.length; i++){
-            if(blocks[i].type == "text/cbs"){
-                applyCBS(removeComments(blocks[i].innerText));
-            }
-        }
-    }
-    function applyCBS(cbs){
-        var parsePos = 0;
-        cbs = cbs.replace(/\r/g," ").replace(/\n/g, " ");
-        while(true){
-            var block = getBlockInfo(cbs, parsePos, "{", "}");
-            if(!block)
-                return;
-
-            var options = trim(cbs.substr(block.start+1, block.end-block.start-1));
-            options = options.replace(/;/g, ",");
-            if(options[options.length-1] == ",")
-                options = options.substr(0, options.length-1);
-
-            var selector = trim(cbs.substr(parsePos, block.start-parsePos));
-            var seq = -1;
-            if(selector[selector.lastIndexOf("[")-1] == " "){
-                if(selector[selector.length-1] != "]"){
-                    throw new Error("Unknown cbs selector " + selector);
+            var lines = text.split("\n");
+            var res = "";
+            for(var i = 0; i< lines.length; i++){
+                var sl = lines[i].split("\r");
+                for(var j= 0; j < sl.length; j++){
+                    if(Utility.trim(sl[j]).substr(0, 2) == "//"){
+                        continue;
+                    }
+                    res += sl[j];
                 }
-                seq = Number(selector.substr(selector.lastIndexOf("[")+1, selector.length - selector.lastIndexOf("[")-2));
-                if(isNaN(seq)){
-                    throw new Error("Unknown cbs selector " + selector);
-                }
-
-                selector = selector.substr(0, selector.lastIndexOf("["));
             }
-            var elements = document.querySelectorAll(selector);
-            if(elements.length == 0)
-                throw new Error("No element matches the selector:" + selector);
-            if(seq>=0){
-                if(elements[seq])
-                    elements[seq].__knot_cbs_options = (elements[seq].__knot_cbs_options?(elements[seq].__knot_cbs_options+";"+  options) :options);
-                else
-                    throw new Error("No element exists at this index. selector:" + selector);
+            return res;
+        },
+        getXhrs: function(){
+            if (window.XMLHttpRequest){
+                return new XMLHttpRequest();
             }
             else{
-                for(var i= 0; i< elements.length; i++){
-                    elements[i].__knot_cbs_options = (elements[i].__knot_cbs_options?(elements[i].__knot_cbs_options+";"+  options) :options)
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        },
+        cbsInit: function(onFinish, onError){
+            var blocks = document.querySelectorAll("script");
+            var scriptToLoad = 0;
+            var check = function(){
+                if(scriptToLoad == 0 && onFinish)
+                    onFinish();
+            }
+            var that =this;
+            for(var i =0; i< blocks.length; i++){
+                if(blocks[i].type == "text/cbs"){
+                    if(blocks[i].src){
+                        scriptToLoad ++;
+                        (function(){
+                            var src = blocks[i].src;
+                            var hr = that.getXhrs();
+                            hr.onreadystatechange = function(){
+                                if(hr.readyState == 4){
+                                    if(hr.status == 200){
+                                        try{
+                                            that.applyCBS(hr.responseText);
+                                            scriptToLoad--;
+                                            check();
+                                        }
+                                        catch(err){
+                                            if(onError) onError("Load CBS script error. url:" + src + " message:"  + err.message)
+                                        }
+                                    }
+                                    else{
+                                        if(onError) onError("Load CBS script error. url:" + src + " message:" +hr.statusText);
+                                    }
+                                }
+                            }
+                            hr.open("GET", src, true);
+                            hr.send();
+                        })();
+                    }
+                    else{
+                        try{
+                            this.applyCBS(this.removeComments(blocks[i].innerText));
+                        }
+                        catch(err){
+                            if(onError) onError("Load CBS block error. " + err.message);
+                        }
+                    }
                 }
             }
 
-            parsePos = block.end +1;
+            check();
+        },
+        applyCBS: function(cbs){
+            var parsePos = 0;
+            cbs = cbs.replace(/\r/g," ").replace(/\n/g, " ");
+            while(true){
+                var block = Utility.getBlockInfo(cbs, parsePos, "{", "}");
+                if(!block)
+                    return;
+
+                var options = Utility.trim(cbs.substr(block.start+1, block.end-block.start-1));
+                options = options.replace(/;/g, ",");
+                if(options[options.length-1] == ",")
+                    options = options.substr(0, options.length-1);
+
+                var selector = Utility.trim(cbs.substr(parsePos, block.start-parsePos));
+                var seq = -1;
+                if(selector[selector.lastIndexOf("[")-1] == " "){
+                    if(selector[selector.length-1] != "]"){
+                        throw new Error("Unknown cbs selector " + selector);
+                    }
+                    seq = Number(selector.substr(selector.lastIndexOf("[")+1, selector.length - selector.lastIndexOf("[")-2));
+                    if(isNaN(seq)){
+                        throw new Error("Unknown cbs selector " + selector);
+                    }
+
+                    selector = selector.substr(0, selector.lastIndexOf("["));
+                }
+                try{
+                    var elements = document.querySelectorAll(selector);
+                }
+                catch(err){
+                    throw new Error("Query selector failed. selector:" + selector + " message:" + err.message);
+                }
+                if(elements.length == 0)
+                    throw new Error("No element matches the selector:" + selector);
+                if(seq>=0){
+                    if(elements[seq])
+                        elements[seq].__knot_cbs_options = (elements[seq].__knot_cbs_options?(elements[seq].__knot_cbs_options+";"+  options) :options);
+                    else
+                        throw new Error("No element exists at this index. selector:" + selector);
+                }
+                else{
+                    for(var i= 0; i< elements.length; i++){
+                        elements[i].__knot_cbs_options = (elements[i].__knot_cbs_options?(elements[i].__knot_cbs_options+";"+  options) :options)
+                    }
+                }
+
+                parsePos = block.end +1;
+            }
         }
     }
-
     ///////////////////////////////////////////////////////
     // Parse options
     ///////////////////////////////////////////////////////
-    function parseOptionToJSON(option) {
-        if (!option)
-            return {};
-        option = option.replace(/\s/g, "");
-        option = "{" + option + "}";
-        option = option.replace(/;/g,",").replace(/:/g, '":"').replace(/,/g, '","').replace(/}/g, '"}').replace(/{/g, '{"').replace(/"{/g, "{").replace(/}"/g, "}");
-        try{
-            return JSON.parse(option);
-        }
-        catch(err){
-            throw new Error("Parse option failed:" +option + " message:"+err.message);
-        }
-    }
-    function parseDetailedOptions(optionName, detailedOptions, valueConverters, validators) {
-        var arr = detailedOptions.split("=");
-        for (var i = 1; i < arr.length; i++) {
-            if (arr[i][0] == ">")
-                valueConverters[optionName] = arr[i].substr(1);
-            if (arr[i][0] == "!")
-                validators[optionName] = arr[i].substr(1).split("&");
-        }
-        return arr[0];
-    }
+    var OptionParser = {
+        parseOptionToJSON: function(option) {
+            if (!option)
+                return {};
+            option = option.replace(/\s/g, "");
+            option = "{" + option + "}";
+            option = option.replace(/;/g,",").replace(/:/g, '":"').replace(/,/g, '","').replace(/}/g, '"}').replace(/{/g, '{"').replace(/"{/g, "{").replace(/}"/g, "}");
+            try{
+                return JSON.parse(option);
+            }
+            catch(err){
+                throw new Error("Parse option failed:" +option + " message:"+err.message);
+            }
+        },
+        parseDetailedOptions: function(optionName, detailedOptions, valueConverters, validators) {
+            var arr = detailedOptions.split("=");
+            for (var i = 1; i < arr.length; i++) {
+                if (arr[i][0] == ">")
+                    valueConverters[optionName] = arr[i].substr(1);
+                if (arr[i][0] == "!")
+                    validators[optionName] = arr[i].substr(1).split("&");
+            }
+            return arr[0];
+        },
 
-    function parseOptions(node) {
-        var options = {};
-        var att = node.getAttribute("binding");
-        if(node.__knot_cbs_options){
-            if(att){
-                att += ";" + node.__knot_cbs_options;
+        parse: function(node) {
+            if(node.__knot_parsedOptions){
+                return node.__knot_parsedOptions;
             }
-            else{
-                att=node.__knot_cbs_options;
-            }
-        }
-
-        if (att) {
-            var bindingOptions = parseOptionToJSON(att);
-            if (bindingOptions.style) {
-                var v = bindingOptions.style;
-                delete bindingOptions.style;
-                for (var s in v) {
-                    bindingOptions["style-" + s] = v[s];
-                }
-            }
-            var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {}, actions={};
-            for (var p in bindingOptions) {
-                if(p[0] == "@"){
-                    actions[p.substr(1)] = bindingOptions[p];
-                    delete bindingOptions[p];
-                }
-                else if(p== "knotDataContext"){
-                    options.dataContextPath = bindingOptions[p];
-                    delete bindingOptions[p];
+            var options = {};
+            var att = node.getAttribute("binding");
+            if(node.__knot_cbs_options){
+                if(att){
+                    att += ";" + node.__knot_cbs_options;
                 }
                 else{
-                    var v = bindingOptions[p];
-                    if (v[0] == "*") {
-                        twoWayBinding[p] = true;
-                        v = v.substr(1);
-                    }
-                    if (v[0] == "!") {
-                        bindingToError[p] = true;
-                        twoWayBinding[p] = true;
-                        v = v.substr(1);
-                    }
-                    bindingOptions[p] = parseDetailedOptions(p, v, valueConverters, validators);
+                    att=node.__knot_cbs_options;
                 }
             }
-            if(!isEmptyObj(valueConverters))
-                options.valueConverters = valueConverters;
-            if(!isEmptyObj(twoWayBinding))
-                options.twoWayBinding = twoWayBinding;
-            if (!isEmptyObj(bindingToError))
-                options.bindingToError = bindingToError;
-            if (!isEmptyObj(validators))
-                options.validators = validators;
-            if(!isEmptyObj(actions)){
-                options.actions = actions;
+
+            if (att) {
+                var bindingOptions = this.parseOptionToJSON(att);
+                if (bindingOptions.style) {
+                    var v = bindingOptions.style;
+                    delete bindingOptions.style;
+                    for (var s in v) {
+                        bindingOptions["style-" + s] = v[s];
+                    }
+                }
+                options.isTemplate = false;
+                if(typeof(bindingOptions.isTemplate) != "undified"){
+                    options.isTemplate = bindingOptions.isTemplate;
+                    delete  bindingOptions.isTemplate;
+                }
+
+                var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {}, actions={};
+                for (var p in bindingOptions) {
+                    if(p[0] == "@"){
+                        actions[p.substr(1)] = bindingOptions[p];
+                        delete bindingOptions[p];
+                    }
+                    else if(p== "dataContext"){
+                        options.dataContextPath = bindingOptions[p];
+                        delete bindingOptions[p];
+                    }
+                    else{
+                        var v = bindingOptions[p];
+                        if (v[0] == "*") {
+                            twoWayBinding[p] = true;
+                            v = v.substr(1);
+                        }
+                        if (v[0] == "!") {
+                            bindingToError[p] = true;
+                            twoWayBinding[p] = true;
+                            v = v.substr(1);
+                        }
+                        bindingOptions[p] = this.parseDetailedOptions(p, v, valueConverters, validators);
+                    }
+                }
+                if(!Utility.isEmptyObj(valueConverters))
+                    options.valueConverters = valueConverters;
+                if(!Utility.isEmptyObj(twoWayBinding))
+                    options.twoWayBinding = twoWayBinding;
+                if (!Utility.isEmptyObj(bindingToError))
+                    options.bindingToError = bindingToError;
+                if (!Utility.isEmptyObj(validators))
+                    options.validators = validators;
+                if(!Utility.isEmptyObj(actions)){
+                    options.actions = actions;
+                }
+                if(!Utility.isEmptyObj(bindingOptions))
+                    options.binding = bindingOptions;
+
             }
-            if(!isEmptyObj(bindingOptions))
-                options.binding = bindingOptions;
+            node.__knot_parsedOptions = options;
+            return options;
         }
-        return options;
     }
 
     ///////////////////////////////////////////////////////////
@@ -430,7 +510,13 @@
     ///////////////////////////////////////////////////////////
     function cloneTemplateNode(node){
         var setAttachedData = function(n, c){
-            c.__knot_cbs_options = n.__knot_cbs_options;
+            if(n.__knot_parsedOptions){
+                c.__knot_parsedOptions =  JSON.parse(JSON.stringify( n.__knot_parsedOptions));
+                c.__knot_parsedOptions.isTemplate = false;
+            }
+            else{
+                c.__knot_cbs_options = n.__knot_cbs_options;
+            }
             for(var i=0; i< n.children.length; i++)
                 setAttachedData(n.children[i], c.children[i]);
         }
@@ -452,6 +538,25 @@
     }
 
     var _itemTemplates = {};
+    function initTemplate(id){
+        if(_itemTemplates[id])
+            return _itemTemplates[id];
+
+        var template = document.getElementById(id);
+        if(template)
+            template.parentNode.removeChild(template);
+        else{
+            template = Utility.getObjectInGlobalScope(id);
+            if(template && typeof(template) != "function"){
+                throw new Error("The item template must be a dom element or a callback function");
+            }
+
+            if(!template)
+                throw new Error("Failed to find item template with name:" + id);
+        }
+        _itemTemplates[id] = template;
+        return template;
+    }
     function setupItemTemplate(info){
         if(info.itemTemplate)
             return;
@@ -464,25 +569,11 @@
             info.node.removeChild(template);
         }
         else{
-            var template;
             var s = info.options.valueConverters["foreach"];
-            if(_itemTemplates[s]){
-                template =  _itemTemplates[s];
-            }
-            else{
-                template = document.getElementById(s);
-                if(template)
-                    template.parentNode.removeChild(template);
-                else{
-                    template = getObjectInGlobalScope(s);
-                    if(template && typeof(template) != "function"){
-                        throw new Error("The item template must be a dom element or a callback function");
-                    }
-                }
-            }
-            if(!template)
-                throw new Error("Failed to find item template with name:" + s);
-            _itemTemplates[s] = template;
+            if(_itemTemplates[s])
+                template = _itemTemplates[s];
+            else
+                template = initTemplate(s);
         }
 
         info.itemTemplate = template;
@@ -526,10 +617,10 @@
             }
             else {
                 var n = createItemFromTemplate(knotInfo, items[i]);
-                knotInfo.childrenInfo.push(tie(n, items[i], contextPath+".["+i+"]"));
+                knotInfo.childrenInfo.push(internalTie(n, items[i], contextPath+".["+i+"]"));
                 addChildTo(node, n, i);
                 if (knotInfo.options.actions && knotInfo.options.actions.itemCreated) {
-                    var callback = getObjectInGlobalScope(knotInfo.options.actions.itemCreated);
+                    var callback = Utility.getObjectInGlobalScope(knotInfo.options.actions.itemCreated);
                     if (!callback)
                         throw new Error("Failed to find event handler with name:" + knotInfo.options.actions.itemCreated);
                     callback(items[i], n);
@@ -545,6 +636,37 @@
         }
     }
 
+    function syncContent(knotInfo){
+        var d = Utility.getValueOnPath(knotInfo.dataContext, knotInfo.options.binding.content);
+        if(!knotInfo.itemTemplate){
+            if(!knotInfo.options.valueConverters.content)
+                throw new Error("No item template specified for 'content' binding.");
+            knotInfo.itemTemplate = initTemplate(knotInfo.options.valueConverters.content);
+        }
+
+        if(knotInfo.node.firstElementChild){
+            var childNode = knotInfo.node.firstElementChild;
+            if(childNode.__knotInfo){
+                if(childNode.__knotInfo.dataContext == d){
+                    return;
+                }
+                else{
+                    untie(childNode);
+                    knotInfo.childrenInfo.splice(knotInfo.childrenInfo.indexOf(childNode.__knotInfo), 1);
+                    knotInfo.node.removeChild(childNode);
+                }
+            }
+            else{
+                throw new Error("The element specified with 'content' binding must not has any children.")
+            }
+        }
+
+        if(d != null){
+            var child =createItemFromTemplate(knotInfo, d);
+            knotInfo.node.appendChild(child);
+            knotInfo.childrenInfo.push(internalTie(child, d, knotInfo.contextPath + "." + knotInfo.options.binding.content));
+        }
+    }
 
     ///////////////////////////////////////////////////////////
     // core
@@ -565,11 +687,14 @@
     function updateDisplay(knotInfo, valueName) {
         //for the array, need to bind the array itself as well
         if (valueName == "foreach"){
-            var d = getValueOnPath(knotInfo.dataContext, knotInfo.options.binding[valueName])
+            var d = Utility.getValueOnPath(knotInfo.dataContext, knotInfo.options.binding[valueName])
             syncItems(knotInfo, d)
         }
+        else if(valueName == "content"){
+            syncContent(knotInfo)
+        }
         else{
-            var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
+            var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type! tag:"+knotInfo.node.tagName + " type:" + valueName);
             }
@@ -583,11 +708,11 @@
             if(action == "itemCreated")
                 continue;
             (function(){
-                var actionType = findProperActionType(knotInfo.node.tagName, action);
+                var actionType = Extension.findProperActionType(knotInfo.node.tagName, action);
                 if(!actionType){
                     throw new Error("Failed to find the proper action type!  tag:" +knotInfo.node.tagName + " type:" + action);
                 }
-                var actionHandle =  getObjectInGlobalScope(knotInfo.options.actions[action]);
+                var actionHandle =  Utility.getObjectInGlobalScope(knotInfo.options.actions[action]);
                 if(actionHandle == null){
                     throw new Error("Failed to find action hanlder:" + knotInfo.options.actions[action]);
                 }
@@ -617,14 +742,15 @@
         var arr = fullPath.split(".");
         var propertyName = arr[arr.length - 1];
         var objectPath = fullPath.substr(0, fullPath.length - propertyName.length-1);
-        var dataToBinding = getValueOnPath(knotInfo.dataContext, objectPath);
+        var dataToBinding = Utility.getValueOnPath(knotInfo.dataContext, objectPath);
         if (dataToBinding) {
-            if (!hasRegisteredOnErrorCallback(dataToBinding)) {
+            if (!Validating.hasRegisteredOnError(dataToBinding)) {
                 (function () {
-                    registerOnErrorCallback(dataToBinding, knotInfo, function (property) {
+                    Validating.registerOnError(dataToBinding, knotInfo, function (property) {
                         for (var v in knotInfo.options.bindingToError) {
                             if (knotInfo.options.binding[v].substr(0, objectPath.length) == objectPath) {
-                                if (property == knotInfo.options.binding[v].substr(objectPath.length+1))
+                                var pos = objectPath.length>0?objectPath.length+1:0;
+                                if (property == knotInfo.options.binding[v].substr(pos))
                                     updateDisplay(knotInfo, v);
                             }
                         }
@@ -651,7 +777,7 @@
             for (var i = 0; i < pathSections.length + 1; i++) {
                 var curData = knotInfo.dataContext;
                 if (path != ""){
-                    curData =getValueOnPath(knotInfo.dataContext, path)
+                    curData =Utility.getValueOnPath(knotInfo.dataContext, path)
                 }
                 if (!curData)
                     break;
@@ -659,10 +785,10 @@
                 if(typeof(curData) != "object" && typeof(curData) != "array")
                     break;
 
-                if (!hasRegisteredValuChangedCallback(curData, knotInfo)) {
+                if (!DataMonitor.hasRegistered(curData, knotInfo)) {
                     (function () {
                         var curPath = path;
-                        registerValueChangedCallback(curData, knotInfo, function (propertyName) {
+                        DataMonitor.register(curData, knotInfo, function (propertyName) {
                             var fullPath = propertyName;
                             if (curPath != ""){
                                 if(propertyName)
@@ -697,8 +823,8 @@
                 path += pathSections[i];
             }
 
-            if(valueName != "foreach"){
-                var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
+            if(valueName != "foreach" && valueName != "content"){
+                var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
                 if (knotType.isEditingSupported(knotInfo.node.tagName, valueName)) {
                     setupNodeMonitering(knotInfo, knotType, valueName);
                 }
@@ -739,7 +865,7 @@
         for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {
 
 
-            var validator = getObjectInGlobalScope(knotInfo.options.validators[valueName][i]);
+            var validator = Utility.getObjectInGlobalScope(knotInfo.options.validators[valueName][i]);
             if (!validator) {
                 throw new Error("Failed to find validator by path:" + knotInfo.options.validators[valueName][i]);
             }
@@ -751,10 +877,10 @@
                 errMessage = err.message;
             }
 
-            setErrorInfo(data, path, errMessage);
+            Validating.setError(data, path, errMessage);
             if (errMessage) {
-                for (var i = 0; i < _onValidatingErrorCallbacks.length; i++) {
-                    _onValidatingErrorCallbacks[i](errMessage, knotInfo.node);
+                for (var i = 0; i < Validating.onValidatingErrorCallbacks.length; i++) {
+                    Validating.onValidatingErrorCallbacks[i](errMessage, knotInfo.node);
                 }
                 return errMessage;
             }
@@ -780,15 +906,15 @@
             var arr = path.split(".");
             var propertyName = arr[arr.length - 1];
             var objectPath = path.substr(0, path.length - propertyName.length-1);
-            var dataToBinding = getValueOnPath(root, objectPath);
-            value = getErrorInfo(dataToBinding, propertyName);
+            var dataToBinding = Utility.getValueOnPath(root, objectPath);
+            value = Validating.getError(dataToBinding, propertyName);
         }
         else{
-            value = getValueOnPath(root, path);
+            value = Utility.getValueOnPath(root, path);
         }
 
-        if (valueName != "foreach" && knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
-            var converter = getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
+        if (valueName != "foreach" && valueName != "content" && knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
+            var converter = Utility.getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
             if (!converter)
                 throw new Error("Failed to find converter with name:" + knotInfo.options.valueConverters[valueName]);
             if (converter.to) {
@@ -814,8 +940,8 @@
         if (path == "--self")
             return knotInfo.dataContext;
 
-        if (valueName != "foreach" && knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
-            var converter = getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
+        if (valueName != "foreach" && valueName != "content" && knotInfo.options.valueConverters && knotInfo.options.valueConverters[valueName]) {
+            var converter = Utility.getObjectInGlobalScope(knotInfo.options.valueConverters[valueName]);
             if (!converter)
                 throw new Error("Failed to find converter with name:" + knotInfo.options.valueConverters[valueName]);
             if (converter.from) {
@@ -833,17 +959,34 @@
             knotDebugger.debug(knotInfo, valueName, "set:" + value);
         }
         if(data)
-            notifyDataChanged(data, path);
+            DataMonitor.notifyDataChanged(data, path);
     }
 
 
     var _isInitialized = false;
-    function tie(docNode, dataContext, contextPath) {
-        if(!_isInitialized){
-            cbsInit();
-            _isInitialized = true;
-        }
 
+    function tie(onFinished, onError){
+        if(!_isInitialized){
+            if(!onError)
+                onError = function(e){alert(e);};
+            CBS.cbsInit(function(){
+                _isInitialized = true;
+                try{
+                    internalTie();
+                }
+                catch(err){
+                    if(onError) onError(err.message);
+                }
+                if(onFinished) onFinished();
+            },
+            onError);
+        }
+        else{
+            internalTie();
+        }
+    }
+
+    function internalTie(docNode, dataContext, contextPath) {
         if(!docNode)
             docNode = document.body;
         if (docNode.__knotInfo) {
@@ -854,7 +997,7 @@
         var info = { node: docNode, childrenInfo: [], contextPath: contextPath };
         docNode.__knotInfo = info;
 
-        info.options = parseOptions(docNode);
+        info.options = OptionParser.parse(docNode);
         if(info.options.dataContextPath){
             var root = dataContext;
             var path = info.options.dataContextPath;
@@ -869,19 +1012,34 @@
             }
             if(!root)
                 root = window;
-            dataContext = getValueOnPath(root, path);
+            dataContext = Utility.getValueOnPath(root, path);
         }
         info.dataContext = dataContext;
+
+        if(info.options.isTemplate){
+            if(!info.node.id){
+                throw new Error("Template must have an id!")
+            }
+            initTemplate(info.node.id);
+            return null;
+        }
 
         if(info.options.binding && info.options.binding.foreach){
             setupItemTemplate(info);
         }
-        for (var i = 0; i < docNode.children.length; i++) {
-            info.childrenInfo.push(tie(docNode.children[i], dataContext, contextPath));
+        //since template child maybe removed, so start from end.
+        var children = [];
+        for(var i= 0; i< info.node.children.length; i++)
+            children.push(info.node.children[i]);
+        for (var i = 0; i< children.length; i++) {
+            var childInfo = internalTie(children[i], dataContext, contextPath);
+            if(childInfo)
+                info.childrenInfo.push(childInfo);
         }
         if (info.options.binding) {
             applyKnots(info);
         }
+
         return info;
     }
 
@@ -893,7 +1051,7 @@
         for (var valueName in knotInfo.options.binding) {
             if(valueName == "foreach")
                 continue;
-            var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
+            var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type1 tag:" + knotInfo.node.tagName + " type:" + valueName);
             }
@@ -911,7 +1069,7 @@
         for(var action in knotInfo.options.actions){
             if(action == "itemCreated")
                 continue;
-            var actionType = findProperActionType(knotInfo.node.tagName, action);
+            var actionType = Extension.findProperActionType(knotInfo.node.tagName, action);
             if(actionType && knotInfo.actionCallbacks[action]){
                 actionType.releaseAction(knotInfo.node, action, knotInfo.actionCallbacks[action]);
             }
@@ -930,7 +1088,7 @@
                 if (!curData)
                     break;
 
-                unregisterValueChangedCallback(curData, knotInfo);
+                DataMonitor.unregister(curData, knotInfo);
 
                 if(pathSections.length > i){
                     if (path != "")
@@ -940,7 +1098,7 @@
             }
 
             if (knotInfo.nodeMonitoringInfo && knotInfo.nodeMonitoringInfo[valueName]) {
-                var knotType = findProperKnotType(knotInfo.node.tagName, valueName);
+                var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
                 knotType.stopMonitoring(knotInfo.node, notInfo.nodeMonitoringInfo[valueName]);
             }
         }
@@ -974,9 +1132,9 @@
                 var arr = fullPath.split(".");
                 var propertyName = arr[arr.length - 1];
                 var objectPath = fullPath.substr(0, fullPath.length - propertyName.length - 1);
-                if (!getValueOnPath(info.dataContext, objectPath))
+                if (!Utility.getValueOnPath(info.dataContext, objectPath))
                     continue;
-                var knotType = findProperKnotType(info.node.tagName, v);
+                var knotType = Extension.findProperKnotType(info.node.tagName, v);
                 var newValue = knotType.getValue(info.node, v);
                 var errorMessage = validateValue(info, v, newValue);
                 if (errorMessage)
@@ -1003,29 +1161,34 @@
         tie: tie,
         untie: untie,
         validate:validate,
-        registerKnotExtension: registerKnotExtension,
+        registerKnotExtension: function(ext, type){
+            Extension.register(ext, type);
+        },
 
         registerOnValidatingError: function(errorCallback){
-            _onValidatingErrorCallbacks.push(errorCallback);
+            Validating.onValidatingErrorCallbacks.push(errorCallback);
         },
         unregisterOnValidatingError: function (errorCallback) {
-            _onValidatingErrorCallbacks.splice(_onValidatingErrorCallbacks.indexOf(errorCallback), 1);
+            Validating.onValidatingErrorCallbacks.splice(Validating.onValidatingErrorCallbacks.indexOf(errorCallback), 1);
         },
 
-        notifyDataChanged:notifyDataChanged,
+        notifyDataChanged:function(data, propertyName)
+        {
+            DataMonitor.notifyDataChanged(data, propertyName);
+        },
         setValue: function (data, property, value) {
             data[property] = value;
-            notifyDataChanged(data, property);
+            DataMonitor.notifyDataChanged(data, property);
         },
         addToArray: function (array, data) {
             array.push(data);
-            notifyDataChanged(array);
-            notifyDataChanged(array, "length");
+            DataMonitor.notifyDataChanged(array);
+            DataMonitor.notifyDataChanged(array, "length");
         },
         removeFromArray: function (array, data) {
             array.splice(array.indexOf(data), 1);
-            notifyDataChanged(array);
-            notifyDataChanged(array, "length");
+            DataMonitor.notifyDataChanged(array);
+            DataMonitor.notifyDataChanged(array, "length");
         },
 
         __registerKnotDebugger: function(dbg){

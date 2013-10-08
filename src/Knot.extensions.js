@@ -99,6 +99,26 @@
     knot.registerKnotExtension(CommonSetOnlyKnots, "knot_type");
 
 
+    var ResetClassKnot = {
+        isSupported: function (tagName, valueName) {
+            if ((valueName == "resetClass")) {
+                return true;
+            }
+            return false;
+        },
+        isEditingSupported: function (tagName, valueName) {
+            return false;
+        },
+        setValue: function (element, valueName, value) {
+            element.className = "";
+            setTimeout(function(){
+                element.className = (typeof (value) == "undefined" ? "" : value);
+            }, 1)
+
+        }
+    }
+    knot.registerKnotExtension(ResetClassKnot, "knot_type");
+
 
     var DomEventActions = {
         isSupported: function (tagName, action) {

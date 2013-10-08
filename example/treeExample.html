@@ -107,121 +107,39 @@
         display:inline-block;
         text-align:right;
     }
+
+    #loadingMaskDiv{
+        z-index: 100;
+        position: absolute;
+        top:0px;
+        left:0px;
+        right:0px;
+        bottom:0px;
+
+        background-color: white;
+
+        text-align: center;
+    }
+    #loadingMaskDiv div{
+        margin-top: 100px;
+    }
 </style>
 
-<script type="text/cbs">
-    body{
-        knotDataContext:/model
-    }
-
-    #treeView{
-        foreach:*categories =>treeItem;
-    }
-    #treeItem>div:first-child{
-        class:*isSelected=>boolToClassConverter;
-        @click: onTreeItemClicked;
-    }
-    #treeItem>div:first-child span{
-        text:*title
-    }
-
-    #treeItem>div:last-child{
-        foreach: *children =>treeItem;
-        style-display: *isExpanded =>visibleControl
-    }
-
-    #treeItem button {
-        text: *isExpanded =>boolToExpandSymbol;
-        style-opacity: *children.length =>boolToOpacity;
-        disabled: *children.length =>enableControl;
-        @click: onExpandButtonClicked
-    }
-
-    .disableWhenNoCategorySelected{
-        disabled: */model.selectedCategory=>enableControl;
-    }
-
-    #textCategoryTitle{
-        value: */model.selectedCategory.title =!mustNotNull;
-    }
-
-
-    #peopleList{
-        foreach:*selectedCategory.peopleList;
-    }
-
-    #peopleList>div{
-        class:*isSelected=>boolToClassConverter;
-        @click:onPeopleClicked
-    }
-
-    #peopleList>div span [0]{
-        text:*sex=>sexToTitle
-    }
-    #spanName{
-        text:*name
-    }
-    #spanAge{
-        text:*age
-    }
-    #spanFrom{
-        text:*from
-    }
-
-
-    #editArea input[type="text"] [0]{
-        value:*selectedPeople.name =!mustNotNull & duplicatedName;
-    }
-    #editArea .errorMessage [0]{
-        style:{
-            display:!selectedPeople.name=>visibleControl
-        };
-        text:!selectedPeople.name
-    }
-
-    #editArea input[type="text"] [1]{
-        value:*selectedPeople.age =!mustNotNull & checkInteger&ageRange;
-    }
-    #editArea .errorMessage [1]{
-        style:
-        {
-            display:!selectedPeople.age=>visibleControl
-        };
-        text:!selectedPeople.age
-    }
-
-    #editArea select [0]{
-        selected:*selectedPeople.sex;
-    }
-    #editArea select [1]{
-        selected:*selectedPeople.from;
-        foreach:/countries
-    }
-
-    .disableWhenNoSelection{
-        disabled:*/model.selectedPeople=>enableControl;
-    }
-
-    #selectFromOptionTemplate{
-        text:--self
-    }
-
-</script>
+<script type="text/cbs" src="treeExample.cbs"></script>
 
 <script>
-
-    var model = {
-        categories:[
-            {title:"test", children:[], peopleList:[], isExpanded:true, parent:model}
-        ],
-        selectedCategory:null,
-        selectedPeople:null};
 
     //here is everything start
     function onLoad() {
 
         //tie a knot! done!!
-        Knot.tie();
+        Knot.tie(function(){
+            var mask = document.getElementById("loadingMaskDiv");
+            mask.parentNode.removeChild(mask);
+        },
+        function(msg){
+            document.querySelector("#loadingMaskDiv div").innerText = msg;
+        });
 
         //when validating fails, set focus to the failed element.
         Knot.registerOnValidatingError(function (msg, node) {
@@ -246,35 +164,46 @@
     function onExpandButtonClicked(){
         Knot.setValue(this, "isExpanded", !this.isExpanded)
     }
-    function onTreeItemClicked(){
-        Knot.setValue(this, "isSelected", true);
-        Knot.setValue(model, "selectedCategory", this);
-        if(this.peopleList.length>0)
-            selectPeople(this.peopleList[0]);
+
+    function selectCategory(cate){
+        Knot.setValue(cate, "isSelected", true);
+        Knot.setValue(model, "selectedCategory", cate);
+        if(cate.peopleList.length>0)
+            selectPeople(cate.peopleList[0]);
         else
             Knot.setValue(model, "selectedPeople");
-        deselectTreeData(this, model.categories);
+        deselectTreeData(cate, model.categories);
+    }
+    function onTreeItemClicked(){
+       selectCategory(this)
     }
 
     function addCategory(){
         if(!validate())
             return;
-        var cate = model.selectedCategory;
-        if(!cate)
-            cate = model;
-        var newCate = {title: "new", isExpanded:true, peopleList:[], parent:model.selectedCategory};
-        if(!cate.children)
-            Knot.setValue(cate, "children", []);
-        Knot.addToArray(cate.children, newCate);
+
+        var arr;
+        if(model.selectedCategory){
+            if(!model.selectedCategory.children)
+                Knot.setValue(model.selectedCategory, "children", []);
+            arr = model.selectedCategory.children;
+        }
+        else{
+            arr = model.categories;
+        }
+
+        var newCate = {title: "new", isExpanded:true, peopleList:[], parent:(model.selectedCategory?model.selectedCategory:model)};
+        Knot.addToArray(arr, newCate);
+        selectCategory(newCate);
     }
 
     function removeCategory(){
         if(!model.selectedCategory)
             return;
 
-        Knot.removeFromArray(model.selectedCategory.parent.children, model.selectedCategory);
-        Knot.setValue(model.selectedCategory, null);
-        Knot.setValue(model.selectedPeople, null);
+        Knot.removeFromArray(model.selectedCategory.parent.children ||  model.selectedCategory.parent.categories, model.selectedCategory);
+        Knot.setValue(model, "selectedCategory", null);
+        Knot.setValue(model, "selectedPeople", null);
     }
 
     //call this function to validate all data. it is called when model.selected is changed.
@@ -331,6 +260,24 @@
         selectPeople(this);
     }
 
+
+
+    /////////////////
+    //Model
+    ////////////////
+    var model = {
+        categories:[
+            {title:"test", children:[], peopleList:[], isExpanded:true}
+        ],
+        selectedCategory:null,
+        selectedPeople:null};
+    model.categories[0].parent = model;
+    selectCategory(model.categories[0]);
+
+
+
+
+
     //these converters are used to change the values on data to anything you want them on html. You can create your own, it is super easy!
     //they are associate to Knot by "=>" mark in html
     var boolToClassConverter = Knot.Converters.createBoolToValue("selected", "unselected");
@@ -342,7 +289,7 @@
     var mustNotNull = Knot.Validators.createNotNull("Must not be null!");
     var checkInteger = Knot.Validators.createInteger("Must be integer");
     var ageRange = Knot.Validators.createValueRange(0, 150, "Must in 0~150!");
-    var sexToTitle = Knot.Converters.createKeysToValues(["Male", "Female"], ["Mr.", "Miss."]);
+    var sexToTitle = Knot.Converters.createKeysToValues({"Male":"Mr.", "Female":"Miss."});
     var duplicatedName = function (value, data) {
         for (var i = 0; i < model.selectedCategory.peopleList.length; i++) {
             if (model.selectedCategory.peopleList[i] == data)
@@ -363,6 +310,9 @@
 <body onload="onLoad();">
 <h2>Knot.js Example</h2>
 <div>
+    <div id="loadingMaskDiv">
+        <div>laoding....</div>
+    </div>
     <div id="treeArea">
         <div>Group</div>
         <input id="textCategoryTitle" class="disableWhenNoCategorySelected"/>
@@ -373,7 +323,7 @@
             </div>
         </div>
         <div>
-            <button onclick="addCategory()" class="disableWhenNoCategorySelected">+</button>
+            <button onclick="addCategory()">+</button>
             <button onclick="removeCategory()" class="disableWhenNoCategorySelected">-</button></div>
     </div>
     <div id="peopleListArea">
