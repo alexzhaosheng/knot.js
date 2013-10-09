@@ -143,6 +143,7 @@
         #selectedPeopleInfo{
             content:*selected =>peopleInfoTemplate;
         }
+
     </script>
 
     <script>
@@ -162,6 +163,7 @@
         //selected: current selected data. the editing controls are bound with thie property
         //it is associated to Knot by dataContext attribute on "body" element
         var model = {list:[], selected:null};
+        model.isChecked = true;
 
         //here is everything start
         function onLoad() {
@@ -304,11 +306,11 @@
 
         <p>
             <button onclick="onNew();">New</button>
-
             <button class="disableWhenNoSelection" onclick="onRemove()">Delete</button>
         </p>
 
         <div id="selectedPeopleInfo"></div>
+
     </div>
 </div>
 </body>

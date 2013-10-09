@@ -8,23 +8,29 @@
 (function (knot) {
 
     var CommInput = {
-        isSupported: function (tagName, valueName) {
-            if ((tagName == "INPUT" || tagName=="TEXTAREA") && valueName == "value" ||
+        isSupported: function (node, valueName) {
+            var tagName = node.tagName.toUpperCase();
+            if (((tagName == "INPUT" || tagName=="TEXTAREA") && valueName == "value") ||
+                ((tagName == "INPUT" && node.type.toUpperCase()=="CHECKBOX") && valueName=="checked") ||
                 (tagName == "SELECT" && valueName == "selected"))
             {
                 return true;
             }
             return false;
         },
-        isEditingSupported: function (tagName, valueName) {
+        isEditingSupported: function (node, valueName) {
             return true;
         },
 
         getValue: function (element, valueName) {
             var tagName = element.tagName;
-            if((tagName == "INPUT" || tagName=="TEXTAREA") && valueName == "value")
+            if((tagName == "INPUT" || tagName=="TEXTAREA") && valueName == "value"){
                 return element.value;
-            if (tagName == "SELECT" && valueName == "selected") {
+            }
+            else if((tagName == "INPUT" && element.type.toUpperCase()=="CHECKBOX") && valueName=="checked"){
+                return element.checked;
+            }
+            else if (tagName == "SELECT" && valueName == "selected") {
                 var option = element.options[element.selectedIndex];
                 if(!option)
                     return null;
@@ -35,6 +41,9 @@
             var tagName = element.tagName;
             if((tagName == "INPUT" || tagName=="TEXTAREA") && valueName == "value"){
                 element.value = (typeof (value) == "undefined" ? "" : value);
+            }
+            else if((tagName == "INPUT" && element.type.toUpperCase()=="CHECKBOX") && valueName=="checked"){
+                element.checked = Boolean(value);
             }
             else if (tagName == "SELECT" && valueName == "selected") {
                 for (var i = 0; i < element.options.length; i++) {
@@ -63,7 +72,8 @@
     }
 
     var CommonSetOnlyKnots = {        
-        isSupported: function (tagName, valueName) {
+        isSupported: function (node, valueName) {
+            var tagName = node.tagName;
             if ((valueName == "text") ||
                 startWith(valueName, "style-") ||
                 (valueName == "class") ||
@@ -74,7 +84,7 @@
             }
             return false;
         },
-        isEditingSupported: function (tagName, valueName) {
+        isEditingSupported: function (node, valueName) {
             return false;
         },        
         setValue: function (element, valueName, value) {
@@ -100,13 +110,14 @@
 
 
     var ResetClassKnot = {
-        isSupported: function (tagName, valueName) {
+        isSupported: function (node, valueName) {
+            var tagName = node.tagName;
             if ((valueName == "resetClass")) {
                 return true;
             }
             return false;
         },
-        isEditingSupported: function (tagName, valueName) {
+        isEditingSupported: function (node, valueName) {
             return false;
         },
         setValue: function (element, valueName, value) {
@@ -121,7 +132,7 @@
 
 
     var DomEventActions = {
-        isSupported: function (tagName, action) {
+        isSupported: function (node, action) {
             return true;
         },
 

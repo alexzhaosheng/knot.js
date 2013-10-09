@@ -263,18 +263,18 @@
             if(type == "knot_action")
                 this._actions.splice(0, 0, ext);
         },
-        findProperKnotType: function(tagName, valueName) {
+        findProperKnotType: function(node, valueName) {
             for (var i = 0; i < this._knotTypes.length; i++) {
-                if (this._knotTypes[i].isSupported(tagName, valueName)) {
+                if (this._knotTypes[i].isSupported(node, valueName)) {
                     return this._knotTypes[i];
                 }
             }
-            throw new Error("Failed to find knot type! tag:" + tagName + " binding type:" + valueName);
+            throw new Error("Failed to find knot type! tag:" + node.tagName + " binding type:" + valueName);
         },
 
-        findProperActionType: function(tagName, actionName) {
+        findProperActionType: function(node, actionName) {
             for (var i = 0; i < this._actions.length; i++) {
-                if (this._actions[i].isSupported(tagName, actionName)) {
+                if (this._actions[i].isSupported(node, actionName)) {
                     return this._actions[i];
                 }
             }
@@ -731,7 +731,7 @@
             syncContent(knotInfo)
         }
         else{
-            var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
+            var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type! tag:"+knotInfo.node.tagName + " type:" + valueName);
             }
@@ -745,7 +745,7 @@
             if(action == "itemCreated")
                 continue;
             (function(){
-                var actionType = Extension.findProperActionType(knotInfo.node.tagName, action);
+                var actionType = Extension.findProperActionType(knotInfo.node, action);
                 if(!actionType){
                     throw new Error("Failed to find the proper action type!  tag:" +knotInfo.node.tagName + " type:" + action);
                 }
@@ -867,8 +867,8 @@
             }
 
             if(valueName != "foreach" && valueName != "content"){
-                var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
-                if (knotType.isEditingSupported(knotInfo.node.tagName, valueName)) {
+                var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
+                if (knotType.isEditingSupported(knotInfo.node, valueName)) {
                     setupNodeMonitering(knotInfo, knotType, valueName);
                 }
             }
@@ -1019,14 +1019,17 @@
     function tie(onFinished, onError){
         if(!_isInitialized){
             if(!onError)
-                onError = function(e){alert(e);};
+                onError = function(msg)
+                {
+                    throw new Error(msg);
+                };
             CBS.cbsInit(function(){
                 _isInitialized = true;
                 try{
                     internalTie();
                 }
                 catch(err){
-                    if(onError) onError(err.message);
+                    onError(err.message);
                 }
                 if(onFinished) onFinished();
             },
@@ -1102,7 +1105,7 @@
         for (var valueName in knotInfo.options.binding) {
             if(valueName == "foreach")
                 continue;
-            var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
+            var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type1 tag:" + knotInfo.node.tagName + " type:" + valueName);
             }
@@ -1120,7 +1123,7 @@
         for(var action in knotInfo.options.actions){
             if(action == "itemCreated")
                 continue;
-            var actionType = Extension.findProperActionType(knotInfo.node.tagName, action);
+            var actionType = Extension.findProperActionType(knotInfo.node, action);
             if(actionType && knotInfo.actionCallbacks[action]){
                 actionType.releaseAction(knotInfo.node, action, knotInfo.actionCallbacks[action]);
             }
@@ -1149,7 +1152,7 @@
             }
 
             if (knotInfo.nodeMonitoringInfo && knotInfo.nodeMonitoringInfo[valueName]) {
-                var knotType = Extension.findProperKnotType(knotInfo.node.tagName, valueName);
+                var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
                 knotType.stopMonitoring(knotInfo.node, notInfo.nodeMonitoringInfo[valueName]);
             }
         }
@@ -1185,7 +1188,7 @@
                 var objectPath = fullPath.substr(0, fullPath.length - propertyName.length - 1);
                 if (!Utility.getValueOnPath(info.dataContext, objectPath))
                     continue;
-                var knotType = Extension.findProperKnotType(info.node.tagName, v);
+                var knotType = Extension.findProperKnotType(info.node, v);
                 var newValue = knotType.getValue(info.node, v);
                 var errorMessage = validateValue(info, v, newValue);
                 if (errorMessage)
