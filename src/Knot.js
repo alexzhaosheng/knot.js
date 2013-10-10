@@ -101,6 +101,31 @@
     }
 
     /////////////////////////////////////
+    //Deffered
+    /////////////////////////////////////
+    var Deffered = function(){
+        this._succCallbacks = [];
+        this._errCallbacks = [];
+    }
+    Deffered.prototype.resolve = function(result){
+        for(var i= 0; i< this._succCallbacks.length; i++)
+            this._succCallbacks[i](result);
+    }
+    Deffered.prototype.reject = function(error){
+        for(var i= 0; i< this._errCallbacks.length; i++)
+            this._errCallbacks[i](error);
+    }
+    Deffered.prototype.done = function(succCallback, errorCallback){
+        this._succCallbacks.push(succCallback);
+        this._errCallbacks.push(errorCallback);
+        return this;
+    }
+    var DefferedFactory = {
+        deferred: function(){return new Deffered();}
+    }
+
+
+    /////////////////////////////////////
     //mock debugger. will be replaced if debugger is actived
     ////////////////////////////////////
     var knotDebugger = {
@@ -884,7 +909,7 @@
                 var newValue = knotType.getValue(knotInfo.node, valueName);
 
                 if (knotInfo.options.validators && knotInfo.options.validators[valueName]) {
-                    if (validateValue(knotInfo, valueName, newValue))
+                    if (validateValue(knotInfo, valueName, newValue,[]))
                         return;
                 }
                 setDataValue(knotInfo, valueName, newValue);
@@ -895,7 +920,7 @@
 
     /////////////////////// two way binding end ///////////////////////////////////////////
 
-    function validateValue(knotInfo, valueName, value) {
+    function validateValue(knotInfo, valueName, value, defferedObjects) {
         var data = knotInfo.dataContext;
         var path = knotInfo.options.binding[valueName];
         while (path.indexOf(".") >= 0 && data) {
@@ -905,21 +930,7 @@
         if (!data)
             return;
 
-        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {
-
-
-            var validator = Utility.getObjectInGlobalScope(knotInfo.options.validators[valueName][i]);
-            if (!validator) {
-                throw new Error("Failed to find validator by path:" + knotInfo.options.validators[valueName][i]);
-            }
-            var errMessage;
-            try {
-                errMessage = validator(value, data);
-            }
-            catch (err) {
-                errMessage = err.message;
-            }
-
+        var processErrorMessage = function(errMessage){
             Validating.setError(data, path, errMessage);
             if (errMessage) {
                 for (var i = 0; i < Validating.onValidatingErrorCallbacks.length; i++) {
@@ -928,7 +939,36 @@
                 return errMessage;
             }
         }
-        return null;
+
+        for (var i = 0; i < knotInfo.options.validators[valueName].length; i++) {
+            var validator = Utility.getObjectInGlobalScope(knotInfo.options.validators[valueName][i]);
+            if (!validator) {
+                throw new Error("Failed to find validator by path:" + knotInfo.options.validators[valueName][i]);
+            }
+            try {
+                var validateRes = validator(value, data, DefferedFactory);
+                if(validateRes instanceof Deffered){
+                    validateRes.done(
+                        function(msg){
+                            processErrorMessage(msg);
+                        },
+                        function(msg){
+                            processErrorMessage(msg)
+                        });
+                    defferedObjects.push(validateRes);
+                }
+                else{
+                    if(processErrorMessage(validateRes)){
+                        return validateRes;
+                    }
+                }
+            }
+            catch (err) {
+                processErrorMessage(err.message);
+                return err.message;
+            }
+        }
+        return validateRes;
     }
 
 
@@ -1175,7 +1215,32 @@
     }
 
 
-    function validate(docNode) {
+    function validate(onComplete) {
+        var docNode = document.body;
+
+        var defferedObjects = [];
+        var errMsg = internalValidate(docNode, defferedObjects);
+
+        if(defferedObjects.length > 0){
+            var finishedCount  =0;
+            var errMsg = null;
+            for(var i=0; i < defferedObjects.length; i++){
+                var done = function(msg){
+                    if(!errMsg && msg){
+                        errMsg = msg;
+                    }
+                    finishedCount++;
+                    if(finishedCount == defferedObjects.length)
+                        onComplete(errMsg);
+                }
+                defferedObjects[i].done(done, done);
+            }
+        }
+        else{
+            onComplete(errMsg);
+        }
+    }
+    function internalValidate(docNode, defferedObjects){
         var info = docNode.__knotInfo;
         if (!info)
             return;
@@ -1190,15 +1255,20 @@
                     continue;
                 var knotType = Extension.findProperKnotType(info.node, v);
                 var newValue = knotType.getValue(info.node, v);
-                var errorMessage = validateValue(info, v, newValue);
-                if (errorMessage)
-                    return errorMessage;
+                var res = validateValue(info, v, newValue, defferedObjects);
+                if(res instanceof Deffered){
+                    defferedObjects.push(res);
+                }
+                else{
+                    if (res)
+                        return res;
+                }
             }
         }
 
         if (info.childrenInfo) {
             for (var i = 0; i < info.childrenInfo.length; i++) {
-                var errorMessage = validate(info.childrenInfo[i].node);
+                var errorMessage = internalValidate(info.childrenInfo[i].node, defferedObjects);
                 if (errorMessage)
                     return errorMessage;
             }
