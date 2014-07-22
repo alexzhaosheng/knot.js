@@ -73,12 +73,15 @@
 
     var CommonSetOnlyKnots = {        
         isSupported: function (node, valueName) {
-            var tagName = node.tagName;
+            var tagName = node.tagName.toUpperCase();
             if ((valueName == "text") ||
                 startWith(valueName, "style-") ||
                 (valueName == "class") ||
                 (valueName == "src") ||
-                (valueName == "disabled")
+                (valueName == "title") ||
+                (valueName == "disabled") ||
+                (valueName == "value" && tagName=="OPTION") ||
+                (valueName == "innerHTML")
                ) {
                 return true;
             }
@@ -88,6 +91,8 @@
             return false;
         },        
         setValue: function (element, valueName, value) {
+            var tagName = element.tagName.toUpperCase();
+
             if (valueName == "text") {
                 element.textContent = (typeof (value) == "undefined" ? "" : value);
             }
@@ -101,8 +106,17 @@
             else if (valueName == "disabled") {
                 element.disabled = (typeof (value) == "undefined" ? true : value);
             }
+            else if(valueName=="title"){
+                element.title = value;
+            }
             else if(valueName == "src"){
                 element.src = value;
+            }
+            else if( (valueName == "value" && tagName=="OPTION")){
+                element.value = value;
+            }
+            else if(valueName == "innerHTML"){
+                element.innerHTML = value;
             }
         }
     }

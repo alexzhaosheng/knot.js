@@ -224,4 +224,18 @@
     else
         knotDebugger.waitForHotKey();
 
+    var parseToElement = function (html) {
+        if (!tempDiv)
+            tempDiv = document.createElement("div");
+        if(window.toStaticHTML){
+            html = window.toStaticHTML(html);
+        }
+        tempDiv.innerHTML = html;
+        if (tempDiv.childElementCount > 1) {
+            throw new Error("Number of element can't be more than 1!");
+        }
+        var e = tempDiv.firstElementChild;
+        tempDiv.removeChild(e);
+        return e;
+    }
 })(Knot);
