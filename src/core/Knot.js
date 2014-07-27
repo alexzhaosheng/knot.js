@@ -19,306 +19,7 @@
 
 
 
-    ///////////////////////////////////////////////////////
-    // Knot extensions
-    ///////////////////////////////////////////////////////
-    var Extension = {
-        _knotTypes:[],
-        _actions: [],
 
-        register: function(ext, type) {
-            //always insert the extensions to the first. So that the extensions that registered lately
-            //would overwrite the previous ones.
-            if(type == "knot_type")
-                this._knotTypes.splice(0, 0, ext);
-            if(type == "knot_action")
-                this._actions.splice(0, 0, ext);
-        },
-        findProperKnotType: function(node, valueName) {
-            for (var i = 0; i < this._knotTypes.length; i++) {
-                if (this._knotTypes[i].isSupported(node, valueName)) {
-                    return this._knotTypes[i];
-                }
-            }
-            throw new Error("Failed to find knot type! Element tag name: " + node.tagName + " binding type: " + valueName);
-        },
-
-        findProperActionType: function(node, actionName) {
-            for (var i = 0; i < this._actions.length; i++) {
-                if (this._actions[i].isSupported(node, actionName)) {
-                    return this._actions[i];
-                }
-            }
-            return null;
-        }
-    }
-
-
-
-    /////////////////////////////////
-    //CBS handling
-    ////////////////////////////////
-    var CBS = {
-        removeComments: function(text){
-            if(!text || text == "")
-                return null;
-            var pos;
-            while((pos = text.indexOf("/*")) >= 0){
-                var np = text.indexOf("*/", pos);
-                if(np < 0){
-                    throw new Error("Can't find close mark for comment.");
-                }
-                text = text.substr(0, pos) +text.substr(np + 2);
-            }
-
-            var lines = text.split("\n");
-            var res = "";
-            for(var i = 0; i< lines.length; i++){
-                var sl = lines[i].split("\r");
-                for(var j= 0; j < sl.length; j++){
-                    if(__private.Utility.trim(sl[j]).substr(0, 2) == "//"){
-                        continue;
-                    }
-                    res += sl[j];
-                }
-            }
-            return res;
-        },
-        getXhrs: function(){
-            if (window.XMLHttpRequest){
-                return new XMLHttpRequest();
-            }
-            else{
-                return new ActiveXObject("Microsoft.XMLHTTP");
-            }
-        },
-        cbsInit: function(onFinish, onError){
-            var blocks = document.querySelectorAll("script");
-            var scriptToLoad = 0;
-            var check = function(){
-                if(scriptToLoad == 0 && onFinish)
-                    onFinish();
-            }
-            var that =this;
-            for(var i =0; i< blocks.length; i++){
-                if(blocks[i].type == "text/cbs"){
-                    if(blocks[i].src){
-                        scriptToLoad ++;
-                        (function(){
-                            var src = blocks[i].src;
-                            var hr = that.getXhrs();
-                            hr.onreadystatechange = function(){
-                                if(hr.readyState == 4){
-                                    if(hr.status == 200){
-                                        try{
-                                            that.applyCBS(hr.responseText);
-                                            scriptToLoad--;
-                                            check();
-                                        }
-                                        catch(err){
-                                            if(onError) onError("Load CBS script error. url:" + src + " message:"  + err.message)
-                                        }
-                                    }
-                                    else{
-                                        if(onError) onError("Load CBS script error. url:" + src + " message:" +hr.statusText);
-                                    }
-                                }
-                            }
-                            hr.open("GET", src, true);
-                            hr.send();
-                        })();
-                    }
-                    else{
-                        try{
-                            this.applyCBS(this.removeComments(blocks[i].textContent));
-                        }
-                        catch(err){
-                            if(onError) onError("Load CBS block error. " + err.message);
-                        }
-                    }
-                }
-            }
-
-            check();
-        },
-        applyCBS: function(cbs){
-            if(!cbs || cbs == "")
-                return;
-            var parsePos = 0;
-            cbs = cbs.replace(/\r/g," ").replace(/\n/g, " ");
-            cbs = OptionParser.processEmbeddedFunction(cbs);
-            while(true){
-                var block = __private.Utility.getBlockInfo(cbs, parsePos, "{", "}");
-                if(!block)
-                    return;
-
-                var options = __private.Utility.trim(cbs.substr(block.start+1, block.end-block.start-1));
-                options = options.replace(/;/g, ",");
-                if(options[options.length-1] == ",")
-                    options = options.substr(0, options.length-1);
-
-                var selector = __private.Utility.trim(cbs.substr(parsePos, block.start-parsePos));
-                var seq = -1;
-                if(selector[selector.lastIndexOf("[")-1] == " "){
-                    if(selector[selector.length-1] != "]"){
-                        throw new Error("Unknown cbs selector " + selector);
-                    }
-                    seq = Number(selector.substr(selector.lastIndexOf("[")+1, selector.length - selector.lastIndexOf("[")-2));
-                    if(isNaN(seq)){
-                        throw new Error("Unknown cbs selector " + selector);
-                    }
-
-                    selector = selector.substr(0, selector.lastIndexOf("["));
-                }
-                try{
-                    var elements = document.querySelectorAll(selector);
-                }
-                catch(err){
-                    throw new Error("Query selector failed. selector:" + selector + " message:" + err.message);
-                }
-                if(elements.length == 0)
-                    throw new Error("No element matches the selector:" + selector);
-                if(seq>=0){
-                    if(elements[seq])
-                        elements[seq].__knot_cbs_options = (elements[seq].__knot_cbs_options?(elements[seq].__knot_cbs_options+";"+  options) :options);
-                    else
-                        throw new Error("No element exists at this index. selector:" + selector);
-                }
-                else{
-                    for(var i= 0; i< elements.length; i++){
-                        elements[i].__knot_cbs_options = (elements[i].__knot_cbs_options?(elements[i].__knot_cbs_options+";"+  options) :options)
-                    }
-                }
-
-                parsePos = block.end +1;
-            }
-        }
-    }
-    ///////////////////////////////////////////////////////
-    // Parse options
-    ///////////////////////////////////////////////////////
-    var OptionParser = {
-        processEmbeddedFunction: function(options){
-            var pos = 0;
-            while(true){
-                var info = __private.Utility.getBlockInfo(options, pos, "${<<", ">>}");
-                if(!info)
-                    return options;
-
-                var funcStr = options.substr(info.start + 4, info.end-info.start - 4);
-                funcStr = "(function(){" + funcStr + "})";
-                try{
-                    var func = eval(funcStr)
-                }
-                catch(err){
-                    throw new Error("Parse embedded function failed. message:" + err.message + "function:" + funcStr);
-                }
-                var funcName = "$" + __private.Utility.registerKnotGlobalFunction(func);
-                options = [options.substr(0, info.start), funcName, options.substr(info.end+3)].join("");
-
-                pos = info.end+3;
-            }
-        },
-        parseOptionToJSON: function(option) {
-            if (!option)
-                return {};
-            option = option.replace(/\s/g, "");
-            option = "{" + option + "}";
-            option = option.replace(/;/g,",").replace(/:/g, '":"').replace(/,/g, '","').replace(/}/g, '"}').replace(/{/g, '{"').replace(/"{/g, "{").replace(/}"/g, "}");
-            try{
-                return JSON.parse(option);
-            }
-            catch(err){
-                throw new Error("Parse option failed:" +option + " message:"+err.message);
-            }
-        },
-        parseDetailedOptions: function(optionName, detailedOptions, valueConverters, validators) {
-            var arr = detailedOptions.split("=");
-            for (var i = 1; i < arr.length; i++) {
-                if (arr[i][0] == ">")
-                    valueConverters[optionName] = arr[i].substr(1);
-                if (arr[i][0] == "!")
-                    validators[optionName] = arr[i].substr(1).split("&");
-            }
-            return arr[0];
-        },
-
-        parse: function(node) {
-            if(node.__knot_parsedOptions){
-                return node.__knot_parsedOptions;
-            }
-            var options = {};
-            var att = node.getAttribute("binding");
-            if(att){
-                att = this.processEmbeddedFunction(att);
-            }
-            if(node.__knot_cbs_options){
-                if(att){
-                    att += ";" + node.__knot_cbs_options;
-                }
-                else{
-                    att=node.__knot_cbs_options;
-                }
-            }
-
-            if (att) {
-                var bindingOptions = this.parseOptionToJSON(att);
-                if (bindingOptions.style) {
-                    var v = bindingOptions.style;
-                    delete bindingOptions.style;
-                    for (var s in v) {
-                        bindingOptions["style-" + s] = v[s];
-                    }
-                }
-                options.isTemplate = false;
-                if(typeof(bindingOptions.isTemplate) != "undified"){
-                    options.isTemplate = bindingOptions.isTemplate;
-                    delete  bindingOptions.isTemplate;
-                }
-
-                var valueConverters = {}, twoWayBinding = {}, validators = {}, bindingToError = {}, actions={};
-                for (var p in bindingOptions) {
-                    if(p[0] == "@"){
-                        actions[p.substr(1)] = bindingOptions[p];
-                        delete bindingOptions[p];
-                    }
-                    else if(p== "dataContext"){
-                        options.dataContextPath = bindingOptions[p];
-                        delete bindingOptions[p];
-                    }
-                    else{
-                        var v = bindingOptions[p];
-                        if (v[0] == "*") {
-                            twoWayBinding[p] = true;
-                            v = v.substr(1);
-                        }
-                        if (v[0] == "!") {
-                            bindingToError[p] = true;
-                            twoWayBinding[p] = true;
-                            v = v.substr(1);
-                        }
-                        bindingOptions[p] = this.parseDetailedOptions(p, v, valueConverters, validators);
-                    }
-                }
-                if(!__private.Utility.isEmptyObj(valueConverters))
-                    options.valueConverters = valueConverters;
-                if(!__private.Utility.isEmptyObj(twoWayBinding))
-                    options.twoWayBinding = twoWayBinding;
-                if (!__private.Utility.isEmptyObj(bindingToError))
-                    options.bindingToError = bindingToError;
-                if (!__private.Utility.isEmptyObj(validators))
-                    options.validators = validators;
-                if(!__private.Utility.isEmptyObj(actions)){
-                    options.actions = actions;
-                }
-                if(!__private.Utility.isEmptyObj(bindingOptions))
-                    options.binding = bindingOptions;
-
-            }
-            node.__knot_parsedOptions = options;
-            return options;
-        }
-    }
 
     ///////////////////////////////////////////////////////////
     // item template management and item sync
@@ -509,7 +210,7 @@
             syncContent(knotInfo)
         }
         else{
-            var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
+            var knotType = __private.Extension.findProperKnotType(knotInfo.node, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type! tag:"+knotInfo.node.tagName + " type:" + valueName);
             }
@@ -523,7 +224,7 @@
             if(action == "itemCreated")
                 continue;
             (function(){
-                var actionType = Extension.findProperActionType(knotInfo.node, action);
+                var actionType = __private.Extension.findProperActionType(knotInfo.node, action);
                 if(!actionType){
                     throw new Error("Failed to find the proper action type!  tag:" +knotInfo.node.tagName + " type:" + action);
                 }
@@ -645,7 +346,7 @@
             }
 
             if(valueName != "foreach" && valueName != "content"){
-                var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
+                var knotType = __private.Extension.findProperKnotType(knotInfo.node, valueName);
                 if (knotType.isEditingSupported(knotInfo.node, valueName)) {
                     setupNodeMonitoring(knotInfo, knotType, valueName);
                 }
@@ -819,7 +520,7 @@
                 {
                     throw new Error(msg);
                 };
-            CBS.cbsInit(function(){
+            __private.CBS.cbsInit(function(){
                 _isInitialized = true;
                 try{
                     internalTie();
@@ -847,7 +548,7 @@
         var info = { node: docNode, childrenInfo: [], contextPath: contextPath };
         docNode.__knotInfo = info;
 
-        info.options = OptionParser.parse(docNode);
+        info.options = __private.OptionParser.parse(docNode);
         if(info.options.dataContextPath){
             var root = dataContext;
             var path = info.options.dataContextPath;
@@ -901,7 +602,7 @@
         for (var valueName in knotInfo.options.binding) {
             if(valueName == "foreach")
                 continue;
-            var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
+            var knotType = __private.Extension.findProperKnotType(knotInfo.node, valueName);
             if (!knotType) {
                 throw new Error("Failed to find the proper knot type1 tag:" + knotInfo.node.tagName + " type:" + valueName);
             }
@@ -919,7 +620,7 @@
         for(var action in knotInfo.options.actions){
             if(action == "itemCreated")
                 continue;
-            var actionType = Extension.findProperActionType(knotInfo.node, action);
+            var actionType = __private.Extension.findProperActionType(knotInfo.node, action);
             if(actionType && knotInfo.options.actions[action]){
                 actionType.releaseAction(knotInfo.node, action, knotInfo.options.actions[action]);
             }
@@ -948,7 +649,7 @@
             }
 
             if (knotInfo.nodeMonitoringInfo && knotInfo.nodeMonitoringInfo[valueName]) {
-                var knotType = Extension.findProperKnotType(knotInfo.node, valueName);
+                var knotType = __private.Extension.findProperKnotType(knotInfo.node, valueName);
                 knotType.stopMonitoring(knotInfo.node, knotInfo.nodeMonitoringInfo[valueName]);
             }
         }
@@ -1014,7 +715,7 @@
                 var objectPath = fullPath.substr(0, fullPath.length - propertyName.length - 1);
                 if (!__private.Utility.getValueOnPath(info.dataContext, objectPath))
                     continue;
-                var knotType = Extension.findProperKnotType(info.node, v);
+                var knotType = __private.Extension.findProperKnotType(info.node, v);
                 var newValue = knotType.getValue(info.node, v);
                 var res = validateValue(info, v, newValue, defferedObjects);
                 if(res instanceof __private.Deffered){
@@ -1050,7 +751,7 @@
         cloneNode: cloneTemplateNode,
         validate:validate,
         registerKnotExtension: function(ext, type){
-            Extension.register(ext, type);
+            __private.Extension.register(ext, type);
         },
 
         registerOnValidating: function(errorCallback){

@@ -55,6 +55,15 @@
             return "--knot--globalFunc-"+ (this._knotGlobalFunction.length-1);
         },
 
+        getXHRS: function(){
+            if (window.XMLHttpRequest){
+                return new XMLHttpRequest();
+            }
+            else{
+                return new ActiveXObject("Microsoft.XMLHTTP");
+            }
+        },
+
 
         getBlockInfo: function(str, startIndex, startMark, endMark){
             var info = {start:-1, end:-1};
