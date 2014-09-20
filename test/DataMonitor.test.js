@@ -1,42 +1,42 @@
 (function(){
     var scope = Knot.getPrivateScope();
 
-    QUnit.test( "private.DataMonitor", function( assert ) {
-        var listener = {}, listener2 = {};
-        var data1 = {}, data2 = {};
-
-        var propertyName = null;
-        var changedData = null;
-        scope.DataMonitor.register(data1, listener, function(n){
-            propertyName = n;
-            changedData = this;
+    QUnit.test("private.DataMonitor", function( assert ) {
+        var node = KnotTestUtility.parseHTML('<input binding="'+
+            'style:{left:*left=>cvt.toLeftNumber; top:top; border-color:!value=>cvt.toBorderColor};'+
+            'value:*subitem.title=>cvt.trimString&cvt.urlEncoding =!validator.notNull & validator.titleLengthCheck;' +
+            '@click:onTitleClicked"></input>');
+        var options = scope.OptionParser.parse(node);
+        var obj = {name:"test", group:"ga"};
+        var info = {options:options};
+        var changedSrc, changedProperty;
+        scope.DataMonitor.monitorData(obj, "", info, function(info, p){
+            changedSrc = info;
+            changedProperty = p;
         });
-        scope.DataMonitor.notifyDataChanged(data1, "sex");
-        scope.DataMonitor.notifyDataChanged(data1, "name");
-        scope.DataMonitor.notifyDataChanged(data2, "sex");
 
-        assert.equal("name", propertyName);
-        assert.equal(data1, changedData);
-        assert.equal(true, scope.DataMonitor.hasRegistered(data1, listener));
-        assert.equal(false, scope.DataMonitor.hasRegistered(data2, listener));
-        assert.equal(false, scope.DataMonitor.hasRegistered(data1, listener2));
+        obj.left= "10";
+        scope.DataEventMgr.notifyDataChanged(obj, "left");
+        assert.equal(changedProperty, "style-left");
+        assert.equal(changedSrc, info);
 
-        assert.equal(true, scope.DataMonitor.getPropertyChangeRecord(data1).indexOf("sex")>=0);
-        assert.equal(true, scope.DataMonitor.getPropertyChangeRecord(data1).indexOf("name")>=0);
-        assert.equal(2, scope.DataMonitor.getPropertyChangeRecord(data1).length);
+        obj.subitem = {};
+        scope.DataEventMgr.notifyDataChanged(obj, "subitem");
+        obj.subitem.title = "item title";
+        scope.DataEventMgr.notifyDataChanged(obj.subitem, "title");
+        assert.equal(changedProperty, "value");
+        assert.equal(changedSrc, info);
 
-        scope.DataMonitor.resetPropertyChangeRecord(data1);
-        assert.equal(0, scope.DataMonitor.getPropertyChangeRecord(data1).length);
+        info.dataContext = obj;
+        scope.DataMonitor.setupDataNotification(info, function(info, p){
+            changedSrc = info;
+            changedProperty = p;
+        });
 
-        scope.DataMonitor.unregister(data1, listener);
-
-        propertyName = null;
-        changedData = null;
-        scope.DataMonitor.notifyDataChanged(data1, "name");
-        assert.equal(null, propertyName);
-        assert.equal(null, changedData);
-
-        assert.equal(false, scope.DataMonitor.hasRegistered(data1, listener));
-
+        changedProperty="";
+        changedSrc = null;
+        scope.Validating.setError(obj, "value", "Validate error test");
+        assert.equal(changedProperty, "style-border-color");
+        assert.equal(changedSrc, info);
     });
 })();
