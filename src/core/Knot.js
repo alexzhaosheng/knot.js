@@ -9,85 +9,21 @@
 (function () {
     var __private = Knot.getPrivateScope();
 
-    ///////////////////////////////////////////////////////////
-    // item template management and item sync
-    ///////////////////////////////////////////////////////////
-    function cloneTemplateNode(node){
-        var setAttachedData = function(n, c){
-            if(n.__knot_parsedOptions){
-                c.__knot_parsedOptions =  JSON.parse(JSON.stringify( n.__knot_parsedOptions));
-                c.__knot_parsedOptions.isTemplate = false;
-            }
-            else{
-                c.__knot_cbs_options = n.__knot_cbs_options;
-            }
-            for(var i=0; i< n.children.length; i++)
-                setAttachedData(n.children[i], c.children[i]);
-        }
-
-        var cloned = node.cloneNode(true);
-        setAttachedData(node, cloned);
-        return cloned;
+    /////////////////////////////////////
+    //mock debugger. will be replaced if debugger is activated
+    ////////////////////////////////////
+    var knotDebugger = {
+        debug:function(knotInfo, valueName, status){}
     }
 
-    function createItemFromTemplate(knotInfo, data){
-        var node = knotInfo.node;
-        if(typeof(knotInfo.itemTemplate) == "function"){
-            return knotInfo.itemTemplate(data, node)
-        }
-        else{
-            return cloneTemplateNode(knotInfo.itemTemplate);
-        }
 
-    }
 
-    var _itemTemplates = {};
-    function initTemplate(id){
-        if(_itemTemplates[id])
-            return _itemTemplates[id];
-
-        var template = document.getElementById(id);
-        if(template)
-            template.parentNode.removeChild(template);
-        else{
-            template = __private.Utility.getObjectInGlobalScope(id);
-            if(template && typeof(template) != "function"){
-                throw new Error("The item template must be a dom element or a callback function");
-            }
-
-            if(!template)
-                throw new Error("Failed to find item template with name:" + id);
-        }
-        _itemTemplates[id] = template;
-        return template;
-    }
-    function setupItemTemplate(info){
-        if(info.itemTemplate)
-            return;
-        var template;
-        if(!info.options.valueConverters || !info.options.valueConverters["foreach"]){
-            template = info.node.children[0];
-            if(!template){
-                throw new Error("No item template defined. foreach binding requires item template");
-            }
-            info.node.removeChild(template);
-        }
-        else{
-            var s = info.options.valueConverters["foreach"];
-            if(_itemTemplates[s])
-                template = _itemTemplates[s];
-            else
-                template = initTemplate(s);
-        }
-
-        info.itemTemplate = template;
-    }
 
     //synchronise the items between array and dom node children, create new, remove old and change order.
     function syncItems(knotInfo, items) {
-        setupItemTemplate(knotInfo);
+        __private.TemplateMgr.setupItemTemplate(knotInfo);
 
-        __private.knotDebugger.debug(knotInfo, "foreach", "sync, itemCount:" + (items? items.length:0));
+        knotDebugger.debug(knotInfo, "foreach", "sync, itemCount:" + (items? items.length:0));
 
         var findChild = function (node, item) {
             for (var i = 0; i < node.children.length; i++) {
@@ -120,7 +56,7 @@
                 }
             }
             else {
-                var n = createItemFromTemplate(knotInfo, items[i]);
+                var n = __private.TemplateMgr.createItemFromTemplate(knotInfo, items[i]);
                 knotInfo.childrenInfo.push(internalTie(n, items[i], contextPath+".["+i+"]"));
                 addChildTo(node, n, i);
                 if (knotInfo.options.actions && knotInfo.options.actions.itemCreated) {
@@ -145,7 +81,7 @@
         if(!knotInfo.itemTemplate){
             if(!knotInfo.options.valueConverters.content)
                 throw new Error("No item template specified for 'content' binding.");
-            knotInfo.itemTemplate = initTemplate(knotInfo.options.valueConverters.content);
+            knotInfo.itemTemplate = __private.TemplateMgr.initTemplate(knotInfo.options.valueConverters.content);
         }
 
         if(knotInfo.node.firstElementChild){
@@ -166,7 +102,7 @@
         }
 
         if(d != null){
-            var child =createItemFromTemplate(knotInfo, d);
+            var child =__private.TemplateMgr.createItemFromTemplate(knotInfo, d);
             knotInfo.node.appendChild(child);
             knotInfo.childrenInfo.push(internalTie(child, d, knotInfo.contextPath + "." + knotInfo.options.binding.content));
         }
@@ -177,12 +113,8 @@
     ///////////////////////////////////////////////////////////
 
     function applyKnots(knotInfo) {
-        if (knotInfo.options.twoWayBinding){
-            __private.DataMonitor.setupDataNotification(knotInfo, function(knotInfo, p){
-                updateDisplay(knotInfo, p);
-            });
-            setupNodeNotification(knotInfo);
-        }
+        if (knotInfo.options.twoWayBinding)
+            setupDataNotification(knotInfo);
 
         if(knotInfo.options.actions){
             prepareActions(knotInfo);
@@ -245,9 +177,98 @@
     ////////////////////////////////////////
     //two way binding setup
     /////////////////////////////////////////
+    function setupErrorNotification(knotInfo, valueName){
+        var fullPath = knotInfo.options.binding[valueName];
+        var arr = fullPath.split(".");
+        var propertyName = arr[arr.length - 1];
+        var objectPath = fullPath.substr(0, fullPath.length - propertyName.length-1);
+        var dataToBinding = __private.Utility.getValueOnPath(knotInfo.dataContext, objectPath);
+        if (dataToBinding) {
+            if (!__private.Validating.hasRegisteredOnError(dataToBinding)) {
+                (function () {
+                    __private.Validating.registerOnError(dataToBinding, knotInfo, function (property) {
+                        for (var v in knotInfo.options.bindingToError) {
+                            if (knotInfo.options.binding[v].substr(0, objectPath.length) == objectPath) {
+                                var pos = objectPath.length>0?objectPath.length+1:0;
+                                if (property == knotInfo.options.binding[v].substr(pos))
+                                    updateDisplay(knotInfo, v);
+                            }
+                        }
+                    });
+                    knotDebugger.debug(knotInfo,valueName, "setup");
+                })();
+            }
+            return true;
+        }
+        return false;
+    }
 
-    function setupNodeNotification(knotInfo){
+    function monitorData(curData, curPath, knotInfo){
+        __private.DataMonitor.register(curData, knotInfo, function (propertyName) {
+            var fullPath = propertyName;
+            if (curPath != ""){
+                if(propertyName)
+                    fullPath = curPath + "." + propertyName;
+                else
+                    fullPath = curPath;
+            }
+
+            for (var p in knotInfo.options.twoWayBinding) {
+                var path = knotInfo.options.binding[p];
+                if(path[0] == "$" || path=="--self"){
+                    updateDisplay(knotInfo, p);
+                    continue;
+                }
+                //if the property is obtained from global scope, need to
+                //remove the first section to get the relative path
+                if(path[0] == "/"){
+                    path = path.substr(path.indexOf(".")+1);
+                }
+
+                if(path.length < fullPath.length){
+                    continue;
+                }
+                else if (fullPath == path.substr(0, fullPath.length)) {
+                    setupDataNotification(knotInfo);
+                    updateDisplay(knotInfo, p);
+                }
+            }
+        });
+    }
+
+    function setupDataNotification(knotInfo) {
         for (var valueName in knotInfo.options.twoWayBinding) {
+            if(knotInfo.options.binding[valueName][0] == "$"){
+                monitorData(knotInfo.dataContext, "", knotInfo);
+            }
+
+            if (knotInfo.options.bindingToError && knotInfo.options.bindingToError[valueName]) {
+                if(setupErrorNotification(knotInfo, valueName))
+                    continue;
+            }
+
+            var pathSections = knotInfo.options.binding[valueName].split(".");
+            var path = "";
+            for (var i = 0; i < pathSections.length + 1; i++) {
+                var curData = knotInfo.dataContext;
+                if (path != ""){
+                    curData =__private.Utility.getValueOnPath(knotInfo.dataContext, path)
+                }
+                if (!curData)
+                    break;
+
+                if(typeof(curData) != "object" && typeof(curData) != "array")
+                    break;
+
+                if (!__private.DataMonitor.hasRegistered(curData, knotInfo)) {
+                    monitorData(curData, path, knotInfo);
+                }
+
+                if(path != "")
+                    path += ".";
+                path += pathSections[i];
+            }
+
             if(valueName != "foreach" && valueName != "content"){
                 var knotType = __private.Extension.findProperKnotType(knotInfo.node, valueName);
                 if (knotType.isEditingSupported(knotInfo.node, valueName)) {
@@ -373,7 +394,7 @@
             }
         }
 
-        __private.knotDebugger.debug(knotInfo, valueName, "get: " + (value instanceof Array? "{array:("+value.length+")}":value));
+        knotDebugger.debug(knotInfo, valueName, "get: " + (value instanceof Array? "{array:("+value.length+")}":value));
 
         return value;
     }
@@ -407,10 +428,10 @@
         }
         if(data){
             data[path] = value;
-            __private.knotDebugger.debug(knotInfo, valueName, "set:" + value);
+            knotDebugger.debug(knotInfo, valueName, "set:" + value);
         }
         if(data)
-            __private.DataEventMgr.notifyDataChanged(data, path);
+            __private.DataMonitor.notifyDataChanged(data, path);
     }
 
 
@@ -474,12 +495,12 @@
             if(!info.node.id){
                 throw new Error("Template must have an id!")
             }
-            initTemplate(info.node.id);
+            __private.TemplateMgr.initTemplate(info.node.id);
             return null;
         }
 
         if(info.options.binding && info.options.binding.foreach){
-            setupItemTemplate(info);
+            __private.TemplateMgr.setupItemTemplate(info);
         }
         //since template child maybe removed, so start from end.
         var children = [];
@@ -525,7 +546,7 @@
                 continue;
             var actionType = __private.Extension.findProperActionType(knotInfo.node, action);
             if(actionType && knotInfo.options.actions[action]){
-                actionType.releaseAction(knotInfo.node, action, knotInfo.actionCallbacks[action]);
+                actionType.releaseAction(knotInfo.node, action, knotInfo.options.actions[action]);
             }
         }
     }
@@ -542,7 +563,7 @@
                 if (!curData)
                     break;
 
-                __private.DataEventMgr.unregister(curData, knotInfo);
+                __private.DataMonitor.unregister(curData, knotInfo);
 
                 if(pathSections.length > i){
                     if (path != "")
@@ -648,10 +669,12 @@
     //Replace the old Knot namespace object to seal the private variables
     ////////////////////////////
     Knot = {
+        ExtensionType:{Knot:"knot_type", Action:"knot_action"},
+
         tie: tie,
         untie: untie,
         tieNode: internalTie,
-        cloneNode: cloneTemplateNode,
+        cloneNode: __private.TemplateMgr.cloneTemplateNode,
         validate:validate,
         registerKnotExtension: function(ext, type){
             __private.Extension.register(ext, type);
@@ -666,41 +689,41 @@
 
         notifyDataChanged:function(data, propertyName)
         {
-            __private.DataEventMgr.notifyDataChanged(data, propertyName);
+            __private.DataMonitor.notifyDataChanged(data, propertyName);
         },
         setValue: function (data, property, value) {
             data[property] = value;
-            __private.DataEventMgr.notifyDataChanged(data, property);
+            __private.DataMonitor.notifyDataChanged(data, property);
         },
         addToArray: function (array, data) {
             array.push(data);
-            __private.DataEventMgr.notifyDataChanged(array);
-            __private.DataEventMgr.notifyDataChanged(array, "length");
+            __private.DataMonitor.notifyDataChanged(array);
+            __private.DataMonitor.notifyDataChanged(array, "length");
         },
         removeFromArray: function (array, data) {
             array.splice(array.indexOf(data), 1);
-            __private.DataEventMgr.notifyDataChanged(array);
-            __private.DataEventMgr.notifyDataChanged(array, "length");
+            __private.DataMonitor.notifyDataChanged(array);
+            __private.DataMonitor.notifyDataChanged(array, "length");
         },
 
         __registerKnotDebugger: function(dbg){
-            __private.knotDebugger = dbg;
+            knotDebugger = dbg;
         },
 
         monitorData:function(data, from, callback){
-            __private.DataEventMgr.register(data, from, function(property){
+            __private.DataMonitor.register(data, from, function(property){
                 callback(data, property);
             })
         },
         stopMonitoringData: function(data, from){
-            __private.DataEventMgr.unregister(data, from);
+            __private.DataMonitor.unregister(data, from);
         },
 
         getPropertyChangeRecord: function(data){
-            return __private.DataEventMgr.getPropertyChangeRecord(data);
+            return __private.DataMonitor.getPropertyChangeRecord(data);
         },
         resetPropertyChangeRecord: function(data){
-            __private.DataEventMgr.resetPropertyChangeRecord(data);
+            __private.DataMonitor.resetPropertyChangeRecord(data);
         }
     }
 })();
