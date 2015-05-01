@@ -67,6 +67,47 @@
             if(!attachedInfo)
                 return null;
             attachedInfo.changedProperties = null;
-        }
+        },
+
+        hookProperty:function(object, property){
+            var attached = __private.AttachedData.getAttachedInfo(object);
+            if(!attached.dataHookInfo){
+                attached.dataHookInfo = {hookedProperties:[], data:{}};
+            }
+            if(attached.dataHookInfo.hookedProperties.indexOf(property) >= 0)
+                return;
+
+            //save current value
+            attached.dataHookInfo.hookedProperties.push(property);
+            attached.dataHookInfo.data[property] = object[property];
+
+            //define a new property to overwrite the current one
+            Object.defineProperty(object, property, {
+                set:function(v){
+                    attached.dataHookInfo.data[property] = v;
+                    __private.DataMonitor.notifyDataChanged(this, property);
+                },
+                get:function(){
+                    return attached.dataHookInfo.data[property];
+                },
+                configurable:true, enumerable:true
+            })
+        },
+
+        unhookProperties: function(object){
+            var attached = __private.AttachedData.getAttachedInfo(object);
+            if(!attached.dataHookInfo){
+                return;
+            }
+
+            for(var i=0; i<attached.dataHookInfo.hookedProperties.length; i++){
+                var property =attached.dataHookInfo.hookedProperties[i];
+                delete  object[property];
+                object[property] = attached.dataHookInfo.data[property];
+            }
+            delete attached.dataHookInfo;
+        },
+
+
     }
 })();

@@ -49,6 +49,7 @@
                 var testTarget = $("#testTarget")[0];
 
                 testDataModel.name = "Satoshi Nakamoto";
+                //Knot.setValue(testDataModel, "name");
                 assert.equal(TestKnot.getValue(testTarget, "simValue1"), testDataModel.name);
 
                 //since name is not in tow-way binding, it shouldn't change the original data when binding target is changed.
@@ -56,7 +57,6 @@
                 TestKnot.changeValue(testTarget, "simValue1", "Alex");
                 assert.equal(TestKnot.getValue(testTarget, "simValue1"), "Alex");
                 assert.equal(testDataModel.name, oldName);
-
 
             });
         }
