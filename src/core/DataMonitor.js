@@ -7,58 +7,69 @@
     ///////////////////////////////////////////////////////
     __private.DataMonitor = {
         //if property is "*", callback will be executed when any property is changed.
-        register: function(data, property, callback) {
+        register: function(data, path, callback, attachedData) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks) {
                 attachedInfo.changedCallbacks = [];
             }
-            if(!attachedInfo.changedCallbacks[property]){
-                attachedInfo.changedCallbacks[property] = [];
+            if(!attachedInfo.changedCallbacks[path]){
+                attachedInfo.changedCallbacks[path] = [];
             }
 
-            attachedInfo.changedCallbacks[property].push({callback: callback});
+            attachedInfo.changedCallbacks[path].push({callback: callback, attachedData:attachedData});
         },
-        unregister: function(data, property, callback) {
+        unregister: function(data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
-            if (!attachedInfo.changedCallbacks || !attachedInfo.changedCallbacks[property])
+            if (!attachedInfo.changedCallbacks || !attachedInfo.changedCallbacks[path])
                 return;
 
-            for (var i = 0; i < attachedInfo.changedCallbacks[property].length; i++) {
-                if (attachedInfo.changedCallbacks[property][i].callback == callback) {
-                    attachedInfo.changedCallbacks[property].splice(i, 1);
+            for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
+                if (attachedInfo.changedCallbacks[path][i].callback == callback) {
+                    attachedInfo.changedCallbacks[path].splice(i, 1);
                     break;
                 }
             }
-            if (attachedInfo.changedCallbacks[property].length == 0) {
-                delete attachedInfo.changedCallbacks[property];
+            if (attachedInfo.changedCallbacks[path].length == 0) {
+                delete attachedInfo.changedCallbacks[path];
                 if(__private.Utility.isEmptyObj(attachedInfo))
                     __private.AttachedData.releaseAttachedInfo(data);
             }
         },
-        hasRegistered: function(data, property, callback) {
+        hasRegistered: function(data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
-            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[property]) {
-                for (var i = 0; i < attachedInfo.changedCallbacks[property].length; i++) {
-                    if (attachedInfo.changedCallbacks[property][i].callback == callback) {
+            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
+                for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
+                    if (attachedInfo.changedCallbacks[path][i].callback == callback) {
                         return true;
                     }
                 }
             }
             return false;
         },
-        notifyDataChanged: function(data, propertyName, oldValue, newValue) {
+        getAttachedData: function(data, path, callback) {
+            var attachedInfo = __private.AttachedData.getAttachedInfo(data);
+            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
+                for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
+                    if (attachedInfo.changedCallbacks[path][i].callback == callback) {
+                        return attachedInfo.changedCallbacks[path][i].attachedData;
+                    }
+                }
+            }
+            return null;
+        },
+        notifyDataChanged: function(data, path, oldValue, newValue) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
 
             if(!attachedInfo.changedProperties){
                 attachedInfo.changedProperties = [];
             }
-            if(attachedInfo.changedProperties.indexOf(propertyName) <0)
-                attachedInfo.changedProperties.push(propertyName);
+            if(attachedInfo.changedProperties.indexOf(path) <0)
+                attachedInfo.changedProperties.push(path);
 
-            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[propertyName]) {
-                for (var i = 0; i < attachedInfo.changedCallbacks[propertyName].length; i++) {
+            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
+                for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
                     try{
-                        attachedInfo.changedCallbacks[propertyName][i].callback.apply(data, [propertyName, oldValue, newValue]);
+                        attachedInfo.changedCallbacks[path][i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
                         __private.Log.log(__private.Log.Source.Client, __private.Log.Level.Warning, error);
@@ -68,7 +79,7 @@
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks["*"]) {
                 for (var i = 0; i < attachedInfo.changedCallbacks["*"].length; i++) {
                     try{
-                        attachedInfo.changedCallbacks["*"][i].callback.apply(data, [propertyName, oldValue, newValue]);
+                        attachedInfo.changedCallbacks["*"][i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
                         __private.Log.log(__private.Log.Source.Client, __private.Log.Level.Warning, error);
@@ -92,14 +103,17 @@
         hookProperty:function(object, property){
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo){
-                attached.dataHookInfo = {hookedProperties:[], data:{}};
+                attached.dataHookInfo = {hookedProperties:[], data:{}, hookRefCount:{}};
             }
-            if(attached.dataHookInfo.hookedProperties.indexOf(property) >= 0)
+            if(attached.dataHookInfo.hookedProperties.indexOf(property) >= 0){
+                attached.dataHookInfo.hookRefCount[property] ++;
                 return;
+            }
 
             //save current value
             attached.dataHookInfo.hookedProperties.push(property);
             attached.dataHookInfo.data[property] = object[property];
+            attached.dataHookInfo.hookRefCount[property] = 1;
 
             //define a new property to overwrite the current one
             Object.defineProperty(object, property, {
@@ -115,18 +129,25 @@
             })
         },
 
-        unhookProperties: function(object){
+        unhookProperty: function(object, property){
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo){
                 return;
             }
+            if(attached.dataHookInfo.hookedProperties.indexOf(property) < 0)
+                return;
 
-            for(var i=0; i<attached.dataHookInfo.hookedProperties.length; i++){
-                var property =attached.dataHookInfo.hookedProperties[i];
-                delete  object[property];
-                object[property] = attached.dataHookInfo.data[property];
+            if(-- attached.dataHookInfo.hookRefCount[property] > 0){
+                return;
             }
-            delete attached.dataHookInfo;
+
+            //remove the hooked property and reset the property to a normal property
+            delete  object[property];
+            object[property] = attached.dataHookInfo.data[property];
+
+            attached.dataHookInfo.hookedProperties.splice(attached.dataHookInfo.hookedProperties.indexOf(property), 1);
+            delete attached.dataHookInfo.data[property];
+            delete attached.dataHookInfo.hookRefCount[property];
         },
 
         hasHookedProperty: function(object, propertyName){
@@ -137,15 +158,70 @@
             return attached.dataHookInfo.hookedProperties.indexOf(propertyName) >=0;
         },
 
-        monitor: function(object, property, callback){
-            this.register(object, property, callback)
-            if(!this.hasHookedProperty(object, property)){
-                this.hookProperty(object, property);
+        monitor: function(object, path, callback){
+            var restPath;
+            var property = path.substr(0, path.indexOf("."));
+            if(!property){
+                property = path;
+                restPath = null;
             }
+            else{
+                restPath = path.substr(path.indexOf(".")+1);
+            }
+
+            var attachedData = {};
+            __private.DataMonitor.register(object, path, callback, attachedData);
+
+            if(restPath){
+                attachedData.childChangedCallback = function(p, oldValue, newValue){
+                    var path = property +"." + restPath;
+                    __private.DataMonitor.notifyDataChanged(object, path, oldValue, newValue);
+                }
+                attachedData.monitorChildChangedCallback = function(p, oldValue, newValue){
+                    if(oldValue){
+                        __private.DataMonitor.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
+                    }
+                    if(newValue){
+                        __private.DataMonitor.monitor(newValue, restPath, attachedData.childChangedCallback);
+                    }
+
+                    var path = property + "." + restPath;
+                    var newChildValue = __private.Utility.getValueOnPath(newValue, restPath);
+                    var oldChildValue = __private.Utility.getValueOnPath(oldValue, restPath);
+                    __private.DataMonitor.notifyDataChanged(object, path, oldChildValue, newChildValue);
+                };
+                __private.DataMonitor.register(object, property, attachedData.monitorChildChangedCallback);
+                if(object[property]){
+                    __private.DataMonitor.monitor(object[property], restPath, attachedData.childChangedCallback);
+                }
+            }
+
+            __private.DataMonitor.hookProperty(object, property);
         },
 
-        stopMonitoringObject:function(object, property, callback){
-            this.unregister(object, property, callback);
+        stopMonitoring:function(object, path, callback){
+            var restPath;
+            var property = path.substr(0, path.indexOf("."));
+            if(!property){
+                property = path;
+                restPath = null;
+            }
+            else{
+                restPath = path.substr(path.indexOf(".")+1);
+            }
+
+            var attachedData = __private.DataMonitor.getAttachedData(object, path, callback);
+            if(attachedData){
+                if(attachedData.monitorChildChangedCallback){
+                    __private.DataMonitor.unregister(object, property, attachedData.monitorChildChangedCallback);
+                }
+
+                if(attachedData.childChangedCallback && object[property]){
+                    __private.DataMonitor.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
+                }
+            }
+            __private.DataMonitor.unregister(object, path, callback);
+            __private.DataMonitor.unhookProperty(object, property);
         }
     }
 })();

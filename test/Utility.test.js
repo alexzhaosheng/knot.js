@@ -18,6 +18,8 @@
 
         assert.equal(globalObject.name, scope.Utility.getValueOnPath(o, "/globalObject.name"));
 
+        assert.equal(true, typeof(scope.Utility.getValueOnPath(null, "nothing"))=="undefined");
+
         delete window.globalObject;
     });
 
