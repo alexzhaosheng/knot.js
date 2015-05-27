@@ -9,10 +9,19 @@
         Level:{Info:"Info", Warning:"Warning", Error:"Error"},
         Source:{Knot:"Knot", Client:"Client"},
         log:function(source, level, msg, exception){
-            Console.writeln("["+source+"." + level + "]" + msg);
+            console.log("["+source+"." + level + "]" + msg);
             if(exception){
-                Console.writeln(exception);
+                console.log(exception);
             }
+        },
+        info:function(source, msg, exception){
+            this.log(source, this.Level.Info, msg, exception);
+        },
+        warning:function(source, msg, exception){
+            this.log(source, this.Level.Warning, msg, exception);
+        },
+        error:function(source, msg, exception){
+            this.log(source, this.Level.Error, msg, exception);
         }
     };
 

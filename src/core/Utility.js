@@ -14,6 +14,8 @@
         },
 
         trim: function (s) {
+            if(s.trim)
+                return s.trim();
             return s.replace(/^\s+|\s+$/g, "");
         },
 
