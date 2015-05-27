@@ -104,7 +104,7 @@
                 return null;
             }
 
-            return {elementAP:left, attachedAP:right};
+            return {elementAccessPoint:left, attachedAccessPoint:right};
         },
 
         parseAccessPoint: function(text){
@@ -116,7 +116,7 @@
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
-            return {AP:AP, pipes:pipes};
+            return {accessPoint:AP, pipes:pipes};
         },
 
         parseCompositeAP: function(text){
@@ -140,7 +140,7 @@
                 __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
                 return null;
             }
-            return {isCompositeAP:true, APs:aPs, nToOnePipe:nToOnePiple};
+            return {isCompositeAccessPoint:true, accessPoints:aPs, nToOnePipe:nToOnePiple};
         }
     }
 })();
