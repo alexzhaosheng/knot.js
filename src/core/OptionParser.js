@@ -46,7 +46,7 @@
     __private.EmbeddedFunctions = {};
 
     var _dynamicFuncNumber = 0;
-    function createDynamicPipeFunction(text){
+    function createEmbeddedPipeFunction(text){
         var newName = "f_" + (_dynamicFuncNumber++);
         var func = "(function(value){" + text + "})";
         try{
@@ -56,7 +56,7 @@
             __private.Log.error(__private.Log.Source.Knot,"Invalid pipe function: \r\n"+ func, ex);
         }
 
-        return "__knot." + newName;
+        return "__knotEmbedded." + newName;
     }
 
     __private.OptionParser = {
@@ -79,7 +79,7 @@
             var blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             while(blockInfo){
                 var funcText = text.substr(blockInfo.start+1, blockInfo.end - blockInfo.start - 1);
-                var registeredName = createDynamicPipeFunction(funcText);
+                var registeredName = createEmbeddedPipeFunction(funcText);
                 text = text.substr(0, blockInfo.start) + registeredName + text.substr(blockInfo.end+1);
                 blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             }

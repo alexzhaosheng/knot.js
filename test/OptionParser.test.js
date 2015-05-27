@@ -51,12 +51,12 @@
         assert.equal(knots.length, 1);
         assert.equal(knots[0].elementAccessPoint.accessPoint, "isEnabled");
         assert.equal(knots[0].elementAccessPoint.pipes.length, 1);
-        assert.equal(knots[0].elementAccessPoint.pipes[0], "__knot.f_0");
+        assert.equal(knots[0].elementAccessPoint.pipes[0], "__knotEmbedded.f_0");
         assert.equal(scope.EmbeddedFunctions["f_0"](true), 10);
         assert.equal(scope.EmbeddedFunctions["f_0"](false), 1);
         assert.equal(knots[0].attachedAccessPoint.accessPoint, "#regOption.selectedIndex");
         assert.equal(knots[0].attachedAccessPoint.pipes.length, 1);
-        assert.equal(knots[0].attachedAccessPoint.pipes[0], "__knot.f_1");
+        assert.equal(knots[0].attachedAccessPoint.pipes[0], "__knotEmbedded.f_1");
         assert.equal(scope.EmbeddedFunctions["f_1"](1), false);
         assert.equal(scope.EmbeddedFunctions["f_1"](3), true);
     });
