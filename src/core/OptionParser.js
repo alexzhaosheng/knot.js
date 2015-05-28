@@ -135,7 +135,17 @@
                 aPs.push(ap);
             }
 
-            var nToOnePiple = __private.Utility.trim(text.substr(block.end +2));
+            var pipleStart = block.end + 1;
+            while(text[pipleStart]!=">"){
+                if(text[pipleStart] != " " && text[pipleStart] != "\t" && text[pipleStart] != "\a" && text[pipleStart] != "\n")
+                {
+                    __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
+                    return null;
+                }
+                pipleStart++;
+            }
+            pipleStart++;
+            var nToOnePiple = __private.Utility.trim(text.substr(pipleStart));
             if(!nToOnePiple){
                 __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
                 return null;

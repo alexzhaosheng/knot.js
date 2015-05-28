@@ -34,7 +34,7 @@
         assert.equal(knots[0].elementAccessPoint.pipes[0], "trim");
 
 
-        knots = scope.OptionParser.parse("isEnabled : (isLogged & userId>trueWhenNot0 )>trueWhenAllTrue");
+        knots = scope.OptionParser.parse("isEnabled : (isLogged & userId>trueWhenNot0 ) > trueWhenAllTrue");
         assert.equal(knots.length, 1);
         assert.equal(knots[0].elementAccessPoint.accessPoint, "isEnabled");
         assert.equal(knots[0].tiedUpAccessPoint.isCompositeAccessPoint, true);
