@@ -104,7 +104,7 @@
                 return null;
             }
 
-            return {elementAccessPoint:left, attachedAccessPoint:right};
+            return {elementAccessPoint:left, tiedUpAccessPoint:right};
         },
 
         parseAccessPoint: function(text){
