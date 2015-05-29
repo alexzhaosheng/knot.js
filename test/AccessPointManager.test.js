@@ -100,5 +100,42 @@
         dataContext.apOnData.intValue = 1;
         assert.equal(element.value, true);
         assert.equal(dataContext.apOnData.intValue, 1);
+
+
+        //test pipes in global scope
+        window.converter = {
+            intToString:function(value){
+                switch (value){
+                    case 1:
+                        return "one";
+                    case 2:
+                        return "two";
+                    default:
+                        throw new Error("Unknow number:"+value);
+                }
+             },
+            strToInt:function(value){
+                switch (value){
+                    case "one":
+                        return 1;
+                    case "two":
+                        return 2;
+                    default:
+                        throw new Error("Unknow number:"+value);
+                }
+            }
+        };
+
+        knots = scope.OptionParser.parse("strValue>converter.strToInt:intValue>converter.intToString");
+        dataContext.intValue = 1;
+        element.strValue = "";
+        scope.AccessPointManager.tieKnot(element, dataContext, knots[0]);
+
+        assert.equal(element.strValue, "one");
+        assert.equal(dataContext.intValue, 1);
+
+        dataContext.intValue = 2;
+        assert.equal(element.strValue, "two");
+        assert.equal(dataContext.intValue, 2);
     });
 })();
