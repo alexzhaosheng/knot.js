@@ -43,20 +43,17 @@
 (function(){
     var __private = Knot.getPrivateScope();
 
-    __private.EmbeddedFunctions = {};
 
-    var _dynamicFuncNumber = 0;
     function createEmbeddedPipeFunction(text){
-        var newName = "f_" + (_dynamicFuncNumber++);
         var func = "(function(value){" + text + "})";
         try{
-            __private.EmbeddedFunctions[newName] = eval(func);
+            var newName = __private.GlobalSymbolHelper.registerSymbol(eval(func))
         }
         catch (ex){
             __private.Log.error(__private.Log.Source.Knot,"Invalid pipe function: \r\n"+ func, ex);
         }
 
-        return "__knotEmbedded." + newName;
+        return newName;
     }
 
     __private.OptionParser = {
@@ -104,7 +101,7 @@
                 return null;
             }
 
-            return {elementAccessPoint:left, tiedUpAccessPoint:right};
+            return {elementAP:left, tiedUpAP:right};
         },
 
         parseAccessPoint: function(text){
@@ -116,7 +113,7 @@
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
-            return {accessPoint:AP, pipes:pipes};
+            return {name:AP, pipes:pipes};
         },
 
         parseCompositeAP: function(text){
@@ -150,7 +147,7 @@
                 __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
                 return null;
             }
-            return {isCompositeAccessPoint:true, accessPoints:aPs, nToOnePipe:nToOnePiple};
+            return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
         }
     }
 })();

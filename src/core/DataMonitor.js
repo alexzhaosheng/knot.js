@@ -119,6 +119,8 @@
             Object.defineProperty(object, property, {
                 set:function(v){
                     var oldValue = attached.dataHookInfo.data[property];
+                    if(oldValue == v)
+                        return;
                     attached.dataHookInfo.data[property] = v;
                     __private.DataMonitor.notifyDataChanged(this, property, oldValue, v);
                 },

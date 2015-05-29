@@ -38,24 +38,17 @@
             return undefined;
         },
 
+        setValueOnPath: function(data, path, value){
+            var vp = path;
+            var p = path.lastIndexOf(".");
+            if(p > 0){
+                vp = path.substr(p+1);
+                data = this.getValueOnPath(data, path.substr(0, p));
+            }
+            if(data)
+                data[vp] = value;
+        },
 
-        getObjectInGlobalScope: function(path) {
-            if(path.substr(0, "--knot--globalFunc-".length) == "--knot--globalFunc-"){
-                var id = Number(path.substr("--knot--globalFunc-".length));
-                return this._knotGlobalFunction[id];
-            }
-            var arr = path.split(".");
-            var o = window;
-            for (var i = 0 ; i < arr.length; i++) {
-                o = o[arr[i]];
-            }
-            return o;
-        },
-        _knotGlobalFunction: [],
-        registerKnotGlobalFunction: function(func){
-            this._knotGlobalFunction.push(func);
-            return "--knot--globalFunc-"+ (this._knotGlobalFunction.length-1);
-        },
 
         getXHRS: function(){
             if (window.XMLHttpRequest){

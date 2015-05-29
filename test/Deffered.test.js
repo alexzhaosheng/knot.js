@@ -20,14 +20,10 @@
         assert.equal(true, result === "test res");
         assert.equal(true, error === null);
 
-    });
+        result = null;
+        error = null;
 
-
-    QUnit.test( "private.Deffered.reject", function( assert ) {
-        var result = null;
-        var error = null;
-
-        var d = new scope.Deffered();
+        d = new scope.Deffered();
         d.done(function(res){
             },
             function(err){

@@ -110,6 +110,15 @@
         assert.equal(scope.DataMonitor.hasHookedProperty(testObject, "name"), true);
         scope.DataMonitor.unhookProperty(testObject, "name");
         assert.equal(scope.DataMonitor.hasHookedProperty(testObject, "name"), false);
+
+
+        //if set the same value, data change event should not be raised.
+        testObject.name = "Alex";
+        propertyName = changedData = null;
+        scope.DataMonitor.hookProperty(testObject, "name");
+        testObject.name = "Alex";
+        assert.equal(propertyName, null);
+        assert.equal(changedData, null);
     });
 
 
