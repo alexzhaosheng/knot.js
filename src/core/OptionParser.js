@@ -6,10 +6,9 @@
  ":"
 
  *access point (AP)
-     - html element AP, on the left of Splitor. The way it is interpreted depends on the html element and the AP name
-     - attached AP, on the right, can be data or  html element+html element AP
-     - only 1 AP allowed on the left, this AP is on the element selected by selector
-     - if there's multiple APs on the right, they must be connected with a n to 1 pipe
+ *   - 2 APs make up a knot. like this: AP1:AP2
+     - The way it is interpreted depends on the target and the AP name
+     - Multiple APs can be composed in to one withe a n to 1 pipe
 
  *pipe
      1 to 1
@@ -17,7 +16,7 @@
      can be a inline code segment marked by {}. it always use variant name "value" to access the inputed value and always return an output. it can access the attached AP by using "this"
 
  *type descriptor for attached APs
-     nothing: data
+     nothing special: data
      "#":html element, followed by the element AP descriptor
      "( & )>": composite AP. Made of multiple APs (can followed by pipe) that are included in "()" and connected by &. Their output is to be merged by a n to 1 pipe that follows >
 
@@ -90,18 +89,18 @@
 
             var parts = text.split(":");
             if(parts.length != 2){
-                __private.Log.error(__private.Log.Source.Knot,"Unknown option:"+text);
+                __private.Log.error(__private.Log.Source.Knot,"Invalid option:"+text);
                 return null;
             }
 
             var left = this.parseAccessPoint(parts[0])
             var right = this.parseAccessPoint(parts[1]);
-            if(left == null || right == null){
-                __private.Log.error(__private.Log.Source.Knot,"Unknown option:"+text);
+            if(left == null || right == null || (left.isComposite && right.isComposite)){
+                __private.Log.error(__private.Log.Source.Knot,"Invalid option:"+text);
                 return null;
             }
 
-            return {elementAP:left, tiedUpAP:right};
+            return {leftAP:left, rightAP:right};
         },
 
         parseAccessPoint: function(text){
@@ -119,7 +118,7 @@
         parseCompositeAP: function(text){
             var block = __private.Utility.getBlockInfo(text, 0, "(", ")");
             if(!block){
-                __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
+                __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
                 return null;
             }
             var aPParts = text.substr(block.start+1, block.end - block.start-1).split("&");
@@ -136,7 +135,7 @@
             while(text[pipleStart]!=">"){
                 if(text[pipleStart] != " " && text[pipleStart] != "\t" && text[pipleStart] != "\a" && text[pipleStart] != "\n")
                 {
-                    __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
+                    __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
                     return null;
                 }
                 pipleStart++;
@@ -144,7 +143,7 @@
             pipleStart++;
             var nToOnePiple = __private.Utility.trim(text.substr(pipleStart));
             if(!nToOnePiple){
-                __private.Log.error(__private.Log.Source.Knot,"Unknown composite option:"+text);
+                __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
                 return null;
             }
             return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
