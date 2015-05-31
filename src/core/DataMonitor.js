@@ -5,6 +5,8 @@
     ///////////////////////////////////////////////////////
     // Value changed callbacks management
     ///////////////////////////////////////////////////////
+
+    var PATH_FOR_OBJECT_ITSELF = "*";
     __private.DataMonitor = {
         //if property is "*", callback will be executed when any property is changed.
         register: function(data, path, callback, attachedData) {
@@ -12,6 +14,10 @@
             if (!attachedInfo.changedCallbacks) {
                 attachedInfo.changedCallbacks = [];
             }
+            if(!path){
+                path=PATH_FOR_OBJECT_ITSELF;
+            }
+
             if(!attachedInfo.changedCallbacks[path]){
                 attachedInfo.changedCallbacks[path] = [];
             }
@@ -19,6 +25,9 @@
             attachedInfo.changedCallbacks[path].push({callback: callback, attachedData:attachedData});
         },
         unregister: function(data, path, callback) {
+            if(!path)
+                path = PATH_FOR_OBJECT_ITSELF;
+
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks || !attachedInfo.changedCallbacks[path])
                 return;
@@ -77,9 +86,9 @@
                 }
             }
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks["*"]) {
-                for (var i = 0; i < attachedInfo.changedCallbacks["*"].length; i++) {
+                for (var i = 0; i < attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF].length; i++) {
                     try{
-                        attachedInfo.changedCallbacks["*"][i].callback.apply(data, [path, oldValue, newValue]);
+                        attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF][i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
                         __private.Log.log(__private.Log.Source.Client, __private.Log.Level.Warning, error);
@@ -160,7 +169,7 @@
             return attached.dataHookInfo.hookedProperties.indexOf(propertyName) >=0;
         },
 
-        monitor: function(object, path, callback){
+        monitorObject:function(object, path, callback){
             var restPath;
             var property = path.substr(0, path.indexOf("."));
             if(!property){
@@ -201,29 +210,43 @@
             __private.DataMonitor.hookProperty(object, property);
         },
 
-        stopMonitoring:function(object, path, callback){
-            var restPath;
-            var property = path.substr(0, path.indexOf("."));
-            if(!property){
-                property = path;
-                restPath = null;
+        monitor: function(object, path, callback){
+            if(path){
+               this.monitorObject(object, path, callback);
             }
             else{
-                restPath = path.substr(path.indexOf(".")+1);
+                __private.DataMonitor.register(object, null, callback);
             }
+        },
 
-            var attachedData = __private.DataMonitor.getAttachedData(object, path, callback);
-            if(attachedData){
-                if(attachedData.monitorChildChangedCallback){
-                    __private.DataMonitor.unregister(object, property, attachedData.monitorChildChangedCallback);
+        stopMonitoring:function(object, path, callback){
+            if(!path){
+                __private.DataMonitor.unregister(object, path, callback);
+            }
+            else{
+                var restPath;
+                var property = path.substr(0, path.indexOf("."));
+                if(!property){
+                    property = path;
+                    restPath = null;
+                }
+                else{
+                    restPath = path.substr(path.indexOf(".")+1);
                 }
 
-                if(attachedData.childChangedCallback && object[property]){
-                    __private.DataMonitor.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
+                var attachedData = __private.DataMonitor.getAttachedData(object, path, callback);
+                if(attachedData){
+                    if(attachedData.monitorChildChangedCallback){
+                        __private.DataMonitor.unregister(object, property, attachedData.monitorChildChangedCallback);
+                    }
+
+                    if(attachedData.childChangedCallback && object[property]){
+                        __private.DataMonitor.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
+                    }
                 }
+                __private.DataMonitor.unregister(object, path, callback);
+                __private.DataMonitor.unhookProperty(object, property);
             }
-            __private.DataMonitor.unregister(object, path, callback);
-            __private.DataMonitor.unhookProperty(object, property);
         }
     }
 })();

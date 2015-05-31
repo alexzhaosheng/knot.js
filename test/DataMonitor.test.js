@@ -239,5 +239,15 @@
         scope.DataMonitor.stopMonitoring(testObject, "address.location.street", onDataChanged);
         testObject.address.location.street = "beagle street";
         assert.equal(dataChangedRaisedCount, 3);
+
+
+
+        resetTest();
+        testObject = {};
+        scope.DataMonitor.monitor(testObject, "test", onDataChanged);
+        var objectChangedCount = 0;
+        scope.DataMonitor.monitor(testObject, "*", function(){objectChangedCount++;});
+        testObject.test = "ttt";
+        assert.equal(propertyName, "test");
     });
 })();
