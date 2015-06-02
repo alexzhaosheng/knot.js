@@ -326,9 +326,9 @@
             try {
                 var validateRes = validator.apply(knotInfo.dataContext, [value, data,
                     {
-                    deferred: function(){return new __private.Deffered();}
+                    deferred: function(){return new __private.Deferred();}
                     }]);
-                if(validateRes instanceof __private.Deffered){
+                if(validateRes instanceof __private.Deferred){
                     validateRes.done(
                         function(msg){
                             processErrorMessage(msg);
@@ -642,7 +642,7 @@
                 var knotType = __private.Extension.findProperKnotType(info.node, v);
                 var newValue = knotType.getValue(info.node, v);
                 var res = validateValue(info, v, newValue, defferedObjects);
-                if(res instanceof __private.Deffered){
+                if(res instanceof __private.Deferred){
                     defferedObjects.push(res);
                 }
                 else{

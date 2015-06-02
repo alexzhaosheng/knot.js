@@ -1,11 +1,11 @@
 (function(){
     var scope = Knot.getPrivateScope();
 
-    QUnit.test( "private.Deffered.resolve", function( assert ) {
+    QUnit.test( "private.Deferred.resolve", function( assert ) {
         var result = null;
         var error = null;
 
-        var d = new scope.Deffered();
+        var d = new scope.Deferred();
         d.done(function(res){
                 result = res;
             },
@@ -23,7 +23,7 @@
         result = null;
         error = null;
 
-        d = new scope.Deffered();
+        d = new scope.Deferred();
         d.done(function(res){
             },
             function(err){

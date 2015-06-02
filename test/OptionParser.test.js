@@ -47,7 +47,7 @@
         assert.equal(knots[0].rightAP.childrenAPs[1].pipes[0], "trueWhenNot0");
 
 
-        knots = scope.OptionParser.parse("isEnabled>{return value?10:1;}:#regOption.selectedIndex>{return value>2?true:false;}");
+        knots = scope.OptionParser.parse("isEnabled>{return value?10:1;}:#regOption.selectedIndex>{return value>2?true:false;}>{return value}");
         assert.equal(knots.length, 1);
         assert.equal(knots[0].leftAP.name, "isEnabled");
         assert.equal(knots[0].leftAP.pipes.length, 1);
@@ -55,7 +55,7 @@
         assert.equal(scope.GlobalSymbolHelper.getSymbol(knots[0].leftAP.pipes[0])(true), 10);
         assert.equal(scope.GlobalSymbolHelper.getSymbol(knots[0].leftAP.pipes[0])(false), 1);
         assert.equal(knots[0].rightAP.name, "#regOption.selectedIndex");
-        assert.equal(knots[0].rightAP.pipes.length, 1);
+        assert.equal(knots[0].rightAP.pipes.length, 2);
         assert.equal(knots[0].rightAP.pipes[0].substr(0, "__knot_global.".length), "__knot_global.");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(knots[0].rightAP.pipes[0])(1), false);
         assert.equal(scope.GlobalSymbolHelper.getSymbol(knots[0].rightAP.pipes[0])(3), true);

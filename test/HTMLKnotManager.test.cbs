@@ -1,0 +1,16 @@
+#cbsFileTest
+{
+    value:test
+}
+
+#cbsTest{
+    checked:gender>{
+        if(value=="m"){
+            return true;
+        }
+        else{
+            return false;
+        }
+    };
+    visible:activated
+}

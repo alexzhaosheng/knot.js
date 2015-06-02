@@ -39,7 +39,7 @@
     QUnit.asyncTest("private.CBS.Loading Stand along CBS File", function(assert){
         expect(2);
 
-        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="./CBS.test.cbs">');
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="HTMLKnotManagerHTMLKnotManager.test.cbs">');
         document.getElementsByTagName("head")[0].appendChild(scriptBlock);
 
         var testNode = KnotTestUtility.parseHTML('<div><input style="display: none" id="cbsFileTest"/></div>');
