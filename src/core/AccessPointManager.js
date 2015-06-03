@@ -21,21 +21,24 @@
 
     var _APProviders = [];
 
-    var DummyProvider = {
+    __private.DefaultProvider = {
         doesSupport:function(target, apName){
             return true;
         },
-        getValue:function(target, apName){
-            return undefined;
+        getValue: function(target, apName){
+            return __private.Utility.getValueOnPath(target, apName);
         },
-        setValue:function(target, apName, value){
+        setValue: function(target, apName, value){
+            return __private.Utility.setValueOnPath(target, apName, value);
         },
-        doesSupportMonitoring:function(target, apName){
+        doesSupportMonitoring: function(target, apName){
             return true;
         },
-        monitor:function(target, apName, callback){
+        monitor: function(target, apName, callback){
+            __private.DataMonitor.monitor(target, apName, callback);
         },
-        stopMonitoring:function(target, apName, callback){
+        stopMonitoring: function(target, apName, callback){
+            __private.DataMonitor.stopMonitoring(target, apName, callback);
         }
     };
 
@@ -50,15 +53,20 @@
                     return _APProviders[i];
             }
 
-            __private.Log.error(__private.Log.Source.Knot,   "Failed to find Access Point Provider for Access Point '" + apName + "', target:" + target);
-            return DummyProvider;
+            return __private.DefaultProvider;
         },
         registerAPProvider: function(apProvider){
             if(_APProviders.indexOf(apProvider) < 0)
                 _APProviders.push(apProvider);
         },
+        unregisterAPProvider:function(apProvider){
+            if(_APProviders.indexOf(apProvider) >=0)
+                _APProviders.splice(_APProviders.indexOf(apProvider), 1);
+        },
 
         getValueThroughPipe: function(target, ap){
+            if(!ap.provider)
+                ap.provider = this.getProvider(target, ap.name);
             var value = ap.provider.getValue(target, ap.name);
             if(ap.pipes){
                 for(var i=0; i< ap.pipes.length; i++){
@@ -73,6 +81,10 @@
         },
 
         monitor:function(src, srcAP, target, targetAP){
+            if(!srcAP.provider)
+                srcAP.provider = this.getProvider(src, srcAP.name);
+            if(!targetAP.provider)
+                targetAP.provider = this.getProvider(target, targetAP.name);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.name)){
                 srcAP.changedCallback = function(){
                     targetAP.provider.setValue(target, targetAP.name,
@@ -84,8 +96,11 @@
         },
 
         stopMonitoring:function(target, ap){
-            var provider = this.getProvider(target, ap.name);
-            provider.stopMonitoring(target, ap.name, ap.changedCallback);
+            if(!ap.provider)
+                ap.provider = this.getProvider(target, ap.name);
+            if(ap.provider.doesSupportMonitoring(target, ap.name)){
+                ap.provider.stopMonitoring(target, ap.name, ap.changedCallback);
+            }
         },
 
         tieKnot:function(leftTarget, rightTarget, knotInfo){

@@ -27,6 +27,15 @@
         return res;
     }
 
+    function getDataContextKnotOption(options){
+        for(var i=0; i<options.length; i++){
+            if(options[i].leftAP.name == "dataContext"){
+                return options[i];
+            }
+        }
+        return null;
+    }
+
     __private.HTMLKnotManager = {
         normalizedCBS:[],
         parseCBS:function(){
@@ -106,8 +115,8 @@
                 var elements = document.querySelectorAll(selector);
                 var cbsOptions = this.normalizedCBS[selector];
                 for(var i=0; i<elements.length; i++){
-                    if(!elements[i].__knot_options){
-                        elements[i].__knot_options = [];
+                    if(!elements[i].__knot){
+                        elements[i].__knot = {options: []};
                     }
                     if(elements[i].attributes["binding"] &&  elements[i].attributes["binding"].value){
                         var embeddedOptions = elements[i].attributes["binding"].value;
@@ -116,15 +125,77 @@
                         cbsOptions = cbsOptions.concat(embeddedOptions);
                     }
                     for(var j=0; j<cbsOptions.length; j++){
-                        if(!elements[i].__knot_options[cbsOptions[j]]){
-                            //each item of "cbsOptions" only contains the option for one knot
-                            var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
-                            if(parsedOption.length == 1){
-                                elements[i].__knot_options[cbsOptions[j]] = parsedOption[0];
-                            }
+                        //each item of "cbsOptions" only contains the option for one knot
+                        var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
+                        if(parsedOption.length != 0){
+                            elements[i].__knot.options.push(parsedOption[0]);
                         }
                     }
                 }
+            }
+        },
+
+        removeKnots: function(node){
+            if(node.__knot){
+                for(var i=0; i<node.__knot.options.length; i++){
+                    if(node.__knot.options[i].leftAP.name == "dataContext")
+                        continue;
+                    __private.AccessPointManager.untieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
+                }
+            }
+//            for(var i=0; i<node.childNodes.length; i++)
+//                this.removeKnots(node.childNodes[i]);
+        },
+        tieKnots:function(node){
+            if(node.__knot){
+                for(var i=0; i<node.__knot.options.length; i++){
+                    if(node.__knot.options[i].leftAP.name == "dataContext")
+                        continue;
+                    __private.AccessPointManager.tieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
+                }
+            }
+//            for(var i=0; i<node.childNodes.length; i++)
+//                this.tieKnots(node.childNodes[i]);
+        },
+
+        updateDataContext: function(node, data){
+            if(node.__knot){
+                var dataContextOption = getDataContextKnotOption(node.__knot.options);
+                var contextData = data;
+                if(dataContextOption){
+                    contextData = __private.AccessPointManager.getValueThroughPipe(data, dataContextOption.rightAP);
+                    if(contextData === node.__knot.dataContext){
+                        return;
+                    }
+
+                    if(dataContextOption.rootData && dataContextOption.changedCallback){
+                        __private.DefaultProvider.stopMonitoring(dataContextOption.rootData, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    }
+
+                    dataContextOption.rootData = data;
+                    if(dataContextOption.rootData){
+                        dataContextOption.changedCallback = function(){
+                            __private.HTMLKnotManager.updateDataContext(node, data);
+                        };
+
+                        __private.DefaultProvider.monitor(dataContextOption.rootData, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    }
+                    else{
+                        dataContextOption.changedCallback = null;
+                    }
+                }
+                if(node.__knot.dataContext){
+                    this.removeKnots(node);
+                }
+                for(var i=0; i<node.childNodes.length; i++)
+                    this.updateDataContext(node.childNodes[i], contextData);
+
+                node.__knot.dataContext = contextData;
+                this.tieKnots(node);
+            }
+            else{
+                for(var i=0; i<node.childNodes.length; i++)
+                    this.updateDataContext(node.childNodes[i], data);
             }
         }
     }

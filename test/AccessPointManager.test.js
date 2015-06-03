@@ -28,11 +28,12 @@
     }
 
 
-    var apProvider = new TestAccessPointerProvider();
-    scope.AccessPointManager.registerAPProvider(apProvider);
+
     QUnit.test( "private.AccessPointerManager", function( assert ) {
         var target1={}, target2={}, target3={};
 
+        var apProvider = new TestAccessPointerProvider();
+        scope.AccessPointManager.registerAPProvider(apProvider);
         var testAp = new TestAccessPointerProvider(target1, "value");
         scope.AccessPointManager.registerAPProvider(testAp);
 
@@ -135,8 +136,8 @@
         };
 
         knots = scope.OptionParser.parse("strValue>converter.strToInt:intValue>converter.intToString");
-        target2.intValue = 1;
-        target1.strValue = "";
+        target2 = {intValue: 1};
+        target1 = {strValue: ""};
         scope.AccessPointManager.tieKnot(target1, target2, knots[0]);
 
         assert.equal(target1.strValue, "one");
@@ -232,5 +233,7 @@
         assert.equal(target1.dotValue, ".");
         assert.equal(target2.boolValue, true);
 
+        scope.AccessPointManager.unregisterAPProvider(testAp);
+        scope.AccessPointManager.unregisterAPProvider(apProvider);
     });
 })();

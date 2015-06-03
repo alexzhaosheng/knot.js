@@ -21,7 +21,9 @@
 
 
         getValueOnPath: function(rootData, path) {
-            if(path =="")
+            if(path == "*NULL")
+                return null;
+            if(path == "*" || path =="")
                 return rootData;
 
             var data = rootData;

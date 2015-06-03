@@ -5,17 +5,19 @@
         return scope.HTMLKnotManager.normalizedCBS[selector];
     }
 
+    var bodyNode = document.getElementsByTagName("body")[0];
+    var headNode = document.getElementsByTagName("head")[0];
     QUnit.test( "private.HTMLKnotManager.CBS", function( assert ) {
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsTest{value:test} \r\n'+
             '.cbsTestClass span{text:title} \r\n'+
             '.cbsTestClass span{text:description; isEnabled:valid} \r\n'+
             '</script>');
-        document.getElementsByTagName("head")[0].appendChild(scriptBlock);
+        headNode.appendChild(scriptBlock);
 
 
         var resetTest = function(){
-            document.getElementsByTagName("head")[0].removeChild(scriptBlock);
+            headNode.removeChild(scriptBlock);
             scope.HTMLKnotManager.normalizedCBS = [];
         };
 
@@ -37,7 +39,7 @@
             '.cbsTestClass span{text:title} \r\n'+
             '.cbsTestClass span{text:description; isEnabled:valid} \r\n'+
             '</script>');
-        document.getElementsByTagName("head")[0].appendChild(scriptBlock);
+        headNode.appendChild(scriptBlock);
 
         scope.HTMLKnotManager.parseCBS();
 
@@ -58,17 +60,16 @@
     QUnit.asyncTest("private.HTMLKnotManager.Loading From File", function(assert){
         expect(9);
 
-        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="HTMLKnotManager.test.cbs">');
-        document.getElementsByTagName("head")[0].appendChild(scriptBlock);
-        scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
+        var cbsFileScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="HTMLKnotManager.test.cbs">');
+        headNode.appendChild(cbsFileScriptBlock);
+        var cbsScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsTest{value:test} \r\n'+
             '.cbsTestClass span{text:title} \r\n'+
             '.cbsTestClass span{text:description; isEnabled:valid} \r\n'+
             '</script>');
-        document.getElementsByTagName("head")[0].appendChild(scriptBlock);
+        headNode.appendChild(cbsScriptBlock);
 
         scope.HTMLKnotManager.parseCBS().done(function(){
-            try{
                 assert.equal(findCBS("#cbsTest") != null, true);
                 assert.equal(findCBS("#cbsTest").length, 3);
                 assert.equal(findCBS("#cbsTest")[1].substr(0, "checked:gender>".length), "checked:gender>");
@@ -79,52 +80,86 @@
                 assert.equal(findCBS(".cbsTestClass span")[0], "text:title");
                 assert.equal(findCBS(".cbsTestClass span")[1], "text:description");
                 assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid");
-            }
-            catch (err){
 
-            }
-            QUnit.start();
-        },
-        function(err){
-            Console.writeln(err);
-            QUnit.start();
-        });;
+                headNode.removeChild(cbsFileScriptBlock);
+                headNode.removeChild(cbsScriptBlock);
+                scope.HTMLKnotManager.normalizedCBS = [];
+                QUnit.start();
+            },
+            function(err){
+                Console.writeln(err);
+                QUnit.start();
+            });;
     });
 
     QUnit.test( "private.HTMLKnotManager.applyCBS", function( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
-        document.getElementsByTagName("body")[0].appendChild(testDiv);
+        bodyNode.appendChild(testDiv);
 
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#userNameInput{text:name;} \r\n'+
             '</script>');
-        document.getElementsByTagName("head")[0].appendChild(scriptBlock);
+        headNode.appendChild(scriptBlock);
 
         var input =  KnotTestUtility.parseHTML('<input type="text" id="userNameInput" binding="isEnabled:isActivated;style-background:age>{return value<=18?\'red\':\'green\';}"/>');
         testDiv.appendChild(input);
 
         scope.HTMLKnotManager.parseCBS();
         scope.HTMLKnotManager.applyCBS();
-        assert.equal(input.__knot_options != null, true);
-        assert.equal(input.__knot_options["text:name"] != null, true);
-        assert.equal(input.__knot_options["text:name"].leftAP.name, "text");
-        assert.equal(input.__knot_options["text:name"].rightAP.name, "name");
+        assert.equal(input.__knot.options != null, true);
+        assert.equal(input.__knot.options[0] != null, true);
+        assert.equal(input.__knot.options[0].leftAP.name, "text");
+        assert.equal(input.__knot.options[0].rightAP.name, "name");
 
-        assert.equal(input.__knot_options["isEnabled:isActivated"] != null, true);
-        assert.equal(input.__knot_options["isEnabled:isActivated"].leftAP.name, "isEnabled");
-        assert.equal(input.__knot_options["isEnabled:isActivated"].rightAP.name, "isActivated");
+        assert.equal(input.__knot.options[1] != null, true);
+        assert.equal(input.__knot.options[1].leftAP.name, "isEnabled");
+        assert.equal(input.__knot.options[1].rightAP.name, "isActivated");
 
-        var lastKnot = null;
-        for(var p in input.__knot_options){
-            if(p.substr(0, "style-background".length) == "style-background"){
-                lastKnot = p;
-                break;
-            }
-        }
+        var lastKnot = input.__knot.options.length-1;
+
         assert.equal(lastKnot != null, true);
-        assert.equal(input.__knot_options[lastKnot].leftAP.name, "style-background");
-        assert.equal(input.__knot_options[lastKnot].rightAP.name, "age");
-        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot_options[lastKnot].rightAP.pipes[0])(10), "red");
-        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot_options[lastKnot].rightAP.pipes[0])(30), "green");
+        assert.equal(input.__knot.options[lastKnot].leftAP.name, "style-background");
+        assert.equal(input.__knot.options[lastKnot].rightAP.name, "age");
+        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(10), "red");
+        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(30), "green");
+
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+    });
+
+    QUnit.test( "private.HTMLKnotManager.updateDataContext", function( assert ) {
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
+            '#userNameInput{text:name;} \r\n'+
+            '#div2{dataContext:user}\r\n'+
+            '#div3{dataContext:group}\r\n'+
+            '#groupNameInput{text:title;} \r\n'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        var node =  KnotTestUtility.parseHTML(
+            '<div id="div1">' +
+                '<div id="div2">'+
+                    '<input type="text" id="userNameInput" />'+
+                '</div>' +
+                '<div>' +
+                    '<div id="div3"> <input type="text" id="groupNameInput"/> </div>' +
+                '</div>' +
+            '</div>');
+        testDiv.appendChild(node);
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+
+        var data = {user:{name:"alex"}, group:{title:"t1"}};
+
+        scope.HTMLKnotManager.updateDataContext(node, data);
+        var userNameInput = document.querySelector("#userNameInput");
+        assert.equal(userNameInput.__knot.dataContext, data.user);
+
+        var groupTitleInput = document.querySelector("#groupNameInput");
+        assert.equal(groupTitleInput.__knot.dataContext, data.group);
     });
 })();
