@@ -132,10 +132,11 @@
         bodyNode.appendChild(testDiv);
 
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
-            '#userNameInput{text:name;} \r\n'+
+           // '#div1{dataContext:/knotTestData;} \r\n'+
+            '#userNameInput{value:name;} \r\n'+
             '#div2{dataContext:user}\r\n'+
             '#div3{dataContext:group}\r\n'+
-            '#groupNameInput{text:title;} \r\n'+
+            '#groupNameInput{value:title;} \r\n'+
             '</script>');
         headNode.appendChild(scriptBlock);
 
@@ -154,6 +155,7 @@
         scope.HTMLKnotManager.applyCBS();
 
         var data = {user:{name:"alex"}, group:{title:"t1"}};
+        window.knotTestData = data;
 
         scope.HTMLKnotManager.updateDataContext(node, data);
         var userNameInput = document.querySelector("#userNameInput");
@@ -161,5 +163,47 @@
 
         var groupTitleInput = document.querySelector("#groupNameInput");
         assert.equal(groupTitleInput.__knot.dataContext, data.group);
+
+        assert.equal(userNameInput.value, "alex");
+        assert.equal(groupTitleInput.value, "t1");
+
+        userNameInput.value = "satoshi";
+        raiseDOMEvent(userNameInput, "change");
+        assert.equal(data.user.name, "satoshi");
+        data.user.name = "einstein";
+        assert.equal(userNameInput.value, "einstein");
+
+
+        var oldUserObj = data.user;
+        data.user = {name:"turing"};
+        assert.equal(userNameInput.value, "turing");
+        data.user.name = "feynman";
+        assert.equal(userNameInput.value, "feynman");
+        userNameInput.value = "satoshi nakamoto";
+        raiseDOMEvent(userNameInput, "change");
+        assert.equal(data.user.name, "satoshi nakamoto");
+
+        oldUserObj.name = "laozi";
+        assert.equal(data.user.name, "satoshi nakamoto");
     });
+
+    function raiseDOMEvent(element, eventType){
+        var event; // The custom event that will be created
+
+        if (document.createEvent) {
+            event = document.createEvent("HTMLEvents");
+            event.initEvent(eventType, true, true);
+        } else {
+            event = document.createEventObject();
+            event.eventType = eventType;
+        }
+
+        event.eventName = eventType;
+
+        if (document.createEvent) {
+            element.dispatchEvent(event);
+        } else {
+            element.fireEvent("on" + event.eventType, event);
+        }
+    }
 })();

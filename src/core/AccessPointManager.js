@@ -118,7 +118,7 @@
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
                     compositeAP.childrenAPs[i].provider = __private.AccessPointManager.getProvider(compositeAPTarget, compositeAP.childrenAPs[i].name);
                 }
-                normalTarget.provider = __private.AccessPointManager.getProvider(normalAP.name);
+                normalTarget.provider = __private.AccessPointManager.getProvider(normalTarget, normalAP.name);
 
                 compositeAP.changedCallback = function(){
                     var values=[];

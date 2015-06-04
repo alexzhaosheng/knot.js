@@ -44,6 +44,8 @@
         assert.equal(scope.AccessPointManager.getProvider(target2,"value"),
             apProvider);
 
+        scope.AccessPointManager.unregisterAPProvider(testAp);
+        scope.AccessPointManager.unregisterAPProvider(apProvider);
 
         target1.value = true;
         var knots = scope.OptionParser.parse("value>{return value?10:1;}:apOnData.intValue>{return value>2?true:false;}");
@@ -233,7 +235,5 @@
         assert.equal(target1.dotValue, ".");
         assert.equal(target2.boolValue, true);
 
-        scope.AccessPointManager.unregisterAPProvider(testAp);
-        scope.AccessPointManager.unregisterAPProvider(apProvider);
     });
 })();
