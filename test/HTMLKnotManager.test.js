@@ -132,7 +132,7 @@
         bodyNode.appendChild(testDiv);
 
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
-           // '#div1{dataContext:/knotTestData;} \r\n'+
+            '#div1{dataContext:/knotTestData;} \r\n'+
             '#userNameInput{value:name;} \r\n'+
             '#div2{dataContext:user}\r\n'+
             '#div3{dataContext:group}\r\n'+
@@ -157,7 +157,9 @@
         var data = {user:{name:"alex"}, group:{title:"t1"}};
         window.knotTestData = data;
 
-        scope.HTMLKnotManager.updateDataContext(node, data);
+        scope.HTMLKnotManager.init();
+
+
         var userNameInput = document.querySelector("#userNameInput");
         assert.equal(userNameInput.__knot.dataContext, data.user);
 
@@ -185,11 +187,14 @@
 
         oldUserObj.name = "laozi";
         assert.equal(data.user.name, "satoshi nakamoto");
+        assert.equal(userNameInput.value, "satoshi nakamoto");
+
+
+
     });
 
     function raiseDOMEvent(element, eventType){
-        var event; // The custom event that will be created
-
+        var event;
         if (document.createEvent) {
             event = document.createEvent("HTMLEvents");
             event.initEvent(eventType, true, true);
@@ -199,7 +204,6 @@
         }
 
         event.eventName = eventType;
-
         if (document.createEvent) {
             element.dispatchEvent(event);
         } else {

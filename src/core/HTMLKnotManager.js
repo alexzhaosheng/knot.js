@@ -197,6 +197,10 @@
                 for(var i=0; i<node.childNodes.length; i++)
                     this.updateDataContext(node.childNodes[i], data);
             }
+        },
+
+        init: function(){
+            this.updateDataContext(document.body, null);
         }
     }
 })();
