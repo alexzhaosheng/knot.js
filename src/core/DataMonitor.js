@@ -212,6 +212,10 @@
 
         monitor: function(object, path, callback){
             if(path){
+                if(path[0] == "/"){
+                    path = path.substr(1);
+                    object = window;
+                }
                this.monitorObject(object, path, callback);
             }
             else{
@@ -224,6 +228,11 @@
                 __private.DataMonitor.unregister(object, path, callback);
             }
             else{
+                if(path[0] == "/"){
+                    path = path.substr(1);
+                    object = window;
+                }
+
                 var restPath;
                 var property = path.substr(0, path.indexOf("."));
                 if(!property){

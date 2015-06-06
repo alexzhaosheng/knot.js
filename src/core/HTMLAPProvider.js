@@ -27,6 +27,79 @@
             return undefined;
         return __private.Utility.getValueOnPath(element, property);
     }
+
+    function getTemplateName(apName){
+        var sections = apName.split("<");
+        return sections[1];
+    }
+    function removeNodeCreatedFromTemplate(node){
+        __private.HTMLKnotManager.clearBinding(node);
+        node.parentNode.removeChild(node);
+    }
+    function setContent(target, apName, value){
+        var currentContent =  target.childNodes[0];
+        if(!currentContent){
+            if(value === null || typeof(value) === "undefined")
+                return;
+            var n  = __private.HTMLKnotManager.createFromTemplate(getTemplateName(apName), value);
+            if(n)
+                target.appendChild(n, value);
+        }
+        else{
+            if(currentContent.__knot && currentContent.__knot.dataContext == value){
+                return;
+            }
+            if(value === null || typeof(value) === "undefined")
+                removeNodeCreatedFromTemplate(currentContent);
+            else{
+                __private.HTMLKnotManager.updateDataContext(currentContent, value);
+                if(currentContent.__knot)
+                    currentContent.__knot={};
+                currentContent.__knot = {dataContext:value};
+            }
+        }
+    }
+
+    function findChild(node, item) {
+        for (var i = 0; i < node.children.length; i++) {
+            if (node.children[i].__knot && node.children[i].__knot.dataContext == item) {
+                return node.children[i];
+            }
+        }
+        return null;
+    }
+    function addChildTo(node, child, index) {
+        if (node.children.length == index)
+            node.appendChild(child);
+        else
+            node.insertBefore(child, node.children[index]);
+    }
+
+    function setForeach(node, apName, values){
+        var templateName = getTemplateName(apName);
+        //take null values as empty array.
+        if(!values){
+            values = [];
+        }
+        for (var i = 0; i < values.length; i++) {
+            var ele = findChild(node, values[i]);
+            if (ele) {
+                if (Array.prototype.indexOf.call(node.children, ele) != i) {
+                    node.removeChild(ele);
+                    addChildTo(node, ele, i);
+                }
+            }
+            else {
+                var n = __private.HTMLKnotManager.createFromTemplate(templateName, values[i])
+                if(n)
+                    addChildTo(node, n, i);
+            }
+        }
+
+        for (var i = node.children.length - 1; i >= values.length; i--) {
+            removeNodeCreatedFromTemplate(node.children[i])
+        }
+    }
     __private.HTMLAPProvider={
         doesSupport:function(target, apName){
             //if start from "#", then it's a selector
@@ -45,17 +118,31 @@
                 return getPropertyFromElemnt(element, getPropertyNameFromAPName(apName));
             }
             else{
+                if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
+                    return;
                 return getPropertyFromElemnt(target, apName);
             }
         },
         setValue: function(target, apName, value){
             if(apName[0] == "#"){
+                if(typeof(value) == "undefined")
+                    value ="";
                 var element = document.querySelector(getSelectorFromAPName(apName));
                 if(element)
                     __private.Utility.setValueOnPath(element, getPropertyNameFromAPName(apName), value);
             }
             else{
-                __private.Utility.setValueOnPath(target, apName, value);
+                if(__private.Utility.startsWith(apName, "content")){
+                    setContent(target, apName, value);
+                }
+                else if(__private.Utility.startsWith(apName, "foreach")){
+                    setForeach(target, apName, value);
+                }
+                else{
+                    if(typeof(value) == "undefined")
+                        value ="";
+                    __private.Utility.setValueOnPath(target, apName, value);
+                }
             }
         },
         doesSupportMonitoring: function(target, apName){

@@ -38,6 +38,7 @@
 
     __private.HTMLKnotManager = {
         normalizedCBS:[],
+        templates:[],
         parseCBS:function(){
             var deferred = new __private.Deferred();
             var blocks = document.querySelectorAll("script");
@@ -135,6 +136,48 @@
             }
         },
 
+        processTemplateNodes: function(){
+            var templateNodes = document.querySelectorAll("*[knot-template]");
+            for(var i=0; i<templateNodes.length; i++){
+                var id = templateNodes[i].id;
+                if(!id){
+                    __private.Log.info(__private.Log.Source.Knot, "Template id is not specified.");
+                    continue;
+                }
+                this.templates[id] = templateNodes[i];
+                templateNodes[i].parentNode.removeChild(this.templates[id]);
+            }
+        },
+        copyAttachedData: function(n, c){
+            if(n.__knot){
+                c.__knot =  JSON.parse(JSON.stringify( n.__knot));
+            }
+            else{
+                delete c.__knot;
+            }
+            for(var i=0; i< n.children.length; i++)
+                this.copyAttachedData(n.children[i], c.children[i]);
+        },
+        cloneTemplateNode: function(node){
+            var cloned = node.cloneNode(true);
+            this.copyAttachedData(node, cloned);
+            return cloned;
+        },
+        createFromTemplate:function(templateId, data){
+            if(!this.templates[templateId]){
+                __private.Log.info(__private.Log.Source.Knot, "Failed find template. id:"+templateId);
+                return;
+            }
+            var newNode = this.cloneTemplateNode(this.templates[templateId]);
+            newNode.id=  undefined;
+            this.updateDataContext(newNode, data);
+            if(!newNode.__knot)
+                newNode.__knot = {dataContext:data};
+            else
+                newNode.__knot.dataContext = data;
+            return newNode;
+        },
+
         removeKnots: function(node){
             if(node.__knot){
                 for(var i=0; i<node.__knot.options.length; i++){
@@ -143,8 +186,6 @@
                     __private.AccessPointManager.untieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
                 }
             }
-//            for(var i=0; i<node.childNodes.length; i++)
-//                this.removeKnots(node.childNodes[i]);
         },
         tieKnots:function(node){
             if(node.__knot){
@@ -154,8 +195,6 @@
                     __private.AccessPointManager.tieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
                 }
             }
-//            for(var i=0; i<node.childNodes.length; i++)
-//                this.tieKnots(node.childNodes[i]);
         },
 
         updateDataContext: function(node, data){
@@ -164,29 +203,28 @@
                 var contextData = data;
                 if(dataContextOption){
                     contextData = __private.AccessPointManager.getValueThroughPipe(data, dataContextOption.rightAP);
-                    if(contextData === node.__knot.dataContext){
+                    if(dataContextOption.hasTiedUpKnot && contextData === node.__knot.dataContext){
                         return;
                     }
 
-                    if(dataContextOption.rootData && dataContextOption.changedCallback){
-                        __private.DefaultProvider.stopMonitoring(dataContextOption.rootData, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    if((dataContextOption.data ||dataContextOption.rightAP.name[0]=="/")  && dataContextOption.changedCallback){
+                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
                     }
 
-                    dataContextOption.rootData = data;
-                    if(dataContextOption.rootData){
+                    dataContextOption.data = data;
+                    if((dataContextOption.data || dataContextOption.rightAP.name[0]=="/")){
                         dataContextOption.changedCallback = function(){
                             __private.HTMLKnotManager.updateDataContext(node, data);
                         };
-
-                        __private.DefaultProvider.monitor(dataContextOption.rootData, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                        __private.DefaultProvider.monitor(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
                     }
                     else{
                         dataContextOption.changedCallback = null;
                     }
+                    dataContextOption.hasTiedUpKnot = true;
                 }
-                if(node.__knot.dataContext){
-                    this.removeKnots(node);
-                }
+                this.removeKnots(node);
+
                 for(var i=0; i<node.childNodes.length; i++)
                     this.updateDataContext(node.childNodes[i], contextData);
 
@@ -199,8 +237,30 @@
             }
         },
 
-        init: function(){
+        clearBinding:function(node){
+            if(node.__knot){
+                var dataContextOption = getDataContextKnotOption(node.__knot.options);
+                if(dataContextOption){
+                    if((dataContextOption.data || dataContextOption.rightAP.name[0] == "/") && dataContextOption.changedCallback){
+                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    }
+
+                    dataContextOption.data = null;
+                    dataContextOption.changedCallback = null;
+                }
+
+                this.removeKnots(node);
+            }
+            for(var i=0; i<node.childNodes.length; i++)
+                this.clearBinding(node.childNodes[i]);
+        },
+
+        bind: function(){
             this.updateDataContext(document.body, null);
+        },
+
+        clear:function(){
+            this.clearBinding(document.body);
         }
     }
 })();

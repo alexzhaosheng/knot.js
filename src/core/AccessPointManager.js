@@ -35,10 +35,20 @@
             return true;
         },
         monitor: function(target, apName, callback){
-            __private.DataMonitor.monitor(target, apName, callback);
+            if(apName && apName[0] == "/"){
+                target = window;
+                apName = apName.substr(1);
+            }
+            if(target)
+                __private.DataMonitor.monitor(target, apName, callback);
         },
         stopMonitoring: function(target, apName, callback){
-            __private.DataMonitor.stopMonitoring(target, apName, callback);
+            if(apName && apName[0] == "/"){
+                target = window;
+                apName = apName.substr(1);
+            }
+            if(target)
+                __private.DataMonitor.stopMonitoring(target, apName, callback);
         }
     };
 

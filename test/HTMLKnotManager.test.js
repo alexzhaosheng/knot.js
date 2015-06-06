@@ -7,6 +7,16 @@
 
     var bodyNode = document.getElementsByTagName("body")[0];
     var headNode = document.getElementsByTagName("head")[0];
+
+    function clearAllScript(){
+        var blocks = document.querySelectorAll('script[type="text/cbs"]');
+        if(!blocks)
+            return;
+        for(var i=0; i<blocks.length; i++){
+            blocks[i].parentNode.removeChild(blocks[i]);
+        }
+    }
+
     QUnit.test( "private.HTMLKnotManager.CBS", function( assert ) {
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsTest{value:test} \r\n'+
@@ -93,6 +103,7 @@
     });
 
     QUnit.test( "private.HTMLKnotManager.applyCBS", function( assert ) {
+        clearAllScript();
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -128,6 +139,7 @@
     });
 
     QUnit.test( "private.HTMLKnotManager.updateDataContext", function( assert ) {
+        clearAllScript();
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -153,12 +165,10 @@
 
         scope.HTMLKnotManager.parseCBS();
         scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.bind();
 
         var data = {user:{name:"alex"}, group:{title:"t1"}};
         window.knotTestData = data;
-
-        scope.HTMLKnotManager.init();
-
 
         var userNameInput = document.querySelector("#userNameInput");
         assert.equal(userNameInput.__knot.dataContext, data.user);
@@ -190,6 +200,35 @@
         assert.equal(userNameInput.value, "satoshi nakamoto");
 
 
+        data = {user:{name:"einstein"}, group:{title:"tx"}};
+        window.knotTestData = data;
+        assert.equal(userNameInput.value, "einstein");
+        assert.equal(groupTitleInput.value, "tx");
+        data.user.name = "feynman";
+        assert.equal(userNameInput.value, "feynman");
+        userNameInput.value = "satoshi nakamoto";
+        raiseDOMEvent(userNameInput, "change");
+        assert.equal(data.user.name, "satoshi nakamoto");
+
+        data.user = null;
+        assert.equal(userNameInput.value, "");
+        data.user = {name:"laozi"};
+        assert.equal(userNameInput.value, "laozi");
+
+        userNameInput.value = "";
+        scope.HTMLKnotManager.clear();
+        data.user.name = "feyman";
+        assert.equal(userNameInput.value, "");
+        data.user = {name:"turing"};
+        assert.equal(userNameInput.value, "");
+        data = {user:{name:"einstein"}, group:{title:"tx"}};
+        window.knotTestData = data;
+        assert.equal(userNameInput.value, "");
+
+
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+        scope.HTMLKnotManager.normalizedCBS = [];
 
     });
 
@@ -209,5 +248,59 @@
         } else {
             element.fireEvent("on" + event.eventType, event);
         }
-    }
+    };
+
+
+    QUnit.test( "private.HTMLKnotManager.template", function( assert ) {
+
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var templateDiv = KnotTestUtility.parseHTML('<div id="userTemplate" knot-template ><span></span>.<span></span></div>');
+        testDiv.appendChild(templateDiv);
+
+        testDiv.appendChild(KnotTestUtility.parseHTML('<div><div id="selectedUser"></div><div id="userList"></div></div>'));
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
+            'body {dataContext:/templateTestData;}'+
+            '#userTemplate>span:first-child{innerText:firstName}'+
+            '#userTemplate>span:last-child{innerText:lastName}'+
+            '#selectedUser{content<userTemplate:selectedUser}'+
+            '#userList{foreach<userTemplate:userList}'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.processTemplateNodes();
+        scope.HTMLKnotManager.bind();
+
+        var list =document.querySelector("#userList");
+        var selected =document.querySelector("#selectedUser");
+
+        var einstein = {firstName:"albert", lastName:"einstein"};
+        var satoshi = {firstName:"satoshi", lastName:"nakamoto"};
+        var laoZi={firstName:"dan", lastName:"li"};
+        var newton={firstName:"issac", lastName:"newton"};
+        window.templateTestData = {userList:[einstein, satoshi, laoZi], selectedUser:satoshi};
+        assert.equal(list.childNodes.length, 3);
+        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName);
+        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName);
+        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName);
+        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName);
+        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName);
+        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName);
+
+        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName);
+        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName);
+
+
+        window.templateTestData.userList.push(newton);
+        assert.equal(list.childNodes.length, 4);
+        assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName);
+        assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName);
+    });
+
+
+
 })();

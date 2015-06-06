@@ -249,5 +249,35 @@
         scope.DataMonitor.monitor(testObject, "*", function(){objectChangedCount++;});
         testObject.test = "ttt";
         assert.equal(propertyName, "test");
+
+        resetTest();
+        window.testData = {name:"test"};;
+        scope.DataMonitor.monitor(null, "/testData.name", onDataChanged);
+
+        window.testData.name = "alex";
+        assert.equal(propertyName, "testData.name");
+        assert.equal(changedData, window);
+        assert.equal(oldData, "test");
+        assert.equal(newData, "alex");
+
+
+        resetTest();
+        testObject = {address:{postCode:123}};
+        scope.DataMonitor.monitor(testObject, "address.postCode", onDataChanged);
+        testObject.address = null;
+        assert.equal(dataChangedRaised, true);
+        assert.equal(propertyName, "address.postCode");
+        assert.equal(oldData, 123);
+        assert.equal(typeof(newData), "undefined");
+
+        resetTest();
+        scope.DataMonitor.monitor(null, "/anotherTestObject.name", onDataChanged);
+        window.anotherTestObject = {name:"alex"};
+        assert.equal(dataChangedRaised, true);
+        assert.equal(changedData, window);
+        assert.equal(propertyName, "anotherTestObject.name");
+        assert.equal(typeof(oldData), "undefined");
+        assert.equal(newData, "alex");
+
     });
 })();

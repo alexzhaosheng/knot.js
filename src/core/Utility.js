@@ -19,6 +19,9 @@
             return s.replace(/^\s+|\s+$/g, "");
         },
 
+        startsWith:function(s, startStr){
+            return s.substr(0, startStr.length) == startStr;
+        },
 
         getValueOnPath: function(rootData, path) {
             if(path == "*NULL")
