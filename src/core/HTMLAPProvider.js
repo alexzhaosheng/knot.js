@@ -60,8 +60,8 @@
         }
     }
 
-    function findChild(node, item) {
-        for (var i = 0; i < node.children.length; i++) {
+    function findChild(node, item, startIndex) {
+        for (var i = startIndex; i < node.children.length; i++) {
             if (node.children[i].__knot && node.children[i].__knot.dataContext == item) {
                 return node.children[i];
             }
@@ -82,7 +82,7 @@
             values = [];
         }
         for (var i = 0; i < values.length; i++) {
-            var ele = findChild(node, values[i]);
+            var ele = findChild(node, values[i], i);
             if (ele) {
                 if (Array.prototype.indexOf.call(node.children, ele) != i) {
                     node.removeChild(ele);
@@ -106,6 +106,10 @@
             if(apName[0] == "#"){
                 return true;
             }
+            //@ is start of dom event
+            if(apName[0] == "@"){
+                return true;
+            }
             //check whether target is html element
             if(target && target.ownerDocument){
                 return true;
@@ -116,6 +120,9 @@
             if(apName[0] == "#"){
                 var element = document.querySelector(getSelectorFromAPName(apName));
                 return getPropertyFromElemnt(element, getPropertyNameFromAPName(apName));
+            }
+            else if(apName[0] == "@"){
+                return;
             }
             else{
                 if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
@@ -130,6 +137,18 @@
                 var element = document.querySelector(getSelectorFromAPName(apName));
                 if(element)
                     __private.Utility.setValueOnPath(element, getPropertyNameFromAPName(apName), value);
+            }
+            else if(apName[0] == "@"){
+                if(typeof(value) != "function"){
+                    __private.Log.error(__private.Log.Source.Knot, "Event listener must be a function!");
+                }
+
+                if(target){
+                    target.addEventListener(apName.substr(1), function(e){
+                        var dataContext = target.__knot.dataContext
+                        value.apply(dataContext, [e, target]);
+                    });;
+                }
             }
             else{
                 if(__private.Utility.startsWith(apName, "content")){

@@ -29,6 +29,10 @@
             if(path == "*" || path =="")
                 return rootData;
 
+            if(this.startsWith(path,"__knot_global")){
+                return __private.GlobalSymbolHelper.getSymbol(path);
+            }
+
             var data = rootData;
             if(path[0] == "/"){
                 data= window;
@@ -44,6 +48,9 @@
         },
 
         setValueOnPath: function(data, path, value){
+            if(this.startsWith(path,"__knot_global")){
+                throw new Error("Can't set global symbol!");
+            }
             var vp = path;
             var p = path.lastIndexOf(".");
             if(p > 0){

@@ -28,6 +28,8 @@
     }
 
     function getDataContextKnotOption(options){
+        if(!options)
+            return null;
         for(var i=0; i<options.length; i++){
             if(options[i].leftAP.name == "dataContext"){
                 return options[i];
@@ -179,7 +181,7 @@
         },
 
         removeKnots: function(node){
-            if(node.__knot){
+            if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
                     if(node.__knot.options[i].leftAP.name == "dataContext")
                         continue;
@@ -188,7 +190,7 @@
             }
         },
         tieKnots:function(node){
-            if(node.__knot){
+            if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
                     if(node.__knot.options[i].leftAP.name == "dataContext")
                         continue;
@@ -247,9 +249,11 @@
 
                     dataContextOption.data = null;
                     dataContextOption.changedCallback = null;
+                    dataContextOption.hasTiedUpKnot = false;
                 }
 
                 this.removeKnots(node);
+                delete node.__knot.dataContext;
             }
             for(var i=0; i<node.childNodes.length; i++)
                 this.clearBinding(node.childNodes[i]);

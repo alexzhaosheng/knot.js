@@ -8,15 +8,6 @@
     var bodyNode = document.getElementsByTagName("body")[0];
     var headNode = document.getElementsByTagName("head")[0];
 
-    function clearAllScript(){
-        var blocks = document.querySelectorAll('script[type="text/cbs"]');
-        if(!blocks)
-            return;
-        for(var i=0; i<blocks.length; i++){
-            blocks[i].parentNode.removeChild(blocks[i]);
-        }
-    }
-
     QUnit.test( "private.HTMLKnotManager.CBS", function( assert ) {
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsTest{value:test} \r\n'+
@@ -103,7 +94,6 @@
     });
 
     QUnit.test( "private.HTMLKnotManager.applyCBS", function( assert ) {
-        clearAllScript();
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -139,7 +129,6 @@
     });
 
     QUnit.test( "private.HTMLKnotManager.updateDataContext", function( assert ) {
-        clearAllScript();
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -180,7 +169,7 @@
         assert.equal(groupTitleInput.value, "t1");
 
         userNameInput.value = "satoshi";
-        raiseDOMEvent(userNameInput, "change");
+        KnotTestUtility.raiseDOMEvent(userNameInput, "change");
         assert.equal(data.user.name, "satoshi");
         data.user.name = "einstein";
         assert.equal(userNameInput.value, "einstein");
@@ -192,7 +181,7 @@
         data.user.name = "feynman";
         assert.equal(userNameInput.value, "feynman");
         userNameInput.value = "satoshi nakamoto";
-        raiseDOMEvent(userNameInput, "change");
+        KnotTestUtility.raiseDOMEvent(userNameInput, "change");
         assert.equal(data.user.name, "satoshi nakamoto");
 
         oldUserObj.name = "laozi";
@@ -207,7 +196,7 @@
         data.user.name = "feynman";
         assert.equal(userNameInput.value, "feynman");
         userNameInput.value = "satoshi nakamoto";
-        raiseDOMEvent(userNameInput, "change");
+        KnotTestUtility.raiseDOMEvent(userNameInput, "change");
         assert.equal(data.user.name, "satoshi nakamoto");
 
         data.user = null;
@@ -229,27 +218,8 @@
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
         scope.HTMLKnotManager.normalizedCBS = [];
-
+        KnotTestUtility.clearAllKnotInfo(document.body);
     });
-
-    function raiseDOMEvent(element, eventType){
-        var event;
-        if (document.createEvent) {
-            event = document.createEvent("HTMLEvents");
-            event.initEvent(eventType, true, true);
-        } else {
-            event = document.createEventObject();
-            event.eventType = eventType;
-        }
-
-        event.eventName = eventType;
-        if (document.createEvent) {
-            element.dispatchEvent(event);
-        } else {
-            element.fireEvent("on" + event.eventType, event);
-        }
-    };
-
 
     QUnit.test( "private.HTMLKnotManager.template", function( assert ) {
 
@@ -299,8 +269,105 @@
         assert.equal(list.childNodes.length, 4);
         assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName);
         assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName);
+
+        window.templateTestData.userList.splice(1,1);
+        assert.equal(list.childNodes.length, 3);
+        assert.equal(list.childNodes[1].childNodes[0].innerText, laoZi.firstName);
+        assert.equal(list.childNodes[1].childNodes[2].innerText, laoZi.lastName);
+        assert.equal(list.childNodes[2].childNodes[0].innerText, newton.firstName);
+        assert.equal(list.childNodes[2].childNodes[2].innerText, newton.lastName);
+
+        window.templateTestData.userList = null;
+        assert.equal(list.childNodes.length, 0);
+        window.templateTestData.userList = [newton, einstein];
+        assert.equal(list.childNodes.length, 2);
+        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName);
+        assert.equal(list.childNodes[0].childNodes[2].innerText, newton.lastName);
+        assert.equal(list.childNodes[1].childNodes[0].innerText, einstein.firstName);
+        assert.equal(list.childNodes[1].childNodes[2].innerText, einstein.lastName);
+
+        newton.firstName = "Newton";
+        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName);
+        newton.firstName = "newton";
+
+        window.templateTestData.userList.push(satoshi);
+        window.templateTestData.userList.push(laoZi);
+
+        assert.equal(list.childNodes.length, 4);
+        assert.equal(list.childNodes[2].childNodes[0].innerText, satoshi.firstName);
+        assert.equal(list.childNodes[2].childNodes[2].innerText, satoshi.lastName);
+
+        window.templateTestData.userList.sort(function(a,b){return a.firstName> b.firstName?1:-1});
+        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName);
+        assert.equal(list.childNodes[3].childNodes[2].innerText, satoshi.lastName);
+
+
+        //test duplicated element in array
+        window.templateTestData.userList.push(newton);
+        assert.equal(list.childNodes.length, 5);
+        assert.equal(list.childNodes[4].childNodes[0].innerText, newton.firstName);
+        assert.equal(list.childNodes[4].childNodes[2].innerText, newton.lastName);
+
+
+        window.templateTestData.selectedUser =laoZi;
+        assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.firstName);
+        assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.lastName);
+
+        window.templateTestData.selectedUser =null;
+        assert.equal(selected.childNodes.length, 0);
+
+        scope.HTMLKnotManager.clear();
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+        scope.HTMLKnotManager.normalizedCBS = [];
+
+        KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
+    QUnit.test( "private.HTMLKnotManager.event", function( assert ) {
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
 
+        var templateDiv = KnotTestUtility.parseHTML('<input id="testButton" type="button" value="test"/>');
+        testDiv.appendChild(templateDiv);
+
+        var latestSender;
+        window.eventTestOnMouseOver = function(arg, sender){
+            latestSender = sender;
+        };
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
+            'body {dataContext:/eventTestData;}'+
+            '#testButton{@click:{window.eventClickedCount++;window.latestThisPointer=this;};@mouseover:/eventTestOnMouseOver}'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.processTemplateNodes();
+        scope.HTMLKnotManager.bind();
+
+        window.eventClickedCount = 0;
+        var testButton = document.querySelector("#testButton");
+        KnotTestUtility.raiseDOMEvent(testButton, "click");
+        assert.equal(window.eventClickedCount, 1);
+        KnotTestUtility.raiseDOMEvent(testButton, "click");
+        assert.equal(window.eventClickedCount, 2);
+        assert.equal(window.latestThisPointer, window);
+
+        window.eventTestData = {name:"test"};
+        KnotTestUtility.raiseDOMEvent(testButton, "click");
+        assert.equal(window.eventClickedCount, 4);
+        assert.equal(window.latestThisPointer, window.eventTestData);
+
+        KnotTestUtility.raiseDOMEvent(testButton, "mouseover");
+        assert.equal(latestSender, testButton);
+
+        scope.HTMLKnotManager.clear();
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+        scope.HTMLKnotManager.normalizedCBS = [];
+        KnotTestUtility.clearAllKnotInfo(document.body);
+    });
 
 })();

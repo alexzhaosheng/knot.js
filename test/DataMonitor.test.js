@@ -279,5 +279,19 @@
         assert.equal(typeof(oldData), "undefined");
         assert.equal(newData, "alex");
 
+        resetTest();
+        scope.DataMonitor.stopMonitoring(null,"/anotherTestObject.name", onDataChanged);
+        window.anotherTestObject.name = "tom";
+        assert.equal(dataChangedRaised, false);
+
+
+        //array change
+        resetTest();
+        scope.DataMonitor.monitor(null, "/anotherTestObject.arrayObj", onDataChanged);
+        window.anotherTestObject = {arrayObj:[]};
+        assert.equal(dataChangedRaised, true);
+        resetTest();
+        window.anotherTestObject.arrayObj.push("test");
+        assert.equal(dataChangedRaised, true);
     });
 })();

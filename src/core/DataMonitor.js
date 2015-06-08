@@ -169,7 +169,7 @@
             return attached.dataHookInfo.hookedProperties.indexOf(propertyName) >=0;
         },
 
-        monitorObject:function(object, path, callback){
+        monitorObject:function(object, path, callback, skipCheckingArray){
             var restPath;
             var property = path.substr(0, path.indexOf("."));
             if(!property){
@@ -193,7 +193,7 @@
                         __private.DataMonitor.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
                     }
                     if(newValue){
-                        __private.DataMonitor.monitor(newValue, restPath, attachedData.childChangedCallback);
+                        __private.DataMonitor.monitorObject(newValue, restPath, attachedData.childChangedCallback, true);
                     }
 
                     var path = property + "." + restPath;
@@ -203,7 +203,32 @@
                 };
                 __private.DataMonitor.register(object, property, attachedData.monitorChildChangedCallback);
                 if(object[property]){
-                    __private.DataMonitor.monitor(object[property], restPath, attachedData.childChangedCallback);
+                    __private.DataMonitor.monitorObject(object[property], restPath, attachedData.childChangedCallback, true);
+                }
+            }
+
+            if(!skipCheckingArray){
+                //array is treated as a special type of object which can change it self with out changing any property
+                //so if the value on the property is an array, it must be monitored too
+                //and we need to setup a monitoring callback to monitor the change of the property so that we can hook
+                //the array object when it is set with an array object
+                attachedData.changedCallback = function(p, oldValue, newValue){
+                    if(oldValue instanceof  Array){
+                        __private.DataMonitor.unregister(oldValue, "*", attachedData.arrayChangedCallback);
+                        delete attachedData.arrayChangedCallback;
+                    }
+                    if(newValue instanceof Array){
+                        attachedData.arrayChangedCallback = function(){
+                            __private.DataMonitor.notifyDataChanged(object, path, newValue, newValue);
+                        }
+                        __private.DataMonitor.register(newValue, "*", attachedData.arrayChangedCallback);
+                    }
+                }
+                __private.DataMonitor.register(object, path, attachedData.changedCallback, attachedData);
+
+                var curValue = __private.Utility.getValueOnPath(object, path);
+                if(curValue instanceof Array){
+                    attachedData.changedCallback("*", null, curValue);
                 }
             }
 
@@ -251,6 +276,13 @@
 
                     if(attachedData.childChangedCallback && object[property]){
                         __private.DataMonitor.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
+                    }
+
+                    if(attachedData.changedCallback){
+                        __private.DataMonitor.unregister(object, path, attachedData.changedCallback);
+                    }
+                    if(attachedData.arrayChangedCallback){
+                        __private.DataMonitor.unregister(__private.Utility.getValueOnPath(object, path), "*", attachedData.arrayChangedCallback);
                     }
                 }
                 __private.DataMonitor.unregister(object, path, callback);

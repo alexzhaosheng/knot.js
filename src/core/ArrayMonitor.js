@@ -25,6 +25,8 @@
     hookArrayMethod("unshift");
     hookArrayMethod("shift");
     hookArrayMethod("splice");
+    hookArrayMethod("sort");
+    hookArrayMethod("reverse");
 
     Array.prototype.notifyChanged = function(){
         if(this.__knot_attachedData){
