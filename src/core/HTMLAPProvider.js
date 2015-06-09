@@ -101,8 +101,10 @@
         }
     }
     __private.HTMLAPProvider={
+        //this provider support error status handling.
+        doesSupportErrorStatus:true,
         doesSupport:function(target, apName){
-            //if start from "#", then it's a selector
+            //if start from "#", then it's an id selector, we only support id selector
             if(apName[0] == "#"){
                 return true;
             }
@@ -110,6 +112,12 @@
             if(apName[0] == "@"){
                 return true;
             }
+
+            //!is error status binding with must comes with an id selector
+            if(apName[0] == "!"){
+                return true;
+            }
+
             //check whether target is html element
             if(target && target.ownerDocument){
                 return true;
@@ -123,6 +131,21 @@
             }
             else if(apName[0] == "@"){
                 return;
+            }
+            else if(apName[0] == "!"){
+                apName = apName.substr(1);
+                if(apName[0] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName));
+                    apName = getPropertyNameFromAPName(apName);
+                }
+                if(!target)
+                    return undefined;
+                else{
+                    if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName])
+                        return null;
+
+                    return target.__knot_errorStatusInfo[apName].currentStatus;
+                }
             }
             else{
                 if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
@@ -150,6 +173,34 @@
                     });;
                 }
             }
+            else  if(apName[0] == "!"){
+                apName = apName.substr(1);
+                if(apName[0] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName));
+                    apName = getPropertyNameFromAPName(apName);
+                }
+                if(target){
+                    if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks))
+                        return;
+                    if(!target.__knot_errorStatusInfo)
+                        target.__knot_errorStatusInfo = {};
+                    if(!target.__knot_errorStatusInfo[apName])
+                        target.__knot_errorStatusInfo[apName] = {};
+                    target.__knot_errorStatusInfo[apName].currentStatus = value;
+                    if(target.__knot_errorStatusInfo[apName].changedCallbacks){
+                        var callbacks = target.__knot_errorStatusInfo[apName].changedCallbacks;
+                        for(var i=0; i<callbacks.length; i++){
+                            try{
+                                callbacks[i].apply(target, [apName, value]);
+                            }
+                            catch (error){
+                                __private.Log.warning(__private.Log.Source.Knot, "Call error status changed callback error.", error);
+                            }
+                        }
+                    }
+                }
+
+            }
             else{
                 if(__private.Utility.startsWith(apName, "content")){
                     setContent(target, apName, value);
@@ -165,6 +216,9 @@
             }
         },
         doesSupportMonitoring: function(target, apName){
+            if(apName[0] == "!"){
+                return true;
+            }
             if(apName[0] == "#"){
                 target = document.querySelector(getSelectorFromAPName(apName));
                 apName = getPropertyNameFromAPName(apName);
@@ -178,22 +232,61 @@
                 return false;
         },
         monitor: function(target, apName, callback){
-            if(apName[0] == "#"){
-                target = document.querySelector(getSelectorFromAPName(apName));
-                apName = getPropertyNameFromAPName(apName);
+            if(apName[0] == "!"){
+                if(apName[1] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName.substr(1)));
+                    apName = getPropertyNameFromAPName(apName.substr(1));
+                }
+                if(!target.__knot_errorStatusInfo)
+                    target.__knot_errorStatusInfo = {};
+                if(!target.__knot_errorStatusInfo[apName])
+                    target.__knot_errorStatusInfo[apName] = {};
+                if(!target.__knot_errorStatusInfo[apName].changedCallbacks)
+                    target.__knot_errorStatusInfo[apName].changedCallbacks=[];
+                target.__knot_errorStatusInfo[apName].changedCallbacks.push(callback);
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-            var event = htmlEventInfo[eventKey];
-            target.addEventListener(event, callback);
+            else{
+                if(apName[0] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName));
+                    apName = getPropertyNameFromAPName(apName);
+                }
+                var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+                var event = htmlEventInfo[eventKey];
+                target.addEventListener(event, callback);
+            }
         },
         stopMonitoring: function(target, apName, callback){
-            if(apName[0] == "#"){
-                target = document.querySelector(getSelectorFromAPName(apName));
-                apName = getPropertyNameFromAPName(apName);
+            if(apName[0] == "!"){
+                if(apName[1] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName.substr(1)));
+                    apName = getPropertyNameFromAPName(apName.substr(1));
+                }
+                if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)
+                    return;
+                var index = target.__knot_errorStatusInfo[apName].changedCallbacks.indexOf(callback);
+                if(index >= 0)
+                    target.__knot_errorStatusInfo[apName].changedCallbacks.splice(index, 1);
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-            var event = htmlEventInfo[eventKey];
-            target.removeEventListener(event, callback);
+            else{
+                if(apName[0] == "#"){
+                    target = document.querySelector(getSelectorFromAPName(apName));
+                    apName = getPropertyNameFromAPName(apName);
+                }
+                var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+                var event = htmlEventInfo[eventKey];
+                target.removeEventListener(event, callback);
+            }
+        },
+
+        getErrorStatusInformation: function(node, result){
+            if(node.__knot_errorStatusInfo){
+                for(var apName in node.__knot_errorStatusInfo)
+                    if(node.__knot_errorStatusInfo[apName] && node.__knot_errorStatusInfo[apName].currentStatus)
+                        result.push({node:node, accessPointName:apName, error: node.__knot_errorStatusInfo[apName].currentStatus} );
+            }
+            for(var i=0; i<node.children.length; i++){
+                this.getErrorStatusInformation(node.children[i], result)
+            }
         }
     };
 

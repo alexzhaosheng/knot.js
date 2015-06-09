@@ -34,12 +34,12 @@
 
         assert.equal(scope.DataMonitor.getAttachedData(data1, "sex", onSexChanged), testAttachedData);
 
-        assert.equal(true, scope.DataMonitor.getPropertyChangeRecord(data1).indexOf("sex")>=0);
-        assert.equal(true, scope.DataMonitor.getPropertyChangeRecord(data1).indexOf("name")>=0);
-        assert.equal(2, scope.DataMonitor.getPropertyChangeRecord(data1).length);
+        assert.equal(true, scope.DataMonitor.getPropertiesChangeRecords(data1).indexOf("sex")>=0);
+        assert.equal(true, scope.DataMonitor.getPropertiesChangeRecords(data1).indexOf("name")>=0);
+        assert.equal(2, scope.DataMonitor.getPropertiesChangeRecords(data1).length);
 
-        scope.DataMonitor.resetPropertyChangeRecord(data1);
-        assert.equal(0, scope.DataMonitor.getPropertyChangeRecord(data1).length);
+        scope.DataMonitor.clearPropertiesChangeRecords(data1);
+        assert.equal(0, scope.DataMonitor.getPropertiesChangeRecords(data1).length);
 
         scope.DataMonitor.unregister(data1, "sex", onSexChanged);
 

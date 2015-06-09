@@ -27,6 +27,11 @@
         clearAllKnotInfo: function(element){
             if(element.__knot)
                 delete element.__knot;
+            if(element.__knot_errorStatusInfo)
+                delete  element.__knot_errorStatusInfo;
+
+            if(element.__knot_attachedData)
+                delete  element.__knot_attachedData;
 
             for(var i=0; i<element.childNodes.length; i++)
                 this.clearAllKnotInfo(element.childNodes[i]);

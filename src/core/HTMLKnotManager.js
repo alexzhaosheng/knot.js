@@ -80,13 +80,19 @@
                         })();
                     }
                     else{
-                        var text = removeComments(blocks[i].textContent);
-                        this.normalizeCBS(text);
+                        try{
+                            var text = removeComments(blocks[i].textContent);
+                            this.normalizeCBS(text);
+                        }
+                        catch (error){
+                            deferred.reject(error);
+                        }
                     }
                 }
             }
-            if(scriptToLoad > 0)
-                return deferred;
+            if(scriptToLoad == 0)
+                deferred.resolve();
+            return deferred;
         },
 
         normalizeCBS: function(text){
@@ -165,12 +171,15 @@
             this.copyAttachedData(node, cloned);
             return cloned;
         },
-        createFromTemplate:function(templateId, data){
+        cloneTemplate:function(templateId){
             if(!this.templates[templateId]){
                 __private.Log.info(__private.Log.Source.Knot, "Failed find template. id:"+templateId);
                 return;
             }
-            var newNode = this.cloneTemplateNode(this.templates[templateId]);
+            return this.cloneTemplateNode(this.templates[templateId]);
+        },
+        createFromTemplate:function(templateId, data){
+            var newNode = this.cloneTemplate(templateId);
             newNode.id=  undefined;
             this.updateDataContext(newNode, data);
             if(!newNode.__knot)

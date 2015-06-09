@@ -52,7 +52,9 @@
         }
     };
 
-
+    function isErrorStatusApName(name){
+        return (name && name[0] == "!");
+    }
 
     __private.AccessPointManager = {
         //search the provider in reversed sequence, so that the later registered providers can
@@ -78,14 +80,23 @@
             if(!ap.provider)
                 ap.provider = this.getProvider(target, ap.name);
             var value = ap.provider.getValue(target, ap.name);
-            if(ap.pipes){
-                for(var i=0; i< ap.pipes.length; i++){
-                    var p = __private.GlobalSymbolHelper.getSymbol(ap.pipes[i]);
-                    if(typeof(p) != "function"){
-                        __private.Log.error(__private.Log.Source.Knot, "Pipe must be a function. pipe name:" + ap.pipes[i]);
+            try{
+                if(ap.pipes){
+                    for(var i=0; i< ap.pipes.length; i++){
+                        var p = __private.GlobalSymbolHelper.getSymbol(ap.pipes[i]);
+                        if(typeof(p) != "function"){
+                            __private.Log.error(__private.Log.Source.Knot, "Pipe must be a function. pipe name:" + ap.pipes[i]);
+                        }
+                        value = p.apply(target, [value]);
                     }
-                    value = p.apply(target, [value]);
+                    if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.name))
+                         ap.provider.setValue(target, "!"+ap.name, undefined);
                 }
+            }
+            catch (exception){
+                if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.name))
+                    ap.provider.setValue(target, "!"+ap.name, exception);
+                return undefined;
             }
             return value;
         },
@@ -108,8 +119,9 @@
         stopMonitoring:function(target, ap){
             if(!ap.provider)
                 ap.provider = this.getProvider(target, ap.name);
-            if(ap.provider.doesSupportMonitoring(target, ap.name)){
+            if(ap.provider.doesSupportMonitoring(target, ap.name) && ap.changedCallback){
                 ap.provider.stopMonitoring(target, ap.name, ap.changedCallback);
+                delete  ap.changedCallback;
             }
         },
 

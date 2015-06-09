@@ -96,13 +96,13 @@
                 }
             }
         },
-        getPropertyChangeRecord: function(data){
+        getPropertiesChangeRecords: function(data){
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo)
                 return null;
             return attachedInfo.changedProperties?attachedInfo.changedProperties:[];
         },
-        resetPropertyChangeRecord: function(data){
+        clearPropertiesChangeRecords: function(data){
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo)
                 return null;

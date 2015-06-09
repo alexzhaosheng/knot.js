@@ -58,7 +58,7 @@
     });
 
 
-    QUnit.asyncTest("private.HTMLKnotManager.Loading From File", function(assert){
+    QUnit.asyncTest("private.HTMLKnotManager.Loading CBS From File", function(assert){
         expect(9);
 
         var cbsFileScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="HTMLKnotManager.test.cbs">');
@@ -316,6 +316,9 @@
         window.templateTestData.selectedUser =null;
         assert.equal(selected.childNodes.length, 0);
 
+
+        assert.equal(false, true, "Has template selector been done?");
+
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
@@ -328,8 +331,8 @@
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
-        var templateDiv = KnotTestUtility.parseHTML('<input id="testButton" type="button" value="test"/>');
-        testDiv.appendChild(templateDiv);
+        var bt = KnotTestUtility.parseHTML('<input id="testButton" type="button" value="test"/>');
+        testDiv.appendChild(bt);
 
         var latestSender;
         window.eventTestOnMouseOver = function(arg, sender){
@@ -370,4 +373,59 @@
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
+    QUnit.test( "private.HTMLKnotManager.bind to exception", function( assert ) {
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>')
+        bodyNode.appendChild(testDiv);
+        var testElements = KnotTestUtility.parseHTML('<div><input id="testInput" type="text" value="test"/><div id="validateMsg"></div></div>');
+        testDiv.appendChild(testElements);
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
+            'body {dataContext:/exceptionTestData;}'+
+            '#testInput{value>{if(value.length<4) throw new Error("short");if(value.length>8) throw new Error("long");}:name}'+
+            '#validateMsg{innerText:!#testInput.value>{if(value)return value.message; else return "";}; style.color:!#testInput.value>{if(value)return "red"; else return "black";}} '+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.processTemplateNodes();
+        scope.HTMLKnotManager.bind();
+
+        window.exceptionTestData = {name:"test"};
+
+        var testInput = document.querySelector("#testInput");
+        var msg = document.querySelector("#validateMsg");
+
+        testInput.value = "bi";
+        KnotTestUtility.raiseDOMEvent(testInput, "change");
+        assert.equal(msg.innerText, "short");
+        assert.equal(msg.style.color, "red");
+
+        testInput.value = "bingoando";
+        KnotTestUtility.raiseDOMEvent(testInput, "change");
+        assert.equal(msg.innerText, "long");
+        assert.equal(msg.style.color, "red");
+
+        var status = [];
+        scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
+        assert.equal(status.length, 1);
+        assert.equal(status[0].node, testInput);
+        assert.equal(status[0].accessPointName, "value");
+        assert.equal(status[0].error.message, "long");
+
+        testInput.value = "bingo";
+        KnotTestUtility.raiseDOMEvent(testInput, "change");
+        assert.equal(msg.innerText, "");
+        assert.equal(msg.style.color, "black");
+
+        status = [];
+        scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
+        assert.equal(status.length, 0);
+
+        scope.HTMLKnotManager.clear();
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+        scope.HTMLKnotManager.normalizedCBS = [];
+        KnotTestUtility.clearAllKnotInfo(document.body);
+    });
 })();
