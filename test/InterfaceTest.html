@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>QUnit basic example</title>
+    <link rel="stylesheet" href="http://code.jquery.com/qunit/qunit-git.css">
+
+    <script src="http://code.jquery.com/qunit/qunit-git.js"></script>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <script src="./TestUtility.js"></script>
+
+    <script src="../src/core/NameSpace.js"></script>
+
+    <script src="../src/core/Utility.js"></script>
+    <script src="../src/core/Deferred.js"></script>
+    <script src="../src/core/AttachedData.js"></script>
+    <script src="../src/core/DataMonitor.js"></script>
+    <script src="../src/core/ArrayMonitor.js"></script>
+    <script src="../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../src/core/OptionParser.js"></script>
+    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/HTMLAPProvider.js"></script>
+    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/KnotInterface.js"></script>
+
+
+    <script type="text/cbs">
+    body{
+        dataContext:/testDataModel
+    }
+    #testMessage{
+        innerText:name>{return "Hello " + value;}
+    }
+    #testDiv2{
+        dataContext:childObj
+    }
+    #testDiv3{
+        innerText:title
+    }
+    </script>
+
+    <script>
+        var testDataModel = {
+            name:"yoda",
+            childObj:{title:"master"}
+        };
+
+
+        Knot.ready(function(succ, err){
+            if(!succ)
+                alert(err.message);
+            else
+                doTest();
+        })
+
+
+        function doTest(){
+            QUnit.test( "Integration test", function( assert ) {
+                assert.equal($("#testInput").val(), "yoda", "initial value is set");
+                assert.equal($("#testMessage").text(), "Hello yoda", "initial value is set");
+
+                testDataModel.name = "laozi";
+                assert.equal($("#testInput").val(), "laozi", "change data then check the result");
+                assert.equal($("#testMessage").text(), "Hello laozi", "change data then check the result");
+
+                $("#testInput").val("satoshi");
+                KnotTestUtility.raiseDOMEvent($("#testInput")[0], "change");
+                assert.equal($("#testInput").val(), "satoshi", "change input.value then check the result");
+                assert.equal($("#testMessage").text(), "Hello satoshi", "change input.value then check the result");
+
+                assert.equal(Knot.getDataContext($("#testDiv")[0]), testDataModel, "getDataContext works");
+                assert.equal(Knot.getDataContext($("#testDiv3")[0]), testDataModel.childObj, "getDataContext works");
+                assert.equal($("#testDiv3").text(), "master", "getDataContext works");
+            });
+        }
+
+    </script>
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+
+<div style="opacity: 0">
+    <input id="testInput" type="text" binding="value:name">
+    <div id="testMessage"></div>
+    <div><div><div id="testDiv"><div id="testDiv2"><div id="testDiv3"></div></div></div></div></div>
+</div>
+</body>
+</html>

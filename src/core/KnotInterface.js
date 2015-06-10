@@ -44,6 +44,10 @@
         __private.HTMLKnotManager.clear();
     }
 
+    window.Knot.getDataContext = function(htmlElement){
+        return __private.HTMLKnotManager.getDataContextOfHTMLNode(htmlElement);
+    }
+
     //automatically initialize when loading
     var _onReadyCallback;
     var _initError;
@@ -57,7 +61,7 @@
     function notifyInitOver(){
         if(!_onReadyCallback)
             return;
-        if(!_initError)
+        if(_initError)
             _onReadyCallback(false, _initError);
         else if(window.Knot.isReady)
             _onReadyCallback(true);
@@ -65,7 +69,7 @@
 
     window.Knot.isReady = false;
 
-    document.body.addEventListener("load", function(){
+    window.onload = function(){
         var deferred =__private.HTMLKnotManager.parseCBS();
 
         deferred.done(function(){
@@ -81,5 +85,5 @@
             _initError = error;
             notifyInitOver();
         });
-    });
+    };
 })();

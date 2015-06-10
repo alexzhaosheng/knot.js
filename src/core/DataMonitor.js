@@ -125,19 +125,25 @@
             attached.dataHookInfo.hookRefCount[property] = 1;
 
             //define a new property to overwrite the current one
-            Object.defineProperty(object, property, {
-                set:function(v){
-                    var oldValue = attached.dataHookInfo.data[property];
-                    if(oldValue == v)
-                        return;
-                    attached.dataHookInfo.data[property] = v;
-                    __private.DataMonitor.notifyDataChanged(this, property, oldValue, v);
-                },
-                get:function(){
-                    return attached.dataHookInfo.data[property];
-                },
-                configurable:true, enumerable:true
-            })
+            try{
+                Object.defineProperty(object, property, {
+                    set:function(v){
+                        var oldValue = attached.dataHookInfo.data[property];
+                        if(oldValue == v)
+                            return;
+                        attached.dataHookInfo.data[property] = v;
+                        __private.DataMonitor.notifyDataChanged(this, property, oldValue, v);
+                    },
+                    get:function(){
+                        return attached.dataHookInfo.data[property];
+                    },
+                    configurable:true, enumerable:true
+                })
+            }
+            catch (err){
+                //when trying to hook the global variable from "window" object, it just fail
+                __private.Log.warning(__private.Log.Source.Knot, "Hook property failed.", err)
+            }
         },
 
         unhookProperty: function(object, property){

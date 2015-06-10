@@ -102,8 +102,12 @@
             '</script>');
         headNode.appendChild(scriptBlock);
 
-        var input =  KnotTestUtility.parseHTML('<input type="text" id="userNameInput" binding="isEnabled:isActivated;style-background:age>{return value<=18?\'red\':\'green\';}"/>');
-        testDiv.appendChild(input);
+        var div =  KnotTestUtility.parseHTML('<div>' +
+            '<input type="text" id="userNameInput" binding="isEnabled:isActivated;style-background:age>{return value<=18?\'red\':\'green\';}"/>' +
+            '<input type="password" id="userPasswordInput" binding="isEnabled:isActivated"/>' +
+            '</div>');
+        testDiv.appendChild(div);
+        input = document.querySelector("#userNameInput");
 
         scope.HTMLKnotManager.parseCBS();
         scope.HTMLKnotManager.applyCBS();
@@ -123,6 +127,11 @@
         assert.equal(input.__knot.options[lastKnot].rightAP.name, "age", "check whether the on-node options is applied");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(10), "red", "check whether the on-node options is applied. check embedded function");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(30), "green", "check whether the on-node options is applied. check embedded function");
+
+        var passwordInput = document.querySelector("#userPasswordInput");
+        assert.equal(passwordInput.__knot!=null && passwordInput.__knot.options!= null, true, "check whether the embedded options is applied");
+        assert.equal(passwordInput.__knot.options[0].leftAP.name, "isEnabled", "check whether the embedded options is applied");
+        assert.equal(passwordInput.__knot.options[0].rightAP.name, "isActivated", "check whether the embedded options is applied");
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
@@ -254,15 +263,15 @@
         var newton={firstName:"issac", lastName:"newton"};
         window.templateTestData = {userList:[einstein, satoshi, laoZi], selectedUser:satoshi};
         assert.equal(list.childNodes.length, 3, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by knot with foreach binding");
+        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by knot with foreach binding");
+        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName, "check the nodes created by knot with foreach binding");
+        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName, "check the nodes created by knot with foreach binding");
+        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName, "check the nodes created by knot with foreach binding");
+        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName, "check the nodes created by knot with foreach binding");
 
-        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName, "check the node created by knot by content binding");
-        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName, "check the node created by knot by content binding");
+        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName, "check the node created by knot with content binding");
+        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName, "check the node created by knot with content binding");
 
 
         window.templateTestData.userList.push(newton);
@@ -316,8 +325,7 @@
         window.templateTestData.selectedUser =null;
         assert.equal(selected.childNodes.length, 0, "change data binding by content");
 
-
-        assert.equal(false, true, "Has template selector been done?");
+        delete window.templateTestData;
 
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
@@ -325,6 +333,87 @@
         scope.HTMLKnotManager.normalizedCBS = [];
 
         KnotTestUtility.clearAllKnotInfo(document.body);
+    });
+
+    QUnit.test("private.HTMLKnotManager.templateSelector", function(assert){
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var templateDiv = KnotTestUtility.parseHTML('<div>' +
+            '<div id="westernUserTemplate" knot-template ><span></span> <span></span><p>west</p></div>' +
+            '<div id="easternUserTemplate" knot-template ><span></span> <span></span><p>east asia</p></div>' +
+            '</div>');
+        testDiv.appendChild(templateDiv);
+
+        testDiv.appendChild(KnotTestUtility.parseHTML('<div><div id="selectedUser"></div><div id="userList"></div></div>'));
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
+            'body {dataContext:/templateTestData;}'+
+            '#westernUserTemplate>span:first-child{innerText:firstName}'+
+            '#westernUserTemplate>span:last-of-type{innerText:lastName}'+
+            '#easternUserTemplate>span:first-child{innerText:lastName}'+
+            '#easternUserTemplate>span:last-of-type{innerText:firstName}'+
+            '#selectedUser{content</testTemplateSelector:selectedUser}'+
+            '#userList{foreach</testTemplateSelector:userList}'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        window.testTemplateSelector = function(value){
+            if(value.isEastAsianName)
+                return scope.HTMLKnotManager.createFromTemplate("easternUserTemplate");
+            else
+                return scope.HTMLKnotManager.createFromTemplate("westernUserTemplate");
+        }
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.processTemplateNodes();
+        scope.HTMLKnotManager.bind();
+
+        try{
+            var list =document.querySelector("#userList");
+            var selected =document.querySelector("#selectedUser");
+
+            var einstein = {firstName:"albert", lastName:"einstein"};
+            var satoshi = {firstName:"satoshi", lastName:"nakamoto", isEastAsianName:true};
+            var laoZi={firstName:"dan", lastName:"li", isEastAsianName:true};
+            var newton={firstName:"issac", lastName:"newton"};
+            window.templateTestData = {userList:[einstein, satoshi, laoZi, newton], selectedUser:newton};
+
+            assert.equal(list.childNodes.length, 4, "check the nodes created by template selector by foreach binding");
+            assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by template selector. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by template selector. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[0].childNodes[3].innerText, "west", "check the nodes created by template selector. should be created from westernUserTemplate");
+
+            assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.firstName, "check the nodes created by template selector. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.lastName, "check the nodes created by template selector. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[1].childNodes[3].innerText, "east asia", "check the nodes created by template selector. should be created from westernUserTemplate");
+
+            assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.firstName,"check the nodes created by template selector. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.lastName, "check the nodes created by template selector. should be created from easternUserTemplate");
+
+            assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName, "check the nodes created by template selector. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName, "check the nodes created by template selector. should be created from westernUserTemplate");
+
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, newton.firstName, "check the node created by template selector with content binding. should be created from westernUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, newton.lastName, "check the node created by template selector with content binding.should be created from westernUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].innerText,"west", "check the node created by template selector with content binding.should be created from westernUserTemplate");
+
+            window.templateTestData.selectedUser = laoZi;
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.firstName, "check the node created by template selector with content binding. should be created from easternUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.lastName, "check the node created by template selector with content binding.should be created from easternUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].innerText, "east asia", "check the node created by template selector with content binding.should be created from easternUserTemplate");
+        }
+        finally{
+            delete window.templateTestData;
+
+            scope.HTMLKnotManager.clear();
+            headNode.removeChild(scriptBlock);
+            bodyNode.removeChild(testDiv);
+            scope.HTMLKnotManager.normalizedCBS = [];
+
+            KnotTestUtility.clearAllKnotInfo(document.body);
+        }
     });
 
     QUnit.test( "private.HTMLKnotManager.event", function( assert ) {

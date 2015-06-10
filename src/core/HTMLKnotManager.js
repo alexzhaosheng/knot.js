@@ -119,6 +119,37 @@
             }
         },
 
+        applyCBSForNode: function(node){
+            var cbsOptions = null;
+            if(node.__knot && node.__knot.cbsOptions){
+                cbsOptions = node.__knot.cbsOptions;
+                delete  node.__knot.cbsOptions;
+            }
+
+            if(node.attributes["binding"] && node.attributes["binding"].value){
+                if(!cbsOptions)
+                    cbsOptions = [];
+                var embeddedOptions = node.attributes["binding"].value;
+                embeddedOptions = __private.OptionParser.processEmbeddedFunctions(embeddedOptions);
+                embeddedOptions = embeddedOptions.split(";").map(function(t){return __private.Utility.trim(t);});
+                cbsOptions = cbsOptions.concat(embeddedOptions);
+            }
+            if(cbsOptions){
+                for(var j=0; j<cbsOptions.length; j++){
+                    if(!node.__knot)
+                        node.__knot={options:[]};
+                    //each item of "cbsOptions" only contains the option for one knot
+                    var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
+                    if(parsedOption.length != 0){
+                        node.__knot.options.push(parsedOption[0]);
+                    }
+                }
+            }
+
+            for(var i=0; i< node.children.length; i++)
+                this.applyCBSForNode(node.children[i]);
+        },
+
         applyCBS: function(){
             for(var selector in this.normalizedCBS){
                 var elements = document.querySelectorAll(selector);
@@ -127,21 +158,11 @@
                     if(!elements[i].__knot){
                         elements[i].__knot = {options: []};
                     }
-                    if(elements[i].attributes["binding"] &&  elements[i].attributes["binding"].value){
-                        var embeddedOptions = elements[i].attributes["binding"].value;
-                        embeddedOptions = __private.OptionParser.processEmbeddedFunctions(embeddedOptions);
-                        embeddedOptions = embeddedOptions.split(";").map(function(t){return __private.Utility.trim(t);});
-                        cbsOptions = cbsOptions.concat(embeddedOptions);
-                    }
-                    for(var j=0; j<cbsOptions.length; j++){
-                        //each item of "cbsOptions" only contains the option for one knot
-                        var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
-                        if(parsedOption.length != 0){
-                            elements[i].__knot.options.push(parsedOption[0]);
-                        }
-                    }
+                    elements[i].__knot.cbsOptions = cbsOptions.slice(0);
                 }
             }
+
+            this.applyCBSForNode(document.body);
         },
 
         processTemplateNodes: function(){
@@ -263,6 +284,15 @@
             else{
                 for(var i=0; i<node.childNodes.length; i++)
                     this.updateDataContext(node.childNodes[i], data);
+            }
+        },
+
+        getDataContextOfHTMLNode: function(node){
+            var n = node;
+            while(n){
+                if(n.__knot)
+                    return n.__knot.dataContext;
+                n = n.parentNode;
             }
         },
 
