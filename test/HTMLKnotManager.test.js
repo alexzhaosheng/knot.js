@@ -25,12 +25,12 @@
 
         scope.HTMLKnotManager.parseCBS();
 
-        assert.equal(findCBS("#cbsTest") != null, true);
-        assert.equal(findCBS("#cbsTest").length, 1);
-        assert.equal(findCBS(".cbsTestClass span").length, 3);
-        assert.equal(findCBS(".cbsTestClass span")[0], "text:title");
-        assert.equal(findCBS(".cbsTestClass span")[1], "text:description");
-        assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid");
+        assert.equal(findCBS("#cbsTest") != null, true, "parseCBS works");
+        assert.equal(findCBS("#cbsTest").length, 1, "parseCBS works");
+        assert.equal(findCBS(".cbsTestClass span").length, 3, "parseCBS works");
+        assert.equal(findCBS(".cbsTestClass span")[0], "text:title", "parseCBS works");
+        assert.equal(findCBS(".cbsTestClass span")[1], "text:description", "parseCBS works");
+        assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid", "parseCBS works");
 
 
         resetTest();
@@ -44,15 +44,15 @@
 
         scope.HTMLKnotManager.parseCBS();
 
-        assert.equal(findCBS("#cbsTest") != null, true);
-        assert.equal(findCBS("#cbsTest").length, 1);
-        assert.equal(findCBS("#cbsTest")[0].substr(0, "value:test>".length), "value:test>");
+        assert.equal(findCBS("#cbsTest") != null, true, "parseCBS with embedded function works");
+        assert.equal(findCBS("#cbsTest").length, 1, "parseCBS with embedded function works");
+        assert.equal(findCBS("#cbsTest")[0].substr(0, "value:test>".length), "value:test>", "parseCBS with embedded function works");
         var func = findCBS("#cbsTest")[0].substr("value:test>".length);
-        assert.equal(scope.GlobalSymbolHelper.getSymbol(func)(3) , 30);
-        assert.equal(findCBS(".cbsTestClass span").length, 3);
-        assert.equal(findCBS(".cbsTestClass span")[0], "text:title");
-        assert.equal(findCBS(".cbsTestClass span")[1], "text:description");
-        assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid");
+        assert.equal(scope.GlobalSymbolHelper.getSymbol(func)(3) , 30, "parseCBS with embedded function works");
+        assert.equal(findCBS(".cbsTestClass span").length, 3, "parseCBS with embedded function works");
+        assert.equal(findCBS(".cbsTestClass span")[0], "text:title", "parseCBS with embedded function works");
+        assert.equal(findCBS(".cbsTestClass span")[1], "text:description", "parseCBS with embedded function works");
+        assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid", "parseCBS with embedded function works");
 
         resetTest();
     });
@@ -71,16 +71,16 @@
         headNode.appendChild(cbsScriptBlock);
 
         scope.HTMLKnotManager.parseCBS().done(function(){
-                assert.equal(findCBS("#cbsTest") != null, true);
-                assert.equal(findCBS("#cbsTest").length, 3);
-                assert.equal(findCBS("#cbsTest")[1].substr(0, "checked:gender>".length), "checked:gender>");
+                assert.equal(findCBS("#cbsTest") != null, true, "parseCBS from stand along CBS file");
+                assert.equal(findCBS("#cbsTest").length, 3, "parseCBS from stand along CBS file");
+                assert.equal(findCBS("#cbsTest")[1].substr(0, "checked:gender>".length), "checked:gender>", "parseCBS from stand along CBS file");
                 var func = findCBS("#cbsTest")[1].substr("checked:gender>".length);
-                assert.equal(scope.GlobalSymbolHelper.getSymbol(func)("m") , true);
-                assert.equal(scope.GlobalSymbolHelper.getSymbol(func)("f") , false);
-                assert.equal(findCBS(".cbsTestClass span").length, 3);
-                assert.equal(findCBS(".cbsTestClass span")[0], "text:title");
-                assert.equal(findCBS(".cbsTestClass span")[1], "text:description");
-                assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid");
+                assert.equal(scope.GlobalSymbolHelper.getSymbol(func)("m") , true, "parseCBS from stand along CBS file");
+                assert.equal(scope.GlobalSymbolHelper.getSymbol(func)("f") , false, "parseCBS from stand along CBS file");
+                assert.equal(findCBS(".cbsTestClass span").length, 3, "parseCBS from stand along CBS file");
+                assert.equal(findCBS(".cbsTestClass span")[0], "text:title", "parseCBS from stand along CBS file");
+                assert.equal(findCBS(".cbsTestClass span")[1], "text:description", "parseCBS from stand along CBS file");
+                assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid", "parseCBS from stand along CBS file");
 
                 headNode.removeChild(cbsFileScriptBlock);
                 headNode.removeChild(cbsScriptBlock);
@@ -107,22 +107,22 @@
 
         scope.HTMLKnotManager.parseCBS();
         scope.HTMLKnotManager.applyCBS();
-        assert.equal(input.__knot.options != null, true);
-        assert.equal(input.__knot.options[0] != null, true);
-        assert.equal(input.__knot.options[0].leftAP.name, "text");
-        assert.equal(input.__knot.options[0].rightAP.name, "name");
+        assert.equal(input.__knot.options != null, true, "check whether the options in CBS is applied");
+        assert.equal(input.__knot.options[0] != null, true, "check whether the options in CBS is applied");
+        assert.equal(input.__knot.options[0].leftAP.name, "text", "check whether the options in CBS is applied");
+        assert.equal(input.__knot.options[0].rightAP.name, "name", "check whether the options in CBS is applied");
 
-        assert.equal(input.__knot.options[1] != null, true);
-        assert.equal(input.__knot.options[1].leftAP.name, "isEnabled");
-        assert.equal(input.__knot.options[1].rightAP.name, "isActivated");
+        assert.equal(input.__knot.options[1] != null, true, "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[1].leftAP.name, "isEnabled", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[1].rightAP.name, "isActivated", "check whether the on-node options is applied");
 
         var lastKnot = input.__knot.options.length-1;
 
-        assert.equal(lastKnot != null, true);
-        assert.equal(input.__knot.options[lastKnot].leftAP.name, "style-background");
-        assert.equal(input.__knot.options[lastKnot].rightAP.name, "age");
-        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(10), "red");
-        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(30), "green");
+        assert.equal(lastKnot != null, true, "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[lastKnot].leftAP.name, "style-background", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[lastKnot].rightAP.name, "age", "check whether the on-node options is applied");
+        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(10), "red", "check whether the on-node options is applied. check embedded function");
+        assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(30), "green", "check whether the on-node options is applied. check embedded function");
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
@@ -160,59 +160,59 @@
         window.knotTestData = data;
 
         var userNameInput = document.querySelector("#userNameInput");
-        assert.equal(userNameInput.__knot.dataContext, data.user);
+        assert.equal(userNameInput.__knot.dataContext, data.user, "updateDataContext works");
 
         var groupTitleInput = document.querySelector("#groupNameInput");
-        assert.equal(groupTitleInput.__knot.dataContext, data.group);
+        assert.equal(groupTitleInput.__knot.dataContext, data.group, "updateDataContext works");
 
-        assert.equal(userNameInput.value, "alex");
-        assert.equal(groupTitleInput.value, "t1");
+        assert.equal(userNameInput.value, "alex", "updateDataContext works");
+        assert.equal(groupTitleInput.value, "t1", "updateDataContext works");
 
         userNameInput.value = "satoshi";
         KnotTestUtility.raiseDOMEvent(userNameInput, "change");
-        assert.equal(data.user.name, "satoshi");
+        assert.equal(data.user.name, "satoshi", "change value on html element and check the binding object");
         data.user.name = "einstein";
-        assert.equal(userNameInput.value, "einstein");
+        assert.equal(userNameInput.value, "einstein", "change value on html element and check the binding object");
 
 
         var oldUserObj = data.user;
         data.user = {name:"turing"};
-        assert.equal(userNameInput.value, "turing");
+        assert.equal(userNameInput.value, "turing", "change value on object then check the binding html element");
         data.user.name = "feynman";
-        assert.equal(userNameInput.value, "feynman");
+        assert.equal(userNameInput.value, "feynman", "change value on object then check the binding html element");
         userNameInput.value = "satoshi nakamoto";
         KnotTestUtility.raiseDOMEvent(userNameInput, "change");
-        assert.equal(data.user.name, "satoshi nakamoto");
+        assert.equal(data.user.name, "satoshi nakamoto", "change value on html element and check the binding object");
 
         oldUserObj.name = "laozi";
-        assert.equal(data.user.name, "satoshi nakamoto");
-        assert.equal(userNameInput.value, "satoshi nakamoto");
+        assert.equal(data.user.name, "satoshi nakamoto", "change value on old object, should has no effect to the relevant element");
+        assert.equal(userNameInput.value, "satoshi nakamoto", "change value on old object, should has no effect to the relevant element");
 
 
         data = {user:{name:"einstein"}, group:{title:"tx"}};
         window.knotTestData = data;
-        assert.equal(userNameInput.value, "einstein");
-        assert.equal(groupTitleInput.value, "tx");
+        assert.equal(userNameInput.value, "einstein", "change to another object and check the relevant values on html element");
+        assert.equal(groupTitleInput.value, "tx", "change to another object and check the relevant values on html element");
         data.user.name = "feynman";
-        assert.equal(userNameInput.value, "feynman");
+        assert.equal(userNameInput.value, "feynman", "change to another object and check the relevant values on html element");
         userNameInput.value = "satoshi nakamoto";
-        KnotTestUtility.raiseDOMEvent(userNameInput, "change");
-        assert.equal(data.user.name, "satoshi nakamoto");
+        KnotTestUtility.raiseDOMEvent(userNameInput, "change", "change to another object and check the relevant values on html element");
+        assert.equal(data.user.name, "satoshi nakamoto", "change to another object and check the relevant values on html element");
 
         data.user = null;
-        assert.equal(userNameInput.value, "");
+        assert.equal(userNameInput.value, "", "change to null object");
         data.user = {name:"laozi"};
-        assert.equal(userNameInput.value, "laozi");
+        assert.equal(userNameInput.value, "laozi", "change from null object");
 
         userNameInput.value = "";
         scope.HTMLKnotManager.clear();
         data.user.name = "feyman";
-        assert.equal(userNameInput.value, "");
+        assert.equal(userNameInput.value, "", "clear works");
         data.user = {name:"turing"};
-        assert.equal(userNameInput.value, "");
+        assert.equal(userNameInput.value, "", "clear works");
         data = {user:{name:"einstein"}, group:{title:"tx"}};
         window.knotTestData = data;
-        assert.equal(userNameInput.value, "");
+        assert.equal(userNameInput.value, "", "clear works");
 
 
         headNode.removeChild(scriptBlock);
@@ -253,68 +253,68 @@
         var laoZi={firstName:"dan", lastName:"li"};
         var newton={firstName:"issac", lastName:"newton"};
         window.templateTestData = {userList:[einstein, satoshi, laoZi], selectedUser:satoshi};
-        assert.equal(list.childNodes.length, 3);
-        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName);
-        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName);
-        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName);
-        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName);
-        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName);
-        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName);
+        assert.equal(list.childNodes.length, 3, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName, "check the nodes created by knot by foreach binding");
+        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName, "check the nodes created by knot by foreach binding");
 
-        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName);
-        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName);
+        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName, "check the node created by knot by content binding");
+        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName, "check the node created by knot by content binding");
 
 
         window.templateTestData.userList.push(newton);
-        assert.equal(list.childNodes.length, 4);
-        assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName);
-        assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName);
+        assert.equal(list.childNodes.length, 4, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
 
         window.templateTestData.userList.splice(1,1);
-        assert.equal(list.childNodes.length, 3);
-        assert.equal(list.childNodes[1].childNodes[0].innerText, laoZi.firstName);
-        assert.equal(list.childNodes[1].childNodes[2].innerText, laoZi.lastName);
-        assert.equal(list.childNodes[2].childNodes[0].innerText, newton.firstName);
-        assert.equal(list.childNodes[2].childNodes[2].innerText, newton.lastName);
+        assert.equal(list.childNodes.length, 3, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[1].childNodes[0].innerText, laoZi.firstName, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[1].childNodes[2].innerText, laoZi.lastName, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[2].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
+        assert.equal(list.childNodes[2].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
 
         window.templateTestData.userList = null;
-        assert.equal(list.childNodes.length, 0);
+        assert.equal(list.childNodes.length, 0, "set list to null");
         window.templateTestData.userList = [newton, einstein];
-        assert.equal(list.childNodes.length, 2);
-        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName);
-        assert.equal(list.childNodes[0].childNodes[2].innerText, newton.lastName);
-        assert.equal(list.childNodes[1].childNodes[0].innerText, einstein.firstName);
-        assert.equal(list.childNodes[1].childNodes[2].innerText, einstein.lastName);
+        assert.equal(list.childNodes.length, 2, "set list from null");
+        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "set list from null");
+        assert.equal(list.childNodes[0].childNodes[2].innerText, newton.lastName, "set list from null");
+        assert.equal(list.childNodes[1].childNodes[0].innerText, einstein.firstName, "set list from null");
+        assert.equal(list.childNodes[1].childNodes[2].innerText, einstein.lastName, "set list from null");
 
         newton.firstName = "Newton";
-        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName);
+        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "change value on item, the change reflect to html elements");
         newton.firstName = "newton";
 
         window.templateTestData.userList.push(satoshi);
         window.templateTestData.userList.push(laoZi);
 
-        assert.equal(list.childNodes.length, 4);
-        assert.equal(list.childNodes[2].childNodes[0].innerText, satoshi.firstName);
-        assert.equal(list.childNodes[2].childNodes[2].innerText, satoshi.lastName);
+        assert.equal(list.childNodes.length, 4, "test sort array");
+        assert.equal(list.childNodes[2].childNodes[0].innerText, satoshi.firstName, "test sort array");
+        assert.equal(list.childNodes[2].childNodes[2].innerText, satoshi.lastName, "test sort array");
 
         window.templateTestData.userList.sort(function(a,b){return a.firstName> b.firstName?1:-1});
-        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName);
-        assert.equal(list.childNodes[3].childNodes[2].innerText, satoshi.lastName);
+        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "test sort array");
+        assert.equal(list.childNodes[3].childNodes[2].innerText, satoshi.lastName, "test sort array");
 
 
         //test duplicated element in array
         window.templateTestData.userList.push(newton);
-        assert.equal(list.childNodes.length, 5);
-        assert.equal(list.childNodes[4].childNodes[0].innerText, newton.firstName);
-        assert.equal(list.childNodes[4].childNodes[2].innerText, newton.lastName);
+        assert.equal(list.childNodes.length, 5, "duplicated items in array");
+        assert.equal(list.childNodes[4].childNodes[0].innerText, newton.firstName, "duplicated items in array");
+        assert.equal(list.childNodes[4].childNodes[2].innerText, newton.lastName, "duplicated items in array");
 
 
         window.templateTestData.selectedUser =laoZi;
-        assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.firstName);
-        assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.lastName);
+        assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.firstName, "change data binding by content");
+        assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.lastName, "change data binding by content");
 
         window.templateTestData.selectedUser =null;
-        assert.equal(selected.childNodes.length, 0);
+        assert.equal(selected.childNodes.length, 0, "change data binding by content");
 
 
         assert.equal(false, true, "Has template selector been done?");
@@ -353,18 +353,18 @@
         window.eventClickedCount = 0;
         var testButton = document.querySelector("#testButton");
         KnotTestUtility.raiseDOMEvent(testButton, "click");
-        assert.equal(window.eventClickedCount, 1);
+        assert.equal(window.eventClickedCount, 1, "click event works");
         KnotTestUtility.raiseDOMEvent(testButton, "click");
-        assert.equal(window.eventClickedCount, 2);
-        assert.equal(window.latestThisPointer, window);
+        assert.equal(window.eventClickedCount, 2, "click event works");
+        assert.equal(window.latestThisPointer, window, "click event works, this pointer in handler is correct");
 
         window.eventTestData = {name:"test"};
         KnotTestUtility.raiseDOMEvent(testButton, "click");
-        assert.equal(window.eventClickedCount, 4);
-        assert.equal(window.latestThisPointer, window.eventTestData);
+        assert.equal(window.eventClickedCount, 4, "click event works, this pointer in handler is correct");
+        assert.equal(window.latestThisPointer, window.eventTestData, "click event works, this pointer in handler is correct");
 
         KnotTestUtility.raiseDOMEvent(testButton, "mouseover");
-        assert.equal(latestSender, testButton);
+        assert.equal(latestSender, testButton, "sender of the event is correct");
 
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
@@ -398,29 +398,29 @@
 
         testInput.value = "bi";
         KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "short");
-        assert.equal(msg.style.color, "red");
+        assert.equal(msg.innerText, "short", "binding to exception works");
+        assert.equal(msg.style.color, "red", "binding to exception works");
 
         testInput.value = "bingoando";
         KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "long");
-        assert.equal(msg.style.color, "red");
+        assert.equal(msg.innerText, "long", "binding to exception works");
+        assert.equal(msg.style.color, "red", "binding to exception works");
 
         var status = [];
         scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
-        assert.equal(status.length, 1);
-        assert.equal(status[0].node, testInput);
-        assert.equal(status[0].accessPointName, "value");
-        assert.equal(status[0].error.message, "long");
+        assert.equal(status.length, 1, "getErrorStatusInformation works");
+        assert.equal(status[0].node, testInput, "getErrorStatusInformation works");
+        assert.equal(status[0].accessPointName, "value", "getErrorStatusInformation works");
+        assert.equal(status[0].error.message, "long", "getErrorStatusInformation works");
 
         testInput.value = "bingo";
         KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "");
-        assert.equal(msg.style.color, "black");
+        assert.equal(msg.innerText, "", "error status is cleared");
+        assert.equal(msg.style.color, "black", "error status is cleared");
 
         status = [];
         scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
-        assert.equal(status.length, 0);
+        assert.equal(status.length, 0, "error status is cleared");
 
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);

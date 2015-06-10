@@ -38,11 +38,11 @@
         scope.AccessPointManager.registerAPProvider(testAp);
 
         assert.equal(scope.AccessPointManager.getProvider(target1,"value"),
-                    testAp);
+                    testAp, "newly registered AP provider overwrite the previous providers");
         assert.equal(scope.AccessPointManager.getProvider(target1,"testAX"),
-            apProvider);
+            apProvider, "newly registered AP provider overwrite the previous providers");
         assert.equal(scope.AccessPointManager.getProvider(target2,"value"),
-            apProvider);
+            apProvider, "newly registered AP provider overwrite the previous providers");
 
         scope.AccessPointManager.unregisterAPProvider(testAp);
         scope.AccessPointManager.unregisterAPProvider(apProvider);
@@ -52,54 +52,51 @@
         knots[0].leftAP.provider = scope.AccessPointManager.getProvider(target1, knots[0].leftAP.name);
         knots[0].rightAP.provider = scope.AccessPointManager.getProvider(target2, knots[0].rightAP.name);
         assert.equal(scope.AccessPointManager.getValueThroughPipe(target1, knots[0].leftAP),
-                    10);
-        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].leftAP),
-            1);
+                    10, "getValueThroughPipe works");
+        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].leftAP), 1, "getValueThroughPipe works");
 
         target2.apOnData = {intValue:1};
-        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].rightAP),
-            false);
+        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].rightAP), false, "getValueThroughPipe works");
         target2.apOnData.intValue = 10;
-        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].rightAP),
-            true);
+        assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].rightAP), true, "getValueThroughPipe works");
 
 
         target1.value = false;
         scope.AccessPointManager.tieKnot(target1, target2, knots[0]);
 
         //initial value should be set from dataContext to element
-        assert.equal(target1.value, true);
-        assert.equal(target2.apOnData.intValue, 10);
+        assert.equal(target1.value, true, "initial value should be set from right to left");
+        assert.equal(target2.apOnData.intValue, 10, "initial value should be set  from right to left");
 
         target2.apOnData.intValue = 1;
-        assert.equal(target1.value, false);
-        assert.equal(target2.apOnData.intValue, 1);
+        assert.equal(target1.value, false, "knot works");
+        assert.equal(target2.apOnData.intValue, 1, "knot works");
 
         target2.apOnData.intValue = 10;
-        assert.equal(target1.value, true);
-        assert.equal(target2.apOnData.intValue, 10);
+        assert.equal(target1.value, true, "knot works");
+        assert.equal(target2.apOnData.intValue, 10, "knot works");
 
         target1.value = false;
-        assert.equal(target1.value, false);
-        assert.equal(target2.apOnData.intValue, 1);
+        assert.equal(target1.value, false, "knot works");
+        assert.equal(target2.apOnData.intValue, 1, "knot works");
 
         target1.value = true;
-        assert.equal(target1.value, true);
-        assert.equal(target2.apOnData.intValue, 10);
+        assert.equal(target1.value, true, "knot works");
+        assert.equal(target2.apOnData.intValue, 10, "knot works");
 
 
         scope.AccessPointManager.untieKnot(target1, target2, knots[0]);
         target1.value = false;
-        assert.equal(target1.value, false);
-        assert.equal(target2.apOnData.intValue, 10);
+        assert.equal(target1.value, false, "untieKnot works");
+        assert.equal(target2.apOnData.intValue, 10, "untieKnot works");
 
         target1.value = true;
-        assert.equal(target1.value, true);
-        assert.equal(target2.apOnData.intValue, 10);
+        assert.equal(target1.value, true, "untieKnot works");
+        assert.equal(target2.apOnData.intValue, 10, "untieKnot works");
 
         target2.apOnData.intValue = 1;
-        assert.equal(target1.value, true);
-        assert.equal(target2.apOnData.intValue, 1);
+        assert.equal(target1.value, true, "untieKnot works");
+        assert.equal(target2.apOnData.intValue, 1, "untieKnot works");
 
 
         //test pipes in global scope
@@ -140,15 +137,15 @@
         knots = scope.OptionParser.parse("strValue>converter.strToInt:intValue>converter.intToString");
         target2 = {intValue: 1};
         target1 = {strValue: ""};
-        scope.AccessPointManager.tieKnot(target1, target2, knots[0]);
+        scope.AccessPointManager.tieKnot(target1, target2, knots[0], "test pipes from global scope");
 
-        assert.equal(target1.strValue, "one");
-        assert.equal(target2.intValue, 1);
-        assert.equal(target2, latestThisPointer);
+        assert.equal(target1.strValue, "one", "test pipes from global scope");
+        assert.equal(target2.intValue, 1, "test pipes from global scope");
+        assert.equal(target2, latestThisPointer, "test pipes from global scope");
 
         target2.intValue = 2;
-        assert.equal(target1.strValue, "two");
-        assert.equal(target2.intValue, 2);
+        assert.equal(target1.strValue, "two", "test pipes from global scope");
+        assert.equal(target2.intValue, 2, "test pipes from global scope");
 
         scope.AccessPointManager.untieKnot(target1, target2, knots[0]);
 
@@ -163,36 +160,36 @@
         scope.AccessPointManager.tieKnot(target1, target2, knot1);
         scope.AccessPointManager.tieKnot(target3, target2, knot2);
 
-        assert.equal(target1.strValue, "two");
-        assert.equal(target3.dotValue, "..");
-        assert.equal(target2.intValue, 2);
+        assert.equal(target1.strValue, "two", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target3.dotValue, "..", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target2.intValue, 2, "test multiple knots tied up to the same AP, and become a chain");
 
         target1.strValue = "one";
-        assert.equal(target1.strValue, "one");
-        assert.equal(target3.dotValue, ".");
-        assert.equal(target2.intValue, 1);
+        assert.equal(target1.strValue, "one", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target3.dotValue, ".", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target2.intValue, 1, "test multiple knots tied up to the same AP, and become a chain");
 
         target3.dotValue = "..";
-        assert.equal(target1.strValue, "two");
-        assert.equal(target3.dotValue, "..");
-        assert.equal(target2.intValue, 2);
+        assert.equal(target1.strValue, "two", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target3.dotValue, "..", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target2.intValue, 2, "test multiple knots tied up to the same AP, and become a chain");
 
         target2.intValue = 1;
-        assert.equal(target1.strValue, "one");
-        assert.equal(target3.dotValue, ".");
-        assert.equal(target2.intValue, 1);
+        assert.equal(target1.strValue, "one", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target3.dotValue, ".", "test multiple knots tied up to the same AP, and become a chain");
+        assert.equal(target2.intValue, 1, "test multiple knots tied up to the same AP, and become a chain");
 
         scope.AccessPointManager.untieKnot(target1, target2, knot1);
         target3.dotValue = "..";
-        assert.equal(target1.strValue, "one");
-        assert.equal(target3.dotValue, "..");
-        assert.equal(target2.intValue, 2);
+        assert.equal(target1.strValue, "one", "untie a part of the chain");
+        assert.equal(target3.dotValue, "..", "untie a part of the chain");
+        assert.equal(target2.intValue, 2, "untie a part of the chain");
 
         scope.AccessPointManager.untieKnot(target3, target2, knot2);
         target3.dotValue = ".";
-        assert.equal(target1.strValue, "one");
-        assert.equal(target3.dotValue, ".");
-        assert.equal(target2.intValue, 2);
+        assert.equal(target1.strValue, "one", "untie the whole chain");
+        assert.equal(target3.dotValue, ".", "untie the whole chain");
+        assert.equal(target2.intValue, 2, "untie the whole chain");
 
 
         window.areTheySame = function(values){
@@ -207,33 +204,33 @@
         var knot = scope.OptionParser.parse("boolValue:(strValue>converter.strToInt & dotValue>converter.dotsToInt)> areTheySame")[0];
         target1 = {strValue:"one", dotValue:".."};
         target2 = {boolValue:true};
-        scope.AccessPointManager.tieKnot(target2, target1, knot);
+        scope.AccessPointManager.tieKnot(target2, target1, knot, "tie with n to 1 pipe");
 
-        assert.equal(target1.strValue, "one");
-        assert.equal(target1.dotValue, "..");
-        assert.equal(target2.boolValue, false);
+        assert.equal(target1.strValue, "one", "tie with n to 1 pipe");
+        assert.equal(target1.dotValue, "..", "tie with n to 1 pipe");
+        assert.equal(target2.boolValue, false, "tie with n to 1 pipe");
 
 
         target1.strValue = "two";
-        assert.equal(target1.strValue, "two");
-        assert.equal(target1.dotValue, "..");
-        assert.equal(target2.boolValue, true);
+        assert.equal(target1.strValue, "two", "tie with n to 1 pipe");
+        assert.equal(target1.dotValue, "..", "tie with n to 1 pipe");
+        assert.equal(target2.boolValue, true, "tie with n to 1 pipe");
 
         target1.dotValue = ".";
-        assert.equal(target1.strValue, "two");
-        assert.equal(target1.dotValue, ".");
-        assert.equal(target2.boolValue, false);
+        assert.equal(target1.strValue, "two", "tie with n to 1 pipe");
+        assert.equal(target1.dotValue, ".", "tie with n to 1 pipe");
+        assert.equal(target2.boolValue, false, "tie with n to 1 pipe");
 
         target1.strValue = "one";
-        assert.equal(target1.strValue, "one");
-        assert.equal(target1.dotValue, ".");
-        assert.equal(target2.boolValue, true);
+        assert.equal(target1.strValue, "one", "tie with n to 1 pipe");
+        assert.equal(target1.dotValue, ".", "tie with n to 1 pipe");
+        assert.equal(target2.boolValue, true, "tie with n to 1 pipe");
 
         scope.AccessPointManager.untieKnot(target2, target1, knot);
         target1.strValue = "two";
-        assert.equal(target1.strValue, "two");
-        assert.equal(target1.dotValue, ".");
-        assert.equal(target2.boolValue, true);
+        assert.equal(target1.strValue, "two", "untie knot with n to 1 pipe");
+        assert.equal(target1.dotValue, ".", "untie knot with n to 1 pipe");
+        assert.equal(target2.boolValue, true, "untie knot with n to 1 pipe");
 
     });
 })();

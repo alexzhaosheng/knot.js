@@ -1,7 +1,7 @@
 (function(){
     var scope = Knot.getPrivateScope();
 
-    QUnit.test( "private.Deferred.resolve", function( assert ) {
+    QUnit.test( "private.Deferred", function( assert ) {
         var result = null;
         var error = null;
 
@@ -13,12 +13,12 @@
 
             });
 
-        assert.equal(true, result === null);
-        assert.equal(true, error === null);
+        assert.equal(result, null, "make sure 'done' is not executed");
+        assert.equal(error, null, "make sure 'done' is not executed");
 
         d.resolve("test res");
-        assert.equal(true, result === "test res");
-        assert.equal(true, error === null);
+        assert.equal(result, "test res", '"done" is executed by calling success callback');
+        assert.equal(error, null, '"done" is executed by calling success callback');
 
         result = null;
         error = null;
@@ -30,12 +30,12 @@
                 error = err;
             });
 
-        assert.equal(true, result === null);
-        assert.equal(true, error === null);
+        assert.equal(result, null, "make sure 'done' is not executed");
+        assert.equal(error, null, "make sure 'done' is not executed");
 
         d.reject("test res");
-        assert.equal(true, result === null);
-        assert.equal(true, error === "test res");
+        assert.equal(error, "test res", '"done" is executed by calling fail callback');
+        assert.equal(result, null, '"done" is executed by calling fail callback');
 
 
         result = null;
@@ -50,8 +50,8 @@
                 error = err;
             });
 
-        assert.equal(result, "test result");
-        assert.equal(error, null);
+        assert.equal(result, "test result", '"done" is executed immediately by calling success callback');
+        assert.equal(error, null, '"done" is executed immediately by calling success callback');
 
 
         result = null;
@@ -65,8 +65,8 @@
                 error = err;
             });
 
-        assert.equal(error, "test result");
-        assert.equal(result, null);
+        assert.equal(error, "test result", '"done" is executed immediately by calling fail callback');
+        assert.equal(result, null, '"done" is executed immediately by calling fail callback');
     });
 
 })();

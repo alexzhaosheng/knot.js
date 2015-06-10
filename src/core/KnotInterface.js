@@ -1,6 +1,6 @@
 (function(){
     var __private = Knot.getPrivateScope();
-    //close private scope
+    //seal private scope
     delete window.Knot.getPrivateScope;
 
     //register a access pointer provider
@@ -46,9 +46,22 @@
 
     //automatically initialize when loading
     var _onReadyCallback;
+    var _initError;
     window.Knot.ready = function(callback){
         _onReadyCallback = callback;
+
+        if(window.Knot.isReady || _initError != null)
+            notifyInitOver();
     };
+
+    function notifyInitOver(){
+        if(!_onReadyCallback)
+            return;
+        if(!_initError)
+            _onReadyCallback(false, _initError);
+        else if(window.Knot.isReady)
+            _onReadyCallback(true);
+    }
 
     window.Knot.isReady = false;
 
@@ -59,14 +72,14 @@
             __private.HTMLKnotManager.applyCBS();
             __private.HTMLKnotManager.processTemplateNodes();
             __private.HTMLKnotManager.bind();
-                window.Knot.isReady = true;
-            if(_onReadyCallback)
-                _onReadyCallback(true);
+            window.Knot.isReady = true;
+            _initError = null;
+            notifyInitOver();
         },
         function(error){
-            window.Knot.isReady = false;
-            if(_onReadyCallback)
-                _onReadyCallback(false, error);
+            window.Knot.isReady = false
+            _initError = error;
+            notifyInitOver();
         });
     });
 })();
