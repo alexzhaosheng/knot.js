@@ -1,0 +1,23 @@
+body{
+    dataContext:/dataModel
+}
+
+#todoList{
+    foreach<listItem:todoList;
+}
+
+#listItem input{
+    checked:isDone;
+    @change:/updateRemaining
+}
+#listItem span{
+    className:isDone>{
+    return value?"done-true":"";};
+    innerText:title
+}
+#listBriefMsg{
+    innerText:
+        (remaining & todoList.length)>{
+            return value[0] +" of " + value[1] + " remaining";
+        }
+}

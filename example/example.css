@@ -1,0 +1,10 @@
+ul{
+    list-style: none;
+}
+li{
+    display: list-item;
+}
+.done-true {
+    text-decoration: line-through;
+    color: grey;
+}

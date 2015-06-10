@@ -304,5 +304,17 @@
         resetTest();
         window.anotherTestObject.arrayObj.push("test");
         assert.equal(dataChangedRaised, true, "monitoring array object, raise the change event when only array it-self is changed");
+
+        resetTest();
+        scope.DataMonitor.stopMonitoring(null, "/anotherTestObject.arrayObj", onDataChanged);
+        window.anotherTestObject.arrayObj.push("test2");
+        assert.equal(dataChangedRaised, false, "stop monitoring array object");
+
+        resetTest();
+        scope.DataMonitor.monitor(window.anotherTestObject.arrayObj, "length", onDataChanged);
+        window.anotherTestObject.arrayObj.push("test3");
+        assert.equal(dataChangedRaised, true, "monitoring array length");
+        assert.equal(propertyName, "length", "monitoring array length");
+
     });
 })();

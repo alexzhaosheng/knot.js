@@ -2,9 +2,10 @@
     var __private = Knot.getPrivateScope();
 
     var htmlEventInfo = [];
-    htmlEventInfo["input.value"] = "change";
+    htmlEventInfo["input.value"] = "change,keyup";
     htmlEventInfo["input.checked"] = "change";
-    htmlEventInfo["select.selectedIndex"] = "change";
+    htmlEventInfo["select.selectedindex"] = "change";
+    htmlEventInfo["select.selecteddata"] = "change";
     htmlEventInfo["select.value"] = "change";
 
     function getSelectorFromAPName(apName){
@@ -126,20 +127,17 @@
             }
 
             //check whether target is html element
-            if(target && target.ownerDocument){
+            if(target instanceof HTMLElement){
                 return true;
             }
             return false;
         },
         getValue: function(target, apName){
-            if(apName[0] == "#"){
-                var element = document.querySelector(getSelectorFromAPName(apName));
-                return getPropertyFromElemnt(element, getPropertyNameFromAPName(apName));
-            }
-            else if(apName[0] == "@"){
+            if(apName[0] == "@"){
                 return;
             }
-            else if(apName[0] == "!"){
+
+            if(apName[0] == "!"){
                 apName = apName.substr(1);
                 if(apName[0] == "#"){
                     target = document.querySelector(getSelectorFromAPName(apName));
@@ -154,21 +152,27 @@
                     return target.__knot_errorStatusInfo[apName].currentStatus;
                 }
             }
+
+            if(apName[0] == "#"){
+                target = document.querySelector(getSelectorFromAPName(apName));
+                apName = getPropertyNameFromAPName(apName);
+            }
+
+            if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
+                return;
+            if(target.tagName.toLowerCase() == "select" && apName == "selectedData"){
+                var selectedOption = target.options[target.selectedIndex];
+                if(selectedOption)
+                    return __private.HTMLKnotManager.getDataContextOfHTMLNode(selectedOption);
+                else
+                    return undefined;
+            }
             else{
-                if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
-                    return;
                 return getPropertyFromElemnt(target, apName);
             }
         },
         setValue: function(target, apName, value){
-            if(apName[0] == "#"){
-                if(typeof(value) == "undefined")
-                    value ="";
-                var element = document.querySelector(getSelectorFromAPName(apName));
-                if(element)
-                    __private.Utility.setValueOnPath(element, getPropertyNameFromAPName(apName), value);
-            }
-            else if(apName[0] == "@"){
+            if(apName[0] == "@"){
                 if(typeof(value) != "function"){
                     __private.Log.error(__private.Log.Source.Knot, "Event listener must be a function!");
                 }
@@ -179,8 +183,10 @@
                         value.apply(dataContext, [e, target]);
                     });;
                 }
+                return;
             }
-            else  if(apName[0] == "!"){
+
+            if(apName[0] == "!"){
                 apName = apName.substr(1);
                 if(apName[0] == "#"){
                     target = document.querySelector(getSelectorFromAPName(apName));
@@ -206,20 +212,33 @@
                         }
                     }
                 }
+                return;
+            }
 
+            if(apName[0] == "#"){
+                target  = document.querySelector(getSelectorFromAPName(apName));
+                apName = getPropertyNameFromAPName(apName);
+            }
+
+            if(__private.Utility.startsWith(apName, "content")){
+                setContent(target, apName, value);
+            }
+            else if(__private.Utility.startsWith(apName, "foreach")){
+                setForeach(target, apName, value);
+            }
+            else if(target.tagName.toLowerCase() == "select" && apName == "selectedData"){
+                for(var i=0; i<target.options.length; i++){
+                    if(__private.HTMLKnotManager.getDataContextOfHTMLNode(target.options[i]) == value){
+                        target.selectedIndex = i;
+                        return;
+                    }
+                }
+                target.selectedIndex = -1;
             }
             else{
-                if(__private.Utility.startsWith(apName, "content")){
-                    setContent(target, apName, value);
-                }
-                else if(__private.Utility.startsWith(apName, "foreach")){
-                    setForeach(target, apName, value);
-                }
-                else{
-                    if(typeof(value) == "undefined")
-                        value ="";
-                    __private.Utility.setValueOnPath(target, apName, value);
-                }
+                if(typeof(value) == "undefined")
+                    value ="";
+                __private.Utility.setValueOnPath(target, apName, value);
             }
         },
         doesSupportMonitoring: function(target, apName){
@@ -257,9 +276,11 @@
                     target = document.querySelector(getSelectorFromAPName(apName));
                     apName = getPropertyNameFromAPName(apName);
                 }
+
                 var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-                var event = htmlEventInfo[eventKey];
-                target.addEventListener(event, callback);
+                var events = htmlEventInfo[eventKey].split(",");
+                for(var i=0; i<events.length; i++)
+                    target.addEventListener(events[i], callback);
             }
         },
         stopMonitoring: function(target, apName, callback){
@@ -280,8 +301,9 @@
                     apName = getPropertyNameFromAPName(apName);
                 }
                 var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-                var event = htmlEventInfo[eventKey];
-                target.removeEventListener(event, callback);
+                var events = htmlEventInfo[eventKey].split(",");
+                for(var i=0; i<events.length; i++)
+                    target.removeEventListener(events[i], callback);
             }
         },
 

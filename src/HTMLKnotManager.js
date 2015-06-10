@@ -258,7 +258,7 @@
                     }
 
                     if((dataContextOption.data ||dataContextOption.rightAP.name[0]=="/")  && dataContextOption.changedCallback){
-                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
                     }
 
                     dataContextOption.data = data;
@@ -266,7 +266,8 @@
                         dataContextOption.changedCallback = function(){
                             __private.HTMLKnotManager.updateDataContext(node, data);
                         };
-                        __private.DefaultProvider.monitor(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+
+                        dataContextOption.rightAP.provider.monitor(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
                     }
                     else{
                         dataContextOption.changedCallback = null;

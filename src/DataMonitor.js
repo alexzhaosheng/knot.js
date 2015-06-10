@@ -12,7 +12,7 @@
         register: function(data, path, callback, attachedData) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks) {
-                attachedInfo.changedCallbacks = [];
+                attachedInfo.changedCallbacks = {};
             }
             if(!path){
                 path=PATH_FOR_OBJECT_ITSELF;
@@ -141,6 +141,7 @@
                 })
             }
             catch (err){
+                attached.dataHookInfo.hookFailed = true;
                 //when trying to hook the global variable from "window" object, it just fail
                 __private.Log.warning(__private.Log.Source.Knot, "Hook property failed.", err)
             }
@@ -158,9 +159,11 @@
                 return;
             }
 
-            //remove the hooked property and reset the property to a normal property
-            delete  object[property];
-            object[property] = attached.dataHookInfo.data[property];
+            if(!attached.dataHookInfo.hookFailed){
+                //remove the hooked property and reset the property to a normal property
+                delete  object[property];
+                object[property] = attached.dataHookInfo.data[property];
+            }
 
             attached.dataHookInfo.hookedProperties.splice(attached.dataHookInfo.hookedProperties.indexOf(property), 1);
             delete attached.dataHookInfo.data[property];

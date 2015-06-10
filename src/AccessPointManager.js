@@ -158,7 +158,7 @@
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i])){
+                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name)){
                         compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].name, compositeAP.changedCallback);
                     }
                 }
@@ -188,9 +188,11 @@
                     compositeAP = knotInfo.rightAP; compositeAPTarget = rightTarget;
                 }
 
-                for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i])){
-                        compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name, compositeAP.changedCallback);
+                if(compositeAP.changedCallback){
+                    for(var i=0; i< compositeAP.childrenAPs.length; i++){
+                        if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name)){
+                            compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name, compositeAP.changedCallback);
+                        }
                     }
                 }
 

@@ -1,0 +1,43 @@
+<!doctype html>
+<html>
+<head>
+    <script src="../src/NameSpace.js"></script>
+    <script src="../src/Utility.js"></script>
+    <script src="../src/Deferred.js"></script>
+    <script src="../src/AttachedData.js"></script>
+    <script src="../src/DataMonitor.js"></script>
+    <script src="../src/ArrayMonitor.js"></script>
+    <script src="../src/GlobalSymbolHelper.js"></script>
+    <script src="../src/OptionParser.js"></script>
+    <script src="../src/AccessPointManager.js"></script>
+    <script src="../src/HTMLAPProvider.js"></script>
+    <script src="../src/HTMLKnotManager.js"></script>
+    <script src="../src/KnotInterface.js"></script>
+
+    <script type="text/cbs">
+        h1{
+            innerText:#nameInput.value>{return value?"Hello " + value:"";}
+        }
+    </script>
+</head>
+<body>
+<div>
+    <p>
+        From angular.js
+    </p>
+    <label>Name:</label>
+    <input type="text" id="nameInput" placeholder="Enter a name here">
+    <hr>
+    <h1> </h1>
+
+    <hr>
+    <p>
+        From knockout.js
+    </p>
+    <p>First name: <input id="firstNameInput" value="Planet"/></p>
+    <p>Last name: <input id="lastNameInput"  value="Earth"/></p>
+    <h2>Hello, <span binding="innerText:(#firstNameInput.value & #lastNameInput.value) > {return value[0]+' '+value[1];} "> </span>!</h2>
+
+</div>
+</body>
+</html>

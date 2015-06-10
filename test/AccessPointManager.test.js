@@ -204,7 +204,7 @@
         var knot = scope.OptionParser.parse("boolValue:(strValue>converter.strToInt & dotValue>converter.dotsToInt)> areTheySame")[0];
         target1 = {strValue:"one", dotValue:".."};
         target2 = {boolValue:true};
-        scope.AccessPointManager.tieKnot(target2, target1, knot, "tie with n to 1 pipe");
+        scope.AccessPointManager.tieKnot(target2, target1, knot);
 
         assert.equal(target1.strValue, "one", "tie with n to 1 pipe");
         assert.equal(target1.dotValue, "..", "tie with n to 1 pipe");
@@ -231,6 +231,16 @@
         assert.equal(target1.strValue, "two", "untie knot with n to 1 pipe");
         assert.equal(target1.dotValue, ".", "untie knot with n to 1 pipe");
         assert.equal(target2.boolValue, true, "untie knot with n to 1 pipe");
+
+
+        var knot = scope.OptionParser.parse("count:list.length")[0];
+        target1 = {count:0};
+        target2 = {list:[1,2]};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.count, 2, "tie to array length");
+        target2.list.push(10);
+        assert.equal(target2.list.length, 3, "tie to array length");
+        assert.equal(target1.count, 3, "tie to array length");
 
     });
 })();
