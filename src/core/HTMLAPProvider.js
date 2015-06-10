@@ -41,7 +41,7 @@
         if(!currentContent){
             if(value === null || typeof(value) === "undefined")
                 return;
-            var n  = __private.HTMLKnotManager.createFromTemplate(getTemplateName(apName), value);
+            var n  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(getTemplateName(apName), value);
             if(n)
                 target.appendChild(n, value);
         }
@@ -52,10 +52,17 @@
             if(value === null || typeof(value) === "undefined")
                 removeNodeCreatedFromTemplate(currentContent);
             else{
+                if( __private.HTMLKnotManager.isDynamicTemplate(getTemplateName(apName))){
+                    removeNodeCreatedFromTemplate(currentContent);
+                    currentContent  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(getTemplateName(apName), value);
+                    if(currentContent)
+                        target.appendChild(currentContent, value);
+                }
+
                 __private.HTMLKnotManager.updateDataContext(currentContent, value);
                 if(currentContent.__knot)
                     currentContent.__knot={};
-                currentContent.__knot = {dataContext:value};
+                currentContent.__knot.dataContext = value;
             }
         }
     }
@@ -90,7 +97,7 @@
                 }
             }
             else {
-                var n = __private.HTMLKnotManager.createFromTemplate(templateName, values[i])
+                var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(templateName, values[i])
                 if(n)
                     addChildTo(node, n, i);
             }

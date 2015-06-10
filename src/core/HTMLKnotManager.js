@@ -171,15 +171,33 @@
             this.copyAttachedData(node, cloned);
             return cloned;
         },
-        cloneTemplate:function(templateId){
+        //if the template is from template method, we call it dynamic
+        isDynamicTemplate: function(templateId){
+            return !this.templates[templateId];
+        },
+        createFromTemplate:function(templateId){
             if(!this.templates[templateId]){
-                __private.Log.info(__private.Log.Source.Knot, "Failed find template. id:"+templateId);
+                __private.Log.error(__private.Log.Source.Knot, "Failed find template. id:"+templateId);
                 return;
             }
             return this.cloneTemplateNode(this.templates[templateId]);
         },
-        createFromTemplate:function(templateId, data){
-            var newNode = this.cloneTemplate(templateId);
+        createFromTemplateAndUpdateData:function(templateId, data){
+            var newNode;
+            if(!this.templates[templateId]){
+                var templateFunction = __private.Utility.getValueOnPath(data, templateId);
+                if(typeof (templateFunction) == "function"){
+                    newNode = templateFunction.apply(data, [data]);
+                }
+                else{
+                    __private.Log.error(__private.Log.Source.Knot, "Unknown template:"+templateId);
+                }
+            }
+            else{
+                newNode = this.createFromTemplate(templateId);
+            }
+            if(!newNode)
+                return;
             newNode.id=  undefined;
             this.updateDataContext(newNode, data);
             if(!newNode.__knot)

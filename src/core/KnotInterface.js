@@ -37,7 +37,7 @@
     }
 
     window.Knot.createFromTemplate = function(id){
-        return __private.HTMLKnotManager.cloneTemplate(id);
+        return __private.HTMLKnotManager.createFromTemplate(id);
     }
 
     window.Knot.clear = function(){
