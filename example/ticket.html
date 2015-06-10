@@ -23,12 +23,15 @@
             dataContext:/model;
         }
         #classSelect{
-            foreach<optionTemplate: tickets
+            foreach<optionTemplate: tickets;
+            selectedData:selected;
         }
         #optionTemplate{
             text:name
         }
-
+        #clearButton{
+            disabled:selected>{return value?false:true;}
+        }
     </script>
     <script>
         var model = {
@@ -36,15 +39,20 @@
                 { name: "Economy", price: 199.95 },
                 { name: "Business", price: 449.22 },
                 { name: "First Class", price: 1199.99 }
-            ]
+            ],
+            selected:null
+        }
+        function clearSelection(){
+            model.selected = null;
         }
     </script>
 </head>
 <body>
 <p>
-Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select><button>clear</button>
+Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
+    <button id="clearButton" onclick="clearSelection();">clear</button>
 </p>
-<p binding="dataContext:#classSelect.selectedData">
+<p binding="dataContext:selected">
     You have chosen <b binding="innerText:name"></b>
     ($<span binding="innerText:price"></span>)
 </p>
