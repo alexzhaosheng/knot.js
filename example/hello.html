@@ -1,6 +1,7 @@
 <!doctype html>
 <html>
 <head>
+    <link rel="stylesheet" href="example.css">
     <script src="../src/NameSpace.js"></script>
     <script src="../src/Utility.js"></script>
     <script src="../src/Deferred.js"></script>
@@ -15,29 +16,38 @@
     <script src="../src/KnotInterface.js"></script>
 
     <script type="text/cbs">
-        h1{
+        #hello1Msg{
             innerText:#nameInput.value>{return value?"Hello " + value:"";}
+        }
+
+        #hello2Msg span{
+            innerText:(#firstNameInput.value & #lastNameInput.value) > {return value[0]+' '+value[1];}
         }
     </script>
 </head>
 <body>
 <div>
-    <p>
-        From angular.js
-    </p>
-    <label>Name:</label>
-    <input type="text" id="nameInput" placeholder="Enter a name here">
-    <hr>
-    <h1> </h1>
+    <div class="knot_example">
+        <h2>Knot.js example - hello 1</h2>
+        <p class="comment">
+            From angular.js
+        </p>
+        <label>Name:</label>
+        <input type="text" id="nameInput" placeholder="Enter a name here">
+        <h3 id="hello1Msg"></h3>
+    </div>
 
-    <hr>
-    <p>
-        From knockout.js
-    </p>
-    <p>First name: <input id="firstNameInput" value="Planet"/></p>
-    <p>Last name: <input id="lastNameInput"  value="Earth"/></p>
-    <h2>Hello, <span binding="innerText:(#firstNameInput.value & #lastNameInput.value) > {return value[0]+' '+value[1];} "> </span>!</h2>
+    <br/>
 
+    <div class="knot_example">
+        <h2>Knot.js example - hello 2</h2>
+        <p class="comment">
+            From knockout.js
+        </p>
+        <p>First name: <input id="firstNameInput" value="Planet"/></p>
+        <p>Last name: <input id="lastNameInput"  value="Earth"/></p>
+        <h3 id="hello2Msg">Hello, <span> </span>!</h3>
+    </div>
 </div>
 </body>
 </html>

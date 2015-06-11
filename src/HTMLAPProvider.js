@@ -5,28 +5,51 @@
     htmlEventInfo["input.value"] = "change,keyup";
     htmlEventInfo["input.checked"] = "change";
     htmlEventInfo["select.selectedindex"] = "change";
-    htmlEventInfo["select.selecteddata"] = "change";
     htmlEventInfo["select.value"] = "change";
 
-    function getSelectorFromAPName(apName){
+    __private.HTMLAPHelper = {
+        getSelectorFromAPName:function(apName){
         var p =apName.indexOf(".");
         if(p <0)
             return apName;
         else
             return apName.substr(0, p);
-    }
-    function getPropertyNameFromAPName(apName){
-        var p =apName.indexOf(".");
-        if(p<0)
-            return null;
-        else
-            return apName.substr(p+1)
-    }
+        },
+        getPropertyNameFromAPName:function (apName){
+            var p =apName.indexOf(".");
+            if(p<0)
+                return null;
+            else
+                return apName.substr(p+1)
+        },
 
-    function getPropertyFromElemnt(element, property){
-        if(!element)
-            return undefined;
-        return __private.Utility.getValueOnPath(element, property);
+        getPropertyFromElemnt: function (element, property){
+            if(!element)
+                return undefined;
+            return __private.Utility.getValueOnPath(element, property);
+        },
+
+        parseInAPNameDefinition: function (apName){
+            var result = {apName:apName, options:{}};
+            var block = __private.Utility.getBlockInfo(apName, 0, "[", "]");
+            if(!block){
+                result.apName = apName;
+            }
+            else{
+                result.apName = apName.substr(0, block.start);
+                var options = apName.substr(block.start+1, block.end-block.start-1);
+                options = options.split(";");
+                for(var i=0; i<options.length;i++){
+                    var opPair = options[i].split(":");
+                    if(opPair.length!=2){
+                        __private.Log.error(__private.Log.Source.Knot, "Invalid options:"+options[i]);
+                        continue;
+                    }
+                    result.options[__private.Utility.trim(opPair[0])] = __private.Utility.trim(opPair[1]);
+                }
+            }
+            return result;
+        }
     }
 
     function getTemplateName(apName){
@@ -140,8 +163,8 @@
             if(apName[0] == "!"){
                 apName = apName.substr(1);
                 if(apName[0] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName));
-                    apName = getPropertyNameFromAPName(apName);
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
                 }
                 if(!target)
                     return undefined;
@@ -154,22 +177,13 @@
             }
 
             if(apName[0] == "#"){
-                target = document.querySelector(getSelectorFromAPName(apName));
-                apName = getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
             if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach"))
                 return;
-            if(target.tagName.toLowerCase() == "select" && apName == "selectedData"){
-                var selectedOption = target.options[target.selectedIndex];
-                if(selectedOption)
-                    return __private.HTMLKnotManager.getDataContextOfHTMLNode(selectedOption);
-                else
-                    return undefined;
-            }
-            else{
-                return getPropertyFromElemnt(target, apName);
-            }
+            return __private.HTMLAPHelper.getPropertyFromElemnt(target, apName);
         },
         setValue: function(target, apName, value){
             if(apName[0] == "@"){
@@ -189,8 +203,8 @@
             if(apName[0] == "!"){
                 apName = apName.substr(1);
                 if(apName[0] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName));
-                    apName = getPropertyNameFromAPName(apName);
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
                 }
                 if(target){
                     if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks))
@@ -216,8 +230,8 @@
             }
 
             if(apName[0] == "#"){
-                target  = document.querySelector(getSelectorFromAPName(apName));
-                apName = getPropertyNameFromAPName(apName);
+                target  = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
             if(__private.Utility.startsWith(apName, "content")){
@@ -225,15 +239,6 @@
             }
             else if(__private.Utility.startsWith(apName, "foreach")){
                 setForeach(target, apName, value);
-            }
-            else if(target.tagName.toLowerCase() == "select" && apName == "selectedData"){
-                for(var i=0; i<target.options.length; i++){
-                    if(__private.HTMLKnotManager.getDataContextOfHTMLNode(target.options[i]) == value){
-                        target.selectedIndex = i;
-                        return;
-                    }
-                }
-                target.selectedIndex = -1;
             }
             else{
                 if(typeof(value) == "undefined")
@@ -246,8 +251,8 @@
                 return true;
             }
             if(apName[0] == "#"){
-                target = document.querySelector(getSelectorFromAPName(apName));
-                apName = getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
             if(!target)
                 return false;
@@ -260,8 +265,8 @@
         monitor: function(target, apName, callback){
             if(apName[0] == "!"){
                 if(apName[1] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName.substr(1)));
-                    apName = getPropertyNameFromAPName(apName.substr(1));
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
                 }
                 if(!target.__knot_errorStatusInfo)
                     target.__knot_errorStatusInfo = {};
@@ -273,8 +278,8 @@
             }
             else{
                 if(apName[0] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName));
-                    apName = getPropertyNameFromAPName(apName);
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
                 }
 
                 var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
@@ -286,8 +291,8 @@
         stopMonitoring: function(target, apName, callback){
             if(apName[0] == "!"){
                 if(apName[1] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName.substr(1)));
-                    apName = getPropertyNameFromAPName(apName.substr(1));
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
                 }
                 if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)
                     return;
@@ -297,8 +302,8 @@
             }
             else{
                 if(apName[0] == "#"){
-                    target = document.querySelector(getSelectorFromAPName(apName));
-                    apName = getPropertyNameFromAPName(apName);
+                    target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
                 }
                 var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
                 var events = htmlEventInfo[eventKey].split(",");

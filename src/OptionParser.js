@@ -55,13 +55,14 @@
         return newName;
     }
 
+
     __private.OptionParser = {
 
         parse: function(optionText) {
             var options = [];
 
             optionText = this.processEmbeddedFunctions(optionText);
-            var sections = optionText.split(";");
+            var sections = __private.Utility.splitWithBlockCheck(optionText, ";");
 
             for(var i=0; i<sections.length; i++){
                 var knot = this.parseKnot(sections[i]);
@@ -87,7 +88,7 @@
             if(!text)
                 return null;
 
-            var parts = text.split(":");
+            var parts = __private.Utility.splitWithBlockCheck(text, ":");
             if(parts.length != 2){
                 __private.Log.error(__private.Log.Source.Knot,"Invalid option:"+text);
                 return null;
@@ -108,7 +109,7 @@
             if(text[0] == "("){
                 return this.parseCompositeAP(text);
             }
-            var parts = text.split(">");
+            var parts =  __private.Utility.splitWithBlockCheck(text, ">");
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
@@ -121,7 +122,7 @@
                 __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
                 return null;
             }
-            var aPParts = text.substr(block.start+1, block.end - block.start-1).split("&");
+            var aPParts = __private.Utility.splitWithBlockCheck(text.substr(block.start+1, block.end - block.start-1),"&");
             var aPs = [];
             for(var i=0 ;i < aPParts.length; i++){
                 var ap = this.parseAccessPoint(aPParts[i]);

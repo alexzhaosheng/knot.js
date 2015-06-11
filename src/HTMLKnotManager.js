@@ -323,6 +323,16 @@
 
         clear:function(){
             this.clearBinding(document.body);
+        },
+
+        setOnNodeDataContext:function(node, data){
+            if(!node.__knot)
+                node.__knot = {};
+            node.__knot.dataContext = data;
+        },
+        getOnNodeDataContext:function(node){
+            if(node.__knot)
+                return node.__knot.dataContext;
         }
     }
 })();

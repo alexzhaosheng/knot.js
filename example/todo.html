@@ -22,20 +22,22 @@
 </head>
 <body>
 <div>
-    <h2>Todo</h2>
-    <div>
-        <span id="listBriefMsg"></span>
-        [ <a href="" onclick="archive();return false;">archive</a> ]
-        <ul id="todoList">
-            <li id="listItem" knot-template>
-                <input type="checkbox">
-                <span></span>
-            </li>
-        </ul>
+    <section class="knot_example">
+        <h2>Knot.js example - todo</h2>
+        <div>
+            <span id="listBriefMsg"></span>
+            [ <a href="" onclick="archive();return false;">archive</a> ]
+            <ul id="todoList">
+                <li id="listItem" knot-template>
+                    <input type="checkbox">
+                    <span></span>
+                </li>
+            </ul>
 
-        <input type="text" placeholder="add new todo here">
-        <button onclick="addNewItem();">add</button>
-    </div>
+            <input type="text" placeholder="add new todo here">
+            <button onclick="addNewItem();">add</button>
+        </div>
+    </section>
 </div>
 </body>
 </div>

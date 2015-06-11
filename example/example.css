@@ -1,5 +1,20 @@
+.knot_example{
+    background-color: whitesmoke;
+    border: 1px solid lightgray;
+    padding: 10px;
+    margin: 10px 1px;
+
+    display:inline-block;
+}
+
+.comment{
+    font-size: 0.8em;
+    color:gray;
+}
+
 ul{
     list-style: none;
+    padding: 2px;
 }
 li{
     display: list-item;

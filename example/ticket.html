@@ -15,6 +15,7 @@
     <script src="../src/OptionParser.js"></script>
     <script src="../src/AccessPointManager.js"></script>
     <script src="../src/HTMLAPProvider.js"></script>
+    <script src="../src/AddonHTMLAPProvider.js"></script>
     <script src="../src/HTMLKnotManager.js"></script>
     <script src="../src/KnotInterface.js"></script>
 
@@ -22,15 +23,33 @@
         body{
             dataContext:/model;
         }
+        .clearButton{
+            disabled:selected>{return value?false:true;}
+        }
+
+        .selectionResult{
+             dataContext:selected;
+        }
+        .selectionResult>b{
+            innerText:name
+        }
+        .selectionResult>span{
+            innerText:price
+        }
+
+        /* For Ticket 1*/
         #classSelect{
             foreach<optionTemplate: tickets;
             selectedData:selected;
         }
         #optionTemplate{
-            text:name
+            text:*>{return value.name+"("+value.price+")";}]
         }
-        #clearButton{
-            disabled:selected>{return value?false:true;}
+
+        /* For Ticket 1*/
+        #classSelect2{
+            options[displayMember:*>{return value.name+"("+value.price+")";}]:tickets;
+            selectedData:selected;
         }
     </script>
     <script>
@@ -48,14 +67,38 @@
     </script>
 </head>
 <body>
-<p>
-Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
-    <button id="clearButton" onclick="clearSelection();">clear</button>
-</p>
-<p binding="dataContext:selected">
-    You have chosen <b binding="innerText:name"></b>
-    ($<span binding="innerText:price"></span>)
-</p>
+<p class="comment">From knockout.js</p>
 
+
+<div class="knot_example">
+    <h2>Knot.js example- Ticket 2</h2>
+    <p class="comment">
+        this example uses special access point "options" of "select" element.
+    </p>
+    <p>
+        Choose a ticket class: <select id="classSelect2"></select>
+        <button class="clearButton" onclick="clearSelection();">clear</button>
+    </p>
+    <p class="selectionResult">
+        You have chosen <b></b>
+        ($<span></span>)
+    </p>
+</div>
+
+
+<div class="knot_example">
+    <h2>Knot.js example- Ticket 1</h2>
+    <p class="comment">
+        this example uses template to fill the options of the combobox
+    </p>
+    <p>
+        Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
+        <button class="clearButton" onclick="clearSelection();">clear</button>
+    </p>
+    <p class="selectionResult">
+        You have chosen <b></b>
+        ($<span></span>)
+    </p>
+</div>
 </body>
 </html>

@@ -64,5 +64,10 @@
         //can't both be composite AP
         knots = scope.OptionParser.parse(" (isLogged & userId>trueWhenNot0 ) > trueWhenAllTrue : (isLogged & userId>trueWhenNot0 ) > trueWhenAllTrue");
         assert.equal(knots.length,0, "invalid option string get empty result");
+
+
+        knots = scope.OptionParser.parse("options[display:name;value:id]:users;text:name;");
+        assert.equal(knots.length, 2, "parse complex AP name")
+        assert.equal(knots[0].leftAP.name, "options[display:name;value:id]", "parse complex AP name");
     });
 })();

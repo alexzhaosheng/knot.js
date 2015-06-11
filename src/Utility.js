@@ -105,6 +105,54 @@
             else{
                 return null;
             }
+        },
+
+        //actual_apName[optionName:option,optionName2:option2...]
+        parseInAPNameDefinition: function(apName){
+            var res = {apName:null, options:[]}
+            var block = this.getBlockInfo(apName, 0, "[", "]");
+            if(block){
+                res.apName = apName;
+            }
+            else{
+                var options = apName.substr(block.start+1, block.end-block.start-1);
+                options = options.split(",")
+                for(var i=0;i<options.length;i++){
+                  //  var o = options[i].split(:)
+                }
+            }
+        },
+
+        splitWithBlockCheck: function(str, splitorChar){
+            var pos = 0; prev=0;
+            var res = [];
+            var bracketCount =0;
+            var squreBracketCount =0;
+            while(pos < str.length){
+                switch (str[pos]){
+                    case "(":
+                        bracketCount++; break;
+                    case ")":
+                        bracketCount = Math.max(0, bracketCount-1); break;
+                    case "[":
+                        squreBracketCount++;break;
+                    case "]":
+                        squreBracketCount=Math.max(0, squreBracketCount-1); break;
+                    case splitorChar:
+                        if(bracketCount ==0 && squreBracketCount==0){
+                            res.push(str.substr(prev, pos-prev));
+                            prev = pos+1;
+                        }
+                        break;
+                    default :
+                        break;
+                }
+                pos++;
+            }
+
+            if(pos >= prev)
+                res.push(str.substr(prev, pos-prev));
+            return res;
         }
     }
 })();

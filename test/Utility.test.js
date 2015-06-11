@@ -42,6 +42,31 @@
         assert.equal(info!=null, true, "getBlockInfo works");
         assert.equal(info.start, 2, "getBlockInfo has correct start");
         assert.equal(info.end, 6, "getBlockInfo has correct end");
+
+
+        var str = "abc:efg";
+        var arr = scope.Utility.splitWithBlockCheck(str, ":");
+        assert.equal(arr.length, 2, "split with block check");
+        assert.equal(arr[0], "abc", "split with block check");
+        assert.equal(arr[1], "efg", "split with block check");
+
+        str = "abc(123:456):efg";
+        arr = scope.Utility.splitWithBlockCheck(str, ":");
+        assert.equal(arr.length, 2, "split with block check");
+        assert.equal(arr[0], "abc(123:456)", "split with block check");
+        assert.equal(arr[1], "efg", "split with block check");
+
+        str = "abc[123:456]:e";
+        arr = scope.Utility.splitWithBlockCheck(str, ":");
+        assert.equal(arr.length, 2, "split with block check");
+        assert.equal(arr[0], "abc[123:456]", "split with block check");
+        assert.equal(arr[1], "e", "split with block check");
+
+        str = "abc(sdf:[123:456]):e";
+        arr = scope.Utility.splitWithBlockCheck(str, ":");
+        assert.equal(arr.length, 2, "split with block check");
+        assert.equal(arr[0], "abc(sdf:[123:456])", "split with block check");
+        assert.equal(arr[1], "e", "split with block check");
     });
 
 })();
