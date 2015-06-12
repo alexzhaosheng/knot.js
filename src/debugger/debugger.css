@@ -58,6 +58,10 @@ li{
     transform: scale(0.9, 0.9);
 }
 
+.type-indicator{
+    color:lightcoral;
+}
+
 .highlightMark{
     color:red;
     -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
