@@ -1,4 +1,5 @@
-(function(){
+(function(window){
+
     window.KnotTestUtility = {
         parseHTML: function(html){
             var div = document.createElement('div');
@@ -37,4 +38,6 @@
                 this.clearAllKnotInfo(element.childNodes[i]);
         }
     };
-})();
+})((function() {
+        return this;
+    })());

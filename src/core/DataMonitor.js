@@ -1,6 +1,5 @@
-(function(){
-
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     ///////////////////////////////////////////////////////
     // Value changed callbacks management
@@ -81,7 +80,7 @@
                         attachedInfo.changedCallbacks[path][i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
-                        __private.Log.log(__private.Log.Source.Client, __private.Log.Level.Warning, error);
+                        __private.Log.warning("Call changed callback failed.", error);
                     }
                 }
             }
@@ -91,7 +90,7 @@
                         attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF][i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
-                        __private.Log.log(__private.Log.Source.Client, __private.Log.Level.Warning, error);
+                        __private.Log.warning("Call changed callback failed.", error);
                     }
                 }
             }
@@ -143,7 +142,7 @@
             catch (err){
                 attached.dataHookInfo.hookFailed = true;
                 //when trying to hook the global variable from "window" object, it just fail
-                __private.Log.warning(__private.Log.Source.Knot, "Hook property failed.", err)
+                __private.Log.warning( "Hook property failed.", err)
             }
         },
 
@@ -299,4 +298,7 @@
             }
         }
     }
-})();
+
+})((function() {
+        return this;
+    })());

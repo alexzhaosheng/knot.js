@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     var TestAccessPointerProvider = function(supportTarget, apName){
         this.supportTarget = supportTarget;
@@ -49,8 +49,8 @@
 
         target1.value = true;
         var knots = scope.OptionParser.parse("value>{return value?10:1;}:apOnData.intValue>{return value>2?true:false;}");
-        knots[0].leftAP.provider = scope.AccessPointManager.getProvider(target1, knots[0].leftAP.name);
-        knots[0].rightAP.provider = scope.AccessPointManager.getProvider(target2, knots[0].rightAP.name);
+        knots[0].leftAP.provider = scope.AccessPointManager.getProvider(target1, knots[0].leftAP.description);
+        knots[0].rightAP.provider = scope.AccessPointManager.getProvider(target2, knots[0].rightAP.description);
         assert.equal(scope.AccessPointManager.getValueThroughPipe(target1, knots[0].leftAP),
                     10, "getValueThroughPipe works");
         assert.equal(scope.AccessPointManager.getValueThroughPipe(target2, knots[0].leftAP), 1, "getValueThroughPipe works");
@@ -243,4 +243,6 @@
         assert.equal(target1.count, 3, "tie to array length");
 
     });
-})();
+})((function() {
+        return this;
+    })());

@@ -1,5 +1,5 @@
-(function () {
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     /////////////////////////////////////
     // Utility functions
@@ -155,4 +155,6 @@
             return res;
         }
     }
-})();
+})((function() {
+        return this;
+    })());

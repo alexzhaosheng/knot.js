@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     QUnit.test( "private.AttachedData", function( assert ) {
         var testData = {};
@@ -8,4 +8,6 @@
         scope.AttachedData.releaseAttachedInfo(testData);
         assert.equal(undefined, scope.AttachedData.getAttachedInfo(testData).test, "releaseAttachedInfo release the attached data");
     });
-})();
+})((function() {
+        return this;
+    })());

@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     QUnit.test("private.Utility", function( assert ) {
         assert.equal(true, scope.Utility.isEmptyObj({}), "isEmptyObj works with the empty objects");
@@ -69,5 +69,6 @@
         assert.equal(arr[1], "e", "split with block check");
     });
 
-})();
-
+})((function() {
+        return this;
+    })());

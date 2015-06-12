@@ -1,0 +1,60 @@
+body{
+    dataContext:/debuggerModel;
+}
+
+#domViewer{
+    style.display:#viewerSelection.selectedIndex>{return value==0?"block":"none";}
+}
+
+#logViewer{
+    style.display:#viewerSelection.selectedIndex>{return value==1?"block":"none";}
+}
+
+
+#domTree{
+    foreach < nodeTemplate: domTreeNodes
+}
+
+
+#nodeTemplate .expander>i{
+    @click:{this.isExpanded = !this.isExpanded;};
+    className:isExpanded>{return value?"fa fa-minus":"fa fa-plus";}
+}
+
+#nodeTemplate .nodeTitle{
+    textContent: description
+}
+#nodeTemplate .highlightMark{
+    style.display:isHighlighted>{return value?"inline-block":"none";}
+}
+
+#nodeTemplate .locateElementButton{
+    @click:/debuggerModel.locateElement
+}
+#nodeTemplate .checkDataContextButton{
+    style.display:dataContext>{return value?"inline-block":"none"};
+    @click:/debuggerModel.checkDataContext
+}
+
+#nodeTemplate .knotList{
+    foreach<knotsListItemTemplate :options;
+    /* only show knot list when it is expanded and has knot options*/
+    style.display:options>{return (value&&value.length>0)?"block":"none";}
+}
+
+
+#knotsListItemTemplate .knotOption{
+    textContent:*
+}
+
+
+#nodeTemplate .nodeChildren{
+    foreach < nodeTemplate: childrenInfo;
+    style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
+}
+
+#nodeTemplate .collapsibleContent{
+    style.display : isExpanded>{return value?"block":"none";}
+}
+
+

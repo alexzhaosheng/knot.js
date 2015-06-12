@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
     QUnit.test( "private.ArrayMonitor", function( assert ) {
         var testArray = [];
         var changed = false;
@@ -50,4 +50,6 @@
         assert.equal(testArray[2], "test1", "array.reverse works");
         assert.equal(testArray[0], "test3", "array.reverse works");
     });
-})();
+})((function() {
+        return this;
+    })());

@@ -39,8 +39,8 @@
  }
 
  */
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
 
     function createEmbeddedPipeFunction(text){
@@ -49,7 +49,7 @@
             var newName = __private.GlobalSymbolHelper.registerSymbol(eval(func))
         }
         catch (ex){
-            __private.Log.error(__private.Log.Source.Knot,"Invalid pipe function: \r\n"+ func, ex);
+            __private.Log.error("Invalid pipe function: \r\n"+ func, ex);
         }
 
         return newName;
@@ -90,14 +90,14 @@
 
             var parts = __private.Utility.splitWithBlockCheck(text, ":");
             if(parts.length != 2){
-                __private.Log.error(__private.Log.Source.Knot,"Invalid option:"+text);
+                __private.Log.error("Invalid option:"+text);
                 return null;
             }
 
             var left = this.parseAccessPoint(parts[0])
             var right = this.parseAccessPoint(parts[1]);
             if(left == null || right == null || (left.isComposite && right.isComposite)){
-                __private.Log.error(__private.Log.Source.Knot,"Invalid option:"+text);
+                __private.Log.error("Invalid option:"+text);
                 return null;
             }
 
@@ -113,13 +113,13 @@
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
-            return {name:AP, pipes:pipes};
+            return {description:AP, pipes:pipes};
         },
 
         parseCompositeAP: function(text){
             var block = __private.Utility.getBlockInfo(text, 0, "(", ")");
             if(!block){
-                __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
+                __private.Log.error("Invalid composite option:"+text);
                 return null;
             }
             var aPParts = __private.Utility.splitWithBlockCheck(text.substr(block.start+1, block.end - block.start-1),"&");
@@ -136,7 +136,7 @@
             while(text[pipleStart]!=">"){
                 if(text[pipleStart] != " " && text[pipleStart] != "\t" && text[pipleStart] != "\a" && text[pipleStart] != "\n")
                 {
-                    __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
+                    __private.Log.error("Invalid composite option:"+text);
                     return null;
                 }
                 pipleStart++;
@@ -144,10 +144,12 @@
             pipleStart++;
             var nToOnePiple = __private.Utility.trim(text.substr(pipleStart));
             if(!nToOnePiple){
-                __private.Log.error(__private.Log.Source.Knot,"Invalid composite option:"+text);
+                __private.Log.error("Invalid composite option:"+text);
                 return null;
             }
             return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
         }
     }
-})();
+})((function() {
+        return this;
+    })());

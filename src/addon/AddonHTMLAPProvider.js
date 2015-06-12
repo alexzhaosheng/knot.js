@@ -1,4 +1,4 @@
-(function(){
+(function(window){
     var __private = Knot.getPrivateScope();
 
     function findOption(options, startIndex, data) {
@@ -154,4 +154,6 @@
     };
 
     __private.AccessPointManager.registerAPProvider(AddonHTMLAPProvider);
-})();
+})((function() {
+        return this;
+    })());

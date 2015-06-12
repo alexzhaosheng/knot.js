@@ -1,4 +1,4 @@
-(function(){
+(function(window){
     var __private = {};
 
     __private.Setting={
@@ -7,21 +7,20 @@
 
     __private.Log={
         Level:{Info:"Info", Warning:"Warning", Error:"Error"},
-        Source:{Knot:"Knot", Client:"Client"},
-        log:function(source, level, msg, exception){
-            console.log("["+source+"." + level + "]" + msg);
+        log:function(level, msg, exception){
+            console.log("["+ level + "]" + msg);
             if(exception){
                 console.log(exception);
             }
         },
-        info:function(source, msg, exception){
-            this.log(source, this.Level.Info, msg, exception);
+        info:function(msg, exception){
+            this.log( this.Level.Info, msg, exception);
         },
-        warning:function(source, msg, exception){
-            this.log(source, this.Level.Warning, msg, exception);
+        warning:function(msg, exception){
+            this.log( this.Level.Warning, msg, exception);
         },
-        error:function(source, msg, exception){
-            this.log(source, this.Level.Error, msg, exception);
+        error:function(msg, exception){
+            this.log(this.Level.Error, msg, exception);
         }
     };
 
@@ -32,4 +31,6 @@
             return __private;
         }
     }
-})();
+})((function() {
+        return this;
+    })());

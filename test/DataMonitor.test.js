@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     QUnit.test( "private.DataMonitor: Event Manager", function( assert ) {
         var data1 = {}, data2 = {};
@@ -317,4 +317,6 @@
         assert.equal(propertyName, "length", "monitoring array length");
 
     });
-})();
+})((function() {
+        return this;
+    })());

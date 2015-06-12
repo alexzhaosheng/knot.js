@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     QUnit.test( "private.Deferred", function( assert ) {
         var result = null;
@@ -69,4 +69,6 @@
         assert.equal(result, null, '"done" is executed immediately by calling fail callback');
     });
 
-})();
+})((function() {
+        return this;
+    })());

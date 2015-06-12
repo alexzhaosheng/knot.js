@@ -1,5 +1,5 @@
-(function(){
-    var scope = Knot.getPrivateScope();
+(function(window){
+    var scope = window.Knot.getPrivateScope();
 
     var findCBS = function(selector){
         return scope.HTMLKnotManager.normalizedCBS[selector];
@@ -113,25 +113,25 @@
         scope.HTMLKnotManager.applyCBS();
         assert.equal(input.__knot.options != null, true, "check whether the options in CBS is applied");
         assert.equal(input.__knot.options[0] != null, true, "check whether the options in CBS is applied");
-        assert.equal(input.__knot.options[0].leftAP.name, "text", "check whether the options in CBS is applied");
-        assert.equal(input.__knot.options[0].rightAP.name, "name", "check whether the options in CBS is applied");
+        assert.equal(input.__knot.options[0].leftAP.description, "text", "check whether the options in CBS is applied");
+        assert.equal(input.__knot.options[0].rightAP.description, "name", "check whether the options in CBS is applied");
 
         assert.equal(input.__knot.options[1] != null, true, "check whether the on-node options is applied");
-        assert.equal(input.__knot.options[1].leftAP.name, "isEnabled", "check whether the on-node options is applied");
-        assert.equal(input.__knot.options[1].rightAP.name, "isActivated", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[1].leftAP.description, "isEnabled", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[1].rightAP.description, "isActivated", "check whether the on-node options is applied");
 
         var lastKnot = input.__knot.options.length-1;
 
         assert.equal(lastKnot != null, true, "check whether the on-node options is applied");
-        assert.equal(input.__knot.options[lastKnot].leftAP.name, "style-background", "check whether the on-node options is applied");
-        assert.equal(input.__knot.options[lastKnot].rightAP.name, "age", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[lastKnot].leftAP.description, "style-background", "check whether the on-node options is applied");
+        assert.equal(input.__knot.options[lastKnot].rightAP.description, "age", "check whether the on-node options is applied");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(10), "red", "check whether the on-node options is applied. check embedded function");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(input.__knot.options[lastKnot].rightAP.pipes[0])(30), "green", "check whether the on-node options is applied. check embedded function");
 
         var passwordInput = document.querySelector("#userPasswordInput");
         assert.equal(passwordInput.__knot!=null && passwordInput.__knot.options!= null, true, "check whether the embedded options is applied");
-        assert.equal(passwordInput.__knot.options[0].leftAP.name, "isEnabled", "check whether the embedded options is applied");
-        assert.equal(passwordInput.__knot.options[0].rightAP.name, "isActivated", "check whether the embedded options is applied");
+        assert.equal(passwordInput.__knot.options[0].leftAP.description, "isEnabled", "check whether the embedded options is applied");
+        assert.equal(passwordInput.__knot.options[0].rightAP.description, "isActivated", "check whether the embedded options is applied");
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
@@ -517,4 +517,6 @@
         scope.HTMLKnotManager.normalizedCBS = [];
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
-})();
+})((function() {
+        return this;
+    })());

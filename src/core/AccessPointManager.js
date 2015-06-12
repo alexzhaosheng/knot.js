@@ -16,8 +16,8 @@
 
  */
 
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     var _APProviders = [];
 
@@ -32,6 +32,9 @@
             return __private.Utility.setValueOnPath(target, apName, value);
         },
         doesSupportMonitoring: function(target, apName){
+            if(typeof(target) != "object" && typeof(target) != "array"){
+                return false;
+            }
             return true;
         },
         monitor: function(target, apName, callback){
@@ -78,24 +81,24 @@
 
         getValueThroughPipe: function(target, ap){
             if(!ap.provider)
-                ap.provider = this.getProvider(target, ap.name);
-            var value = ap.provider.getValue(target, ap.name);
+                ap.provider = this.getProvider(target, ap.description);
+            var value = ap.provider.getValue(target, ap.description);
             try{
                 if(ap.pipes){
                     for(var i=0; i< ap.pipes.length; i++){
                         var p = __private.GlobalSymbolHelper.getSymbol(ap.pipes[i]);
                         if(typeof(p) != "function"){
-                            __private.Log.error(__private.Log.Source.Knot, "Pipe must be a function. pipe name:" + ap.pipes[i]);
+                            __private.Log.error( "Pipe must be a function. pipe name:" + ap.pipes[i]);
                         }
                         value = p.apply(target, [value]);
                     }
-                    if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.name))
-                         ap.provider.setValue(target, "!"+ap.name, undefined);
+                    if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.description))
+                         ap.provider.setValue(target, "!"+ap.description, undefined);
                 }
             }
             catch (exception){
-                if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.name))
-                    ap.provider.setValue(target, "!"+ap.name, exception);
+                if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.description))
+                    ap.provider.setValue(target, "!"+ap.description, exception);
                 return undefined;
             }
             return value;
@@ -103,24 +106,24 @@
 
         monitor:function(src, srcAP, target, targetAP){
             if(!srcAP.provider)
-                srcAP.provider = this.getProvider(src, srcAP.name);
+                srcAP.provider = this.getProvider(src, srcAP.description);
             if(!targetAP.provider)
-                targetAP.provider = this.getProvider(target, targetAP.name);
-            if(srcAP.provider.doesSupportMonitoring(src, srcAP.name)){
+                targetAP.provider = this.getProvider(target, targetAP.description);
+            if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)){
                 srcAP.changedCallback = function(){
-                    targetAP.provider.setValue(target, targetAP.name,
+                    targetAP.provider.setValue(target, targetAP.description,
                         __private.AccessPointManager.getValueThroughPipe(src,  srcAP));
                 };
 
-                srcAP.provider.monitor(src, srcAP.name, srcAP.changedCallback);
+                srcAP.provider.monitor(src, srcAP.description, srcAP.changedCallback);
             }
         },
 
         stopMonitoring:function(target, ap){
             if(!ap.provider)
-                ap.provider = this.getProvider(target, ap.name);
-            if(ap.provider.doesSupportMonitoring(target, ap.name) && ap.changedCallback){
-                ap.provider.stopMonitoring(target, ap.name, ap.changedCallback);
+                ap.provider = this.getProvider(target, ap.description);
+            if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback){
+                ap.provider.stopMonitoring(target, ap.description, ap.changedCallback);
                 delete  ap.changedCallback;
             }
         },
@@ -138,9 +141,9 @@
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    compositeAP.childrenAPs[i].provider = __private.AccessPointManager.getProvider(compositeAPTarget, compositeAP.childrenAPs[i].name);
+                    compositeAP.childrenAPs[i].provider = __private.AccessPointManager.getProvider(compositeAPTarget, compositeAP.childrenAPs[i].description);
                 }
-                normalTarget.provider = __private.AccessPointManager.getProvider(normalTarget, normalAP.name);
+                normalTarget.provider = __private.AccessPointManager.getProvider(normalTarget, normalAP.description);
 
                 compositeAP.changedCallback = function(){
                     var values=[];
@@ -150,27 +153,27 @@
 
                     var p = __private.GlobalSymbolHelper.getSymbol(compositeAP.nToOnePipe);
                     if(typeof(p) != "function"){
-                        __private.Log.error(__private.Log.Source.Knot, "Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
+                        __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
                     }
                     var lastValue = p.apply(compositeAP, [values]);
 
-                    normalTarget.provider.setValue(normalTarget, normalAP.name, lastValue);
+                    normalTarget.provider.setValue(normalTarget, normalAP.description, lastValue);
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name)){
-                        compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].name, compositeAP.changedCallback);
+                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)){
+                        compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback);
                     }
                 }
                 //set the initial value
                 compositeAP.changedCallback();
             }
             else{
-                knotInfo.leftAP.provider = this.getProvider(leftTarget, knotInfo.leftAP.name);
-                knotInfo.rightAP.provider = this.getProvider(rightTarget, knotInfo.rightAP.name);
+                knotInfo.leftAP.provider = this.getProvider(leftTarget, knotInfo.leftAP.description);
+                knotInfo.rightAP.provider = this.getProvider(rightTarget, knotInfo.rightAP.description);
 
                 //set initial value, always use the left side value as initial value
-                knotInfo.leftAP.provider.setValue(leftTarget, knotInfo.leftAP.name,
+                knotInfo.leftAP.provider.setValue(leftTarget, knotInfo.leftAP.description,
                     this.getValueThroughPipe(rightTarget,  knotInfo.rightAP));
 
                 this.monitor(leftTarget, knotInfo.leftAP, rightTarget, knotInfo.rightAP);
@@ -190,8 +193,8 @@
 
                 if(compositeAP.changedCallback){
                     for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                        if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name)){
-                            compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].name, compositeAP.changedCallback);
+                        if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)){
+                            compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback);
                         }
                     }
                 }
@@ -206,5 +209,6 @@
             }
         }
     };
-
-})();
+})((function() {
+        return this;
+    })());

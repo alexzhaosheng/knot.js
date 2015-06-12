@@ -1,0 +1,190 @@
+
+section{
+    background-color: whitesmoke;
+    border: 1px solid lightgray;
+    padding: 10px;
+    margin-top: 10px;
+}
+
+
+ul{
+    list-style: none;
+    margin: 0px 0px 0px 10px;
+    padding: 0px;
+    font-family: Verdana, Geneva, sans-serif;
+    font-size: 0.95em;
+}
+li{
+    padding: 0px;
+    margin: 0px;
+}
+
+@keyframes flash {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+@-webkit-keyframes flash {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+.domViewerToolBar{
+    height: 30px;
+    line-height: 30px;
+}
+.domViewerToolBar>i{
+    cursor: pointer;
+    margin: auto 4px;
+}
+.domViewerToolBar>i:active{
+    -webkit-transform: scale(0.9, 0.9);
+    -moz-transform: scale(0.9, 0.9);
+    -ms-transform: scale(0.9, 0.9);
+    -o-transform: scale(0.9, 0.9);
+    transform: scale(0.9, 0.9);
+}
+
+.highlightMark{
+    color:red;
+    -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
+}
+
+.legend{
+    line-height: 25px;
+    color:darkred;
+    float: right;
+    display:inline-block;
+    background-color: lightgoldenrodyellow;
+    border: gray solid 1px;
+}
+.legend ul{
+    display: inline-block;
+    margin: 0px 5px;
+}
+.legend li{
+    display: inline-block;
+    margin: 0px 5px;
+}
+
+
+.nodeTitle{
+    font-weight: bold;
+    color:#660000;
+}
+.knotOption{
+    color:#008800;
+}
+
+
+
+#domTree{
+    margin-left: 0px;
+    padding-left: 0px;
+    border-left: none;
+}
+
+#nodeTemplate .collapsibleContent{
+    border-left: 1px solid lightgray;
+    margin-left: 10px;
+}
+#nodeTemplate>div>div:nth-child(1){
+    background-color: lightcyan;
+    border: 1px solid lightgray;
+}
+#nodeTemplate .expander{
+    color:#222288;
+    display:inline-block;
+    margin: 2px;
+    cursor: pointer;
+
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+}
+#nodeTemplate .locateElementButton{
+    cursor: pointer;
+    margin-left: 30px;
+}
+#nodeTemplate .checkDataContextButton{
+    cursor: pointer;
+    margin-left: 5px;
+}
+#nodeTemplate .checkDataContextButton:active{
+    -webkit-transform: scale(0.9, 0.9);
+    -moz-transform: scale(0.9, 0.9);
+    -ms-transform: scale(0.9, 0.9);
+    -o-transform: scale(0.9, 0.9);
+    transform: scale(0.9, 0.9);
+}
+#nodeTemplate .locateElementButton:active{
+    -webkit-transform: scale(0.9, 0.9);
+    -moz-transform: scale(0.9, 0.9);
+    -ms-transform: scale(0.9, 0.9);
+    -o-transform: scale(0.9, 0.9);
+    transform: scale(0.9, 0.9);
+}
+
+.knotList{
+    margin: 0px 0px 1px 0px;
+    background-color: #ffffee;
+    border: 1px solid lightgray;
+    border-left: none;
+    border-top:none;
+}
+
+#knotsListItemTemplate{
+    display: block;
+    min-width: 300px;
+    border-top:1px solid lightgray;
+    padding: 1px;
+}
+#knotsListItemTemplate:nth-child(1){
+    border-top:none;
+}
+#knotsListItemTemplate:nth-child(even){
+    background-color: #ffffee;
+}
+#knotsListItemTemplate:nth-child(odd){
+    background-color: #eeffee;
+}
+
+.collapsibleContent{
+    margin-left: 5px;
+}
+
+
+
+
+.fullScreen{
+    position: absolute;
+    z-index: 100;
+
+    top:0px; left:0px; right: 0px; bottom: 0px;
+    background-color: rgba(255,255,255, 0.8);
+
+    display: none;;
+}
+.fullScreen>div{
+    background-color: lightgoldenrodyellow;
+    border:1px solid lightgray;
+    position: absolute;
+    padding: 10px 0px;
+    top:20%;
+    width: 100%;
+    text-align: center;
+}

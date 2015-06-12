@@ -1,5 +1,5 @@
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     var htmlEventInfo = [];
     htmlEventInfo["input.value"] = "change,keyup";
@@ -13,14 +13,14 @@
         if(p <0)
             return apName;
         else
-            return apName.substr(0, p);
+            return __private.Utility.trim(apName.substr(0, p));
         },
         getPropertyNameFromAPName:function (apName){
             var p =apName.indexOf(".");
             if(p<0)
                 return null;
             else
-                return apName.substr(p+1)
+                return __private.Utility.trim(apName.substr(p+1))
         },
 
         getPropertyFromElemnt: function (element, property){
@@ -36,13 +36,13 @@
                 result.apName = apName;
             }
             else{
-                result.apName = apName.substr(0, block.start);
+                result.apName = __private.Utility.trim(apName.substr(0, block.start));
                 var options = apName.substr(block.start+1, block.end-block.start-1);
                 options = options.split(";");
                 for(var i=0; i<options.length;i++){
                     var opPair = options[i].split(":");
                     if(opPair.length!=2){
-                        __private.Log.error(__private.Log.Source.Knot, "Invalid options:"+options[i]);
+                        __private.Log.error( "Invalid options:"+options[i]);
                         continue;
                     }
                     result.options[__private.Utility.trim(opPair[0])] = __private.Utility.trim(opPair[1]);
@@ -54,7 +54,7 @@
 
     function getTemplateName(apName){
         var sections = apName.split("<");
-        return sections[1];
+        return __private.Utility.trim(sections[1]);
     }
     function removeNodeCreatedFromTemplate(node){
         __private.HTMLKnotManager.clearBinding(node);
@@ -188,7 +188,7 @@
         setValue: function(target, apName, value){
             if(apName[0] == "@"){
                 if(typeof(value) != "function"){
-                    __private.Log.error(__private.Log.Source.Knot, "Event listener must be a function!");
+                    __private.Log.error( "Event listener must be a function!");
                 }
 
                 if(target){
@@ -221,7 +221,7 @@
                                 callbacks[i].apply(target, [apName, value]);
                             }
                             catch (error){
-                                __private.Log.warning(__private.Log.Source.Knot, "Call error status changed callback error.", error);
+                                __private.Log.warning( "Call error status changed callback failed.", error);
                             }
                         }
                     }
@@ -325,4 +325,6 @@
     };
 
     __private.AccessPointManager.registerAPProvider(__private.HTMLAPProvider);
-})();
+})((function() {
+        return this;
+    })());

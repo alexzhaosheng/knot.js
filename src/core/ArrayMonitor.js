@@ -1,5 +1,5 @@
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     var _originalArrayMethods = {};
 
@@ -35,4 +35,6 @@
         }
     }
 
-})();
+})((function() {
+        return this;
+    })());

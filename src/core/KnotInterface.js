@@ -1,12 +1,15 @@
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
     //seal private scope
     delete window.Knot.getPrivateScope;
 
     //register a access pointer provider
-    window.Knot.registerAPProvider = function(provider){
-        return __private.AccessPointManager.registerAPProvider(provider);
-    };
+    window.Knot.Advanced = {
+        registerAPProvider:function(provider){
+            return __private.AccessPointManager.registerAPProvider(provider);
+        }
+
+    }
 
     //get the error status for the rootNode and all of the children nodes within it
     //the error status information is returned in this form:
@@ -69,7 +72,7 @@
 
     window.Knot.isReady = false;
 
-    window.onload = function(){
+    window.addEventListener("load", function(){
         var deferred =__private.HTMLKnotManager.parseCBS();
 
         deferred.done(function(){
@@ -85,5 +88,7 @@
             _initError = error;
             notifyInitOver();
         });
-    };
-})();
+    });
+})((function() {
+        return this;
+    })());

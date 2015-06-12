@@ -1,5 +1,5 @@
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
 
     /////////////////////////////////////
@@ -12,8 +12,10 @@
         getAttachedInfo: function(data) {
             if(__private.Setting.enablePropertyHook){
                 if(!data.__knot_attachedData){
+                    if(typeof(data) != "object" && typeof(data) != "array"){
+                        throw new Error("Can only monitor object or array!");
+                    }
                     Object.defineProperty(data, "__knot_attachedData", {value:{}, configurable:true, writable:false, enumerable:false});
-
                 }
                 return data.__knot_attachedData;
             }
@@ -38,4 +40,6 @@
             }
         }
     };
-})();
+})((function() {
+        return this;
+    })());

@@ -3,8 +3,8 @@
 //This is simplified Deferred object for asynchronous validating and initialization.
 /////////////////////////////////////
 
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     __private.Deferred = function(){
         this._succCallbacks = [];
@@ -41,4 +41,6 @@
         return this;
     }
 
-})();
+})((function() {
+        return this;
+    })());

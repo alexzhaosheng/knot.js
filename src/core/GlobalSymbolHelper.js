@@ -1,6 +1,5 @@
-(function(){
-    var __private = Knot.getPrivateScope();
-
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     var _symbolCount = 0;
     var _knotSymbols = {};
@@ -27,4 +26,6 @@
             return v;
         }
     }
-})();
+})((function() {
+        return this;
+    })());

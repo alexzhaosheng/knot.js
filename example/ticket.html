@@ -5,19 +5,21 @@
 
     <link rel="stylesheet" href="example.css">
 
-    <script src="../src/NameSpace.js"></script>
-    <script src="../src/Utility.js"></script>
-    <script src="../src/Deferred.js"></script>
-    <script src="../src/AttachedData.js"></script>
-    <script src="../src/DataMonitor.js"></script>
-    <script src="../src/ArrayMonitor.js"></script>
-    <script src="../src/GlobalSymbolHelper.js"></script>
-    <script src="../src/OptionParser.js"></script>
-    <script src="../src/AccessPointManager.js"></script>
-    <script src="../src/HTMLAPProvider.js"></script>
-    <script src="../src/AddonHTMLAPProvider.js"></script>
-    <script src="../src/HTMLKnotManager.js"></script>
-    <script src="../src/KnotInterface.js"></script>
+    <script src="../src/core/NameSpace.js"></script>
+    <script src="../src/core/Utility.js"></script>
+    <script src="../src/core/Deferred.js"></script>
+    <script src="../src/core/AttachedData.js"></script>
+    <script src="../src/core/DataMonitor.js"></script>
+    <script src="../src/core/ArrayMonitor.js"></script>
+    <script src="../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../src/core/OptionParser.js"></script>
+    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/HTMLAPProvider.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/KnotInterface.js"></script>
+
+    <script src="../src/debugger/knot.debug.js"></script>
 
     <script type="text/cbs">
         body{
@@ -43,7 +45,7 @@
             selectedData:selected;
         }
         #optionTemplate{
-            text:*>{return value.name+"("+value.price+")";}]
+            text:*>{return value.name+"("+value.price+")";}
         }
 
         /* For Ticket 1*/
@@ -71,12 +73,12 @@
 
 
 <div class="knot_example">
-    <h2>Knot.js example- Ticket 2</h2>
+    <h2>Knot.js example- Ticket 1</h2>
     <p class="comment">
-        this example uses special access point "options" of "select" element.
+        this example uses template to fill the options of the combobox
     </p>
     <p>
-        Choose a ticket class: <select id="classSelect2"></select>
+        Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
         <button class="clearButton" onclick="clearSelection();">clear</button>
     </p>
     <p class="selectionResult">
@@ -85,14 +87,13 @@
     </p>
 </div>
 
-
 <div class="knot_example">
-    <h2>Knot.js example- Ticket 1</h2>
+    <h2>Knot.js example- Ticket 2</h2>
     <p class="comment">
-        this example uses template to fill the options of the combobox
+        this example uses special access point "options" of "select" element.
     </p>
     <p>
-        Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
+        Choose a ticket class: <select id="classSelect2"></select>
         <button class="clearButton" onclick="clearSelection();">clear</button>
     </p>
     <p class="selectionResult">

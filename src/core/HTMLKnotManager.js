@@ -1,5 +1,5 @@
-(function(){
-    var __private = Knot.getPrivateScope();
+(function(window){
+    var __private = window.Knot.getPrivateScope();
 
     function removeComments(text){
         if(!text || text == "")
@@ -31,7 +31,7 @@
         if(!options)
             return null;
         for(var i=0; i<options.length; i++){
-            if(options[i].leftAP.name == "dataContext"){
+            if(options[i].leftAP.description == "dataContext"){
                 return options[i];
             }
         }
@@ -43,7 +43,7 @@
         templates:[],
         parseCBS:function(){
             var deferred = new __private.Deferred();
-            var blocks = document.querySelectorAll("script");
+            var blocks = window.document.querySelectorAll("script");
             var that =this;
             var scriptToLoad = 0;
 
@@ -65,12 +65,12 @@
                                                 deferred.resolve();
                                         }
                                         catch(err){
-                                            __private.Log.error(__private.Log.Source.Knot, "Load CBS script error. url:" + src + " message:" + err.message, err);
+                                            __private.Log.error( "Load CBS script error. url:" + src + " message:" + err.message, err);
                                             deferred.reject(err);
                                         }
                                     }
                                     else{
-                                        __private.Log.error(__private.Log.Source.Knot, "Load CBS script error. url:" + src + " message:" +hr.statusText);
+                                        __private.Log.error( "Load CBS script error. url:" + src + " message:" +hr.statusText);
                                         deferred.reject(new Error( "Load CBS script error. url:" + src + " message:" +hr.statusText));
                                     }
                                 }
@@ -153,12 +153,15 @@
         applyCBS: function(){
             for(var selector in this.normalizedCBS){
                 var elements = document.querySelectorAll(selector);
-                var cbsOptions = this.normalizedCBS[selector];
                 for(var i=0; i<elements.length; i++){
+                    var cbsOptions = this.normalizedCBS[selector].slice(0);
                     if(!elements[i].__knot){
                         elements[i].__knot = {options: []};
                     }
-                    elements[i].__knot.cbsOptions = cbsOptions.slice(0);
+                    if(elements[i].__knot.cbsOptions){
+                        cbsOptions = elements[i].__knot.cbsOptions.concat(cbsOptions);
+                    }
+                    elements[i].__knot.cbsOptions = cbsOptions;
                 }
             }
 
@@ -170,7 +173,7 @@
             for(var i=0; i<templateNodes.length; i++){
                 var id = templateNodes[i].id;
                 if(!id){
-                    __private.Log.info(__private.Log.Source.Knot, "Template id is not specified.");
+                    __private.Log.error("Template id is not specified.");
                     continue;
                 }
                 this.templates[id] = templateNodes[i];
@@ -198,7 +201,7 @@
         },
         createFromTemplate:function(templateId){
             if(!this.templates[templateId]){
-                __private.Log.error(__private.Log.Source.Knot, "Failed find template. id:"+templateId);
+                __private.Log.error( "Failed find template. id:"+templateId);
                 return;
             }
             return this.cloneTemplateNode(this.templates[templateId]);
@@ -211,7 +214,7 @@
                     newNode = templateFunction.apply(data, [data]);
                 }
                 else{
-                    __private.Log.error(__private.Log.Source.Knot, "Unknown template:"+templateId);
+                    __private.Log.error( "Unknown template:"+templateId);
                 }
             }
             else{
@@ -219,7 +222,10 @@
             }
             if(!newNode)
                 return;
-            newNode.id=  undefined;
+
+            //keep id of the cloned node so that css specified by id still works for it
+            //newNode.removeAttribute("id");
+
             this.updateDataContext(newNode, data);
             if(!newNode.__knot)
                 newNode.__knot = {dataContext:data};
@@ -231,7 +237,7 @@
         removeKnots: function(node){
             if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
-                    if(node.__knot.options[i].leftAP.name == "dataContext")
+                    if(node.__knot.options[i].leftAP.description == "dataContext")
                         continue;
                     __private.AccessPointManager.untieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
                 }
@@ -240,7 +246,7 @@
         tieKnots:function(node){
             if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
-                    if(node.__knot.options[i].leftAP.name == "dataContext")
+                    if(node.__knot.options[i].leftAP.description == "dataContext")
                         continue;
                     __private.AccessPointManager.tieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
                 }
@@ -257,17 +263,17 @@
                         return;
                     }
 
-                    if((dataContextOption.data ||dataContextOption.rightAP.name[0]=="/")  && dataContextOption.changedCallback){
-                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    if((dataContextOption.data ||dataContextOption.rightAP.description[0]=="/")  && dataContextOption.changedCallback){
+                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
                     }
 
                     dataContextOption.data = data;
-                    if((dataContextOption.data || dataContextOption.rightAP.name[0]=="/")){
+                    if((dataContextOption.data || dataContextOption.rightAP.description[0]=="/")){
                         dataContextOption.changedCallback = function(){
                             __private.HTMLKnotManager.updateDataContext(node, data);
                         };
 
-                        dataContextOption.rightAP.provider.monitor(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                        dataContextOption.rightAP.provider.monitor(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
                     }
                     else{
                         dataContextOption.changedCallback = null;
@@ -301,8 +307,8 @@
             if(node.__knot){
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 if(dataContextOption){
-                    if((dataContextOption.data || dataContextOption.rightAP.name[0] == "/") && dataContextOption.changedCallback){
-                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.name,dataContextOption.changedCallback);
+                    if((dataContextOption.data || dataContextOption.rightAP.description[0] == "/") && dataContextOption.changedCallback){
+                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
                     }
 
                     dataContextOption.data = null;
@@ -335,4 +341,6 @@
                 return node.__knot.dataContext;
         }
     }
-})();
+})((function() {
+        return this;
+    })());
