@@ -43,8 +43,44 @@
             $("#dataContextViewer").show()
                 .find("textarea").val(content);
             $("#dataContextViewer").find(".nodeDescription").text(this.description);
+        },
+
+        showKnotDetail:function(){
+            function getDes(info){
+                var msg  = "id:" +  info.id + " " +  (info.isFromLeftToRight?"output":"input") +"\n";
+                msg += JSON.stringify(info.value);
+                return msg;
+            }
+            var content = getDes(this.latestValueInfo);
+            for(var i=this.historyValueInfo.length-1; i>=0 ; i--){
+                content += "\n--------------------------------------\n";
+                content += getDes(this.historyValueInfo[i]);
+            }
+
+            $("#dataContextViewer").show()
+                .find("textarea").val(content);
+            $("#dataContextViewer").find(".nodeDescription").text("");
         }
     };
+
+
+    var nodeDictionary = {
+        _nodeArray:[],
+        _nodeInfoArray:[],
+        add:function(nodeInfo){
+            this._nodeArray.push(nodeInfo.node); this._nodeInfoArray.push(nodeInfo);
+        },
+        remove:function(node){
+            var index = this._nodeArray.indexOf(node);
+            if(index >= 0){
+                this._nodeArray.splice(index, 1);
+                this._nodeInfoArray.splice(index, 1);
+            }
+        },
+        get:function(node){
+            return this._nodeInfoArray[this._nodeArray.indexOf(node)];
+        }
+    }
 
 
     function getClosestVisibleElement(element){
@@ -100,13 +136,19 @@
             if(node.__knot.options){
                 nodeInfo.options = [];
                 for(var i=0; i< node.__knot.options.length; i++){
-                    nodeInfo.options.push(getKnotOptionsStr(node.__knot.options[i]));
+                    nodeInfo.options.push({
+                        description:getKnotOptionsStr(node.__knot.options[i]),
+                        knotOption:node.__knot.options[i],
+                        latestValueInfo:null,
+                        historyValueInfo:[]
+                    });
                 }
             }
         }
 
         nodeInfo.description = getHTMLElementDescription(node);
         nodeInfo.node = node;
+        nodeDictionary.add(nodeInfo);
         return nodeInfo;
     }
 
@@ -161,6 +203,7 @@
                 var e = window.opener.document.elementFromPoint(arg.clientX, arg.clientY);
                 searchByNode(window.debuggerModel.domTreeNodes[0], e);
                 window.opener.removeEventListener("mousedown", downHandler, true);
+                window.opener.removeEventListener("mousemove", mouseMoveHandler);
                 arg.preventDefault();
                 $("#fullWindowMessage").hide();
                 _mouseTip.remove();
@@ -175,7 +218,7 @@
                 }
                 _mouseTip.css("top",window.opener.document.body.scrollTop +  arg.clientY+25).css("left", window.opener.document.body.scrollLeft +arg.clientX);
             };
-            window.opener.addEventListener("mousemove",mouseMoveHandler , true);
+            window.opener.addEventListener("mousemove",mouseMoveHandler);
         });
 
         $("#searchButton").click(function(){
@@ -193,6 +236,76 @@
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
     })
 
+
+    function startsWith(s, startStr){
+        return s.substr(0, startStr.length) == startStr;
+    };
+
+    var SetWithColorAnmation = {
+        doesSupport:function(target, apName){
+            if(target instanceof HTMLElement && startsWith(apName, "colorSet_"))
+                return true;
+            return false;
+        },
+        getValue: function(target, apName){
+        },
+        setValue: function(target, apDescription, value){
+            apDescription = apDescription.substr("colorSet_".length);
+            var apName = apDescription.split(",")[0].trim();
+            var colorFrom = apDescription.split(",")[1].trim();
+            var colorTo = apDescription.split(",")[2].trim();
+            target[apName] = typeof(value)=="undefined"?"":value;
+            if(typeof(value) != "undefined"){
+                $(target).stop()
+                    .css("backgroundColor", colorFrom)
+                    .animate({backgroundColor:colorTo}, 3000);
+            }
+        },
+        doesSupportMonitoring: function(target, apName){
+            return false;
+        }
+    };
+    window.Knot.Advanced.registerAPProvider(SetWithColorAnmation);
+
+    var _debugLogCount = 0;
+    window.calledByOpener = {
+        hi:function(v){
+            alert(v);
+        },
+        log:function(level, msg, exception){
+
+        },
+        debugger:{
+            knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+                var info = nodeDictionary.get(leftTarget);
+                if(!info)
+                    return;
+                for(var i=0; i<info.options.length; i++){
+                    if(info.options[i].knotOption == knotOption){
+                        if(info.options[i].latestValueInfo)
+                            info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
+                        info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
+                        return;
+                    }
+                }
+            },
+            knotTied: function(leftTarget, rightTarget, knotOption){
+            },
+            knotUntied:function(leftTarget, rightTarget, knotOption){
+
+            },
+            dataContextChanged:function(node){
+
+            },
+
+            nodeAdded: function(node){
+
+            },
+            nodeRemoved: function(node){
+
+            }
+        }
+    }
 })((function() {
         return this;
     })());

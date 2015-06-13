@@ -7,6 +7,13 @@
     window.Knot.Advanced = {
         registerAPProvider:function(provider){
             return __private.AccessPointManager.registerAPProvider(provider);
+        },
+
+        registerLog: function(logger){
+            __private.Log.log = logger;
+        },
+        registerDebugger: function(dbg){
+            __private.Debugger = dbg;
         }
 
     }

@@ -286,6 +286,7 @@
                     this.updateDataContext(node.childNodes[i], contextData);
 
                 node.__knot.dataContext = contextData;
+                __private.Debugger.dataContextChanged(node);
                 this.tieKnots(node);
             }
             else{

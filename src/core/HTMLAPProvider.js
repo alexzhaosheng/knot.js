@@ -59,6 +59,7 @@
     function removeNodeCreatedFromTemplate(node){
         __private.HTMLKnotManager.clearBinding(node);
         node.parentNode.removeChild(node);
+        __private.Debugger.nodeRemoved(node);
     }
     function setContent(target, apName, value){
         var currentContent =  target.childNodes[0];
@@ -66,8 +67,10 @@
             if(value === null || typeof(value) === "undefined")
                 return;
             var n  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(getTemplateName(apName), value);
-            if(n)
+            if(n){
                 target.appendChild(n, value);
+                __private.Debugger.nodeAdded(n);
+            }
         }
         else{
             if(currentContent.__knot && currentContent.__knot.dataContext == value){
@@ -79,8 +82,10 @@
                 if( __private.HTMLKnotManager.isDynamicTemplate(getTemplateName(apName))){
                     removeNodeCreatedFromTemplate(currentContent);
                     currentContent  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(getTemplateName(apName), value);
-                    if(currentContent)
+                    if(currentContent){
                         target.appendChild(currentContent, value);
+                        __private.Debugger.nodeAdded(n);
+                    }
                 }
 
                 __private.HTMLKnotManager.updateDataContext(currentContent, value);
@@ -122,8 +127,10 @@
             }
             else {
                 var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(templateName, values[i])
-                if(n)
+                if(n){
                     addChildTo(node, n, i);
+                    __private.Debugger.nodeAdded(n);
+                }
             }
         }
 

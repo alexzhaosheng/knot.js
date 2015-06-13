@@ -5,9 +5,10 @@
     <title>Knot debugger</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
     <link rel="stylesheet" href="debugger.css">
 
-    <script src="../core/NameSpace.js"></script>
+    <script src="../core/PrivateScope.js"></script>
     <script src="../core/Utility.js"></script>
     <script src="../core/Deferred.js"></script>
     <script src="../core/AttachedData.js"></script>
@@ -29,7 +30,7 @@
     <script src="debugger.cbs" type="text/cbs"></script>
 </head>
 <body>
-<div>
+<div class="section">
     <div id="ownerWindowInfo"></div>
     <select id="viewerSelection">
         <option selected>DOM Viewer</option>
@@ -37,7 +38,7 @@
     </select>
 </div>
 
-<section id="domViewer">
+<section id="domViewer" class="contentSection section">
     <div>
         <div class="domViewerToolBar">
             <input id="searchText" type="text" placeholder="Search html node">
@@ -54,33 +55,38 @@
 
 
     </div>
-    <ul id="domTree">
-        <li id="nodeTemplate" knot-template>
-            <div>
+    <div class="treeContainer">
+        <ul id="domTree">
+            <li id="nodeTemplate" knot-template>
                 <div>
-                    <div class="expander">
-                        <i class="iconButton fa fa-plus-circle"></i>
+                    <div class="nonCollapsibleContent">
+                        <div class="expander">
+                            <i class="iconButton fa fa-plus-circle"></i>
+                        </div>
+                        <i class="type-indicator fa fa-share-alt"></i>
+                        <span class="nodeTitle selectable"></span>
+                        <i class="highlightMark fa fa-chevron-circle-left"></i>
+
+                        <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i>
+                        <i class="checkDataContextButton iconButton fa fa-indent" title="View current data context"></i>
+
                     </div>
-                    <i class="type-indicator fa fa-share-alt"></i>
-                    <span class="nodeTitle selectable"></span>
-                    <i class="highlightMark fa fa-chevron-circle-left"></i>
-
-                    <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i>
-                    <i class="checkDataContextButton iconButton fa fa-indent" title="View current data context"></i>
-
+                    <div class="collapsibleContent">
+                        <ul class="knotList" >
+                            <li id="knotsListItemTemplate" knot-template>
+                                <i class="type-indicator fa fa-wrench"></i>
+                                <div class="knotOption selectable"></div>
+                                <div class="knotValue selectable"></div>
+                                <i class="knotValueDirection fa fa-angle-double-left"></i>
+                                <i class="iconButton knotValueDetail fa fa-indent" title="Details"></i>
+                            </li>
+                        </ul>
+                        <ul class="nodeChildren"></ul>
+                    </div>
                 </div>
-                <div class="collapsibleContent">
-                    <ul class="knotList" >
-                        <li id="knotsListItemTemplate" knot-template>
-                            <i class="type-indicator fa fa-wrench"></i>
-                            <span class="knotOption selectable"></span>
-                        </li>
-                    </ul>
-                    <ul class="nodeChildren"></ul>
-                </div>
-            </div>
-        </li>
-    </ul>
+            </li>
+        </ul>
+    </div>
 
     <div id="fullWindowMessage" class="fullScreen"><div></div></div>
     <div id="dataContextViewer" class="fullScreen">
@@ -92,7 +98,7 @@
     </div>
 </section>
 
-<section id="logViewer">
+<section id="logViewer" class="contentSection section">
     log Viewer
 </section>
 

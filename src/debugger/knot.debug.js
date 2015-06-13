@@ -4,11 +4,30 @@
     function showDebugWindow(dir){
         var url = dir + "debugger.html";
         debugWindow = window.open(url, "KnotDebuggerWindow", "width=600,height=500,resizable=yes,scrollbars=yes");
+
+        //window.Knot.Advanced.registerLog(debugWindow.calledByOpener.log);
+        window.Knot.Advanced.registerDebugger(debuggerProxy);
     }
 
+    var debuggerProxy = {
+        knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+            debugWindow.calledByOpener.debugger.knotChanged.apply(debugWindow.calledByOpener.debugger, arguments);
+        },
+        knotTied: function(leftTarget, rightTarget, knotOption){
+        },
+        knotUntied:function(leftTarget, rightTarget, knotOption){
 
-    window.__knotDebugger = {
+        },
+        dataContextChanged:function(node){
 
+        },
+
+        nodeAdded: function(node){
+
+        },
+        nodeRemoved: function(node){
+
+        }
     };
 
     window.addEventListener("load", function(){

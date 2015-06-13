@@ -18,7 +18,7 @@ body{
 
 #nodeTemplate .expander>i{
     @click:@{this.isExpanded = !this.isExpanded;};
-    class:isExpanded>{return value?"+fa-minus -fa-plus":"-fa-minus +fa-plus";}
+    class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle":"-fa-minus-circle +fa-plus-circle";}
 }
 
 #nodeTemplate .nodeTitle{
@@ -41,12 +41,6 @@ body{
     style.display:options>{return (value&&value.length>0)?"block":"none";}
 }
 
-
-#knotsListItemTemplate .knotOption{
-    textContent:*
-}
-
-
 #nodeTemplate .nodeChildren{
     foreach < nodeTemplate: childrenInfo;
     style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
@@ -55,5 +49,27 @@ body{
 #nodeTemplate .collapsibleContent{
     style.display : isExpanded>{return value?"block":"none";}
 }
+
+
+
+#knotsListItemTemplate .knotOption{
+    textContent:description
+}
+
+#knotsListItemTemplate .knotValueDirection, #knotsListItemTemplate .knotValue, #knotsListItemTemplate .knotValueDetail{
+    style.display:latestValueInfo>{return value?"inline-block":"none";};
+}
+
+#knotsListItemTemplate .knotValueDirection{
+    class:latestValueInfo.isFromLeftToRight>{return value?"+fa-angle-double-right -fa-angle-double-left":"-fa-angle-double-right +fa-angle-double-left";}
+}
+
+#knotsListItemTemplate .knotValue{
+    colorSet_innerText,#0bac45,transparent: latestValueInfo.value >{return JSON.stringify(value);}
+}
+
+ #knotsListItemTemplate .knotValueDetail{
+    @click:@/debuggerModel.showKnotDetail
+ }
 
 

@@ -5,14 +5,16 @@
         enablePropertyHook: true
     };
 
+    var defaultLogger = function(level, msg, exception){
+        console.log("["+ level + "]" + msg);
+        if(exception){
+            console.log(exception);
+        }
+    };
+
     __private.Log={
         Level:{Info:"Info", Warning:"Warning", Error:"Error"},
-        log:function(level, msg, exception){
-            console.log("["+ level + "]" + msg);
-            if(exception){
-                console.log(exception);
-            }
-        },
+        log: defaultLogger,
         info:function(msg, exception){
             this.log( this.Level.Info, msg, exception);
         },
@@ -21,6 +23,27 @@
         },
         error:function(msg, exception){
             this.log(this.Level.Error, msg, exception);
+        }
+    };
+
+    __private.Debugger = {
+        knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+
+        },
+        knotTied: function(leftTarget, rightTarget, knotOption){
+        },
+        knotUntied:function(leftTarget, rightTarget, knotOption){
+
+        },
+        dataContextChanged:function(node){
+
+        },
+
+        nodeAdded: function(node){
+
+        },
+        nodeRemoved: function(node){
+
         }
     };
 

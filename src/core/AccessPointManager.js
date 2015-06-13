@@ -129,17 +129,22 @@
             return value;
         },
 
-        monitor:function(src, srcAP, target, targetAP){
+        monitor:function(src, srcAP, target, targetAP, knotInfo){
             if(!srcAP.provider)
                 srcAP.provider = this.getProvider(src, srcAP.description);
             if(!targetAP.provider)
                 targetAP.provider = this.getProvider(target, targetAP.description);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)){
                 srcAP.changedCallback = function(){
-                    targetAP.provider.setValue(target, targetAP.description,
-                        __private.AccessPointManager.getValueThroughPipe(src,  srcAP));
+                    var v = __private.AccessPointManager.getValueThroughPipe(src,  srcAP)
+                    targetAP.provider.setValue(target, targetAP.description, v);
+                    if(knotInfo.leftAP == srcAP){
+                        __private.Debugger.knotChanged(src, target, knotInfo, v, true);
+                    }
+                    else{
+                        __private.Debugger.knotChanged(target, src, knotInfo, v, false);
+                    }
                 };
-
                 srcAP.provider.monitor(src, srcAP.description, srcAP.changedCallback);
             }
         },
@@ -183,6 +188,7 @@
                     var lastValue = p.apply(compositeAP, [values]);
 
                     normalTarget.provider.setValue(normalTarget, normalAP.description, lastValue);
+                    __private.Debugger.knotChanged(leftTarget, rightTarget, knotInfo, lastValue, normalTarget == rightTarget);
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
@@ -201,9 +207,11 @@
                 knotInfo.leftAP.provider.setValue(leftTarget, knotInfo.leftAP.description,
                     this.getValueThroughPipe(rightTarget,  knotInfo.rightAP));
 
-                this.monitor(leftTarget, knotInfo.leftAP, rightTarget, knotInfo.rightAP);
-                this.monitor(rightTarget, knotInfo.rightAP, leftTarget, knotInfo.leftAP);
+                this.monitor(leftTarget, knotInfo.leftAP, rightTarget, knotInfo.rightAP, knotInfo);
+                this.monitor(rightTarget, knotInfo.rightAP, leftTarget, knotInfo.leftAP, knotInfo);
             }
+
+            __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },
 
         untieKnot: function(leftTarget, rightTarget, knotInfo){
@@ -223,7 +231,6 @@
                         }
                     }
                 }
-
                 delete compositeAP.changedCallback;
             }
             else{
@@ -232,6 +239,7 @@
                 this.stopMonitoring(rightTarget, knotInfo.rightAP);
                 delete knotInfo.rightAP.changedCallback;
             }
+            __private.Debugger.knotUntied(leftTarget, rightTarget, knotInfo);
         }
     };
 })((function() {

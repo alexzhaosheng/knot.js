@@ -5,6 +5,9 @@ body {
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
+
+    background-color: #222235;
+    color:whitesmoke;
 }
 
 .selectable{
@@ -16,11 +19,17 @@ body {
     user-select: text;
 }
 
-section{
-    background-color: whitesmoke;
-    border: 1px solid lightgray;
-    padding: 10px;
-    margin-top: 10px;
+.section{
+    background-color: #2d2d37;
+    border-radius: 5px;
+    padding: 5px;
+    box-shadow: 0px 0px 3px black;
+}
+
+.contentSection{
+    position: absolute;
+    top:90px; left:10px; right:10px; bottom: 10px;
+
 }
 
 
@@ -61,6 +70,7 @@ li{
 .iconButton{
     cursor: pointer;
     margin: auto 2px;
+    color:#39628b;
 }
 .iconButton:active{
     -webkit-transform: scale(0.9, 0.9);
@@ -70,29 +80,45 @@ li{
     transform: scale(0.9, 0.9);
 }
 .iconButton:hover{
-    text-shadow:  0px 0px 4px #FFAAAA;
+    text-shadow:  0px 0px 4px #ed4d4d;
 }
 
 #ownerWindowInfo{
-    background-color:#aaFF99;
-    border: 1px solid lightgray;
+    display: inline-block;
     padding: 10px 3px;
     margin:0px 0px 5px 0px;
+    max-width: calc(100% - 150px);
+    overflow: hidden;
+    white-space: nowrap;
+}
+#viewerSelection{
+    margin-top: 12px;
+    float: right;
 }
 
 .domViewerToolBar{
-    height: 40px;
-    line-height: 40px;
+    height: 30px;
+    line-height: 30px;
+}
+
+#searchText{
+    background-color: #333340;
+    color:whitesmoke;
+    border: 1px solid #444444;
+}
+.treeContainer {
+    position: absolute;
+    top:40px;left:5px;right:5px;bottom: 5px;
+    overflow:auto;
 }
 
 .type-indicator{
-    color:lightcoral;
+    color:#f36564;
     font-size: 0.8em;
-    margin: 0px 2px;
 }
 
 .highlightMark{
-    color:red;
+    color:#ec334d;
     -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
 }
 
@@ -101,8 +127,7 @@ li{
     color:darkred;
     float: right;
     display:inline-block;
-    background-color: lightgoldenrodyellow;
-    border: gray solid 1px;
+    border: darkgray solid 1px;
 }
 .legend ul{
     display: inline-block;
@@ -115,13 +140,17 @@ li{
 
 
 .nodeTitle{
-    font-weight: bold;
     font-size: 11px;
-    color:#660000;
+    color:#ff6400;
 }
 .knotOption{
-    color:#008800;
     font-size: 11px;
+    color:#61ce3c;
+}
+.knotValue{
+    font-size: 11px;
+    color:white;
+    padding: 2px 4px;
 }
 
 
@@ -132,17 +161,15 @@ li{
 }
 
 #nodeTemplate .collapsibleContent{
-    border-left: 1px solid lightgray;
-    margin-left: 10px;
+    margin-left: 16px;
 }
-#nodeTemplate>div>div:nth-child(1){
-    background-color: lightcyan;
-    border: 1px solid lightgray;
+#nodeTemplate .nonCollapsibleContent{
+    padding: 4px 0px;
+
 }
 #nodeTemplate .expander{
-    color:#222288;
+    /*color:#222288;*/
     display:inline-block;
-    margin: 2px;
     width: 16px;
     height: 16px;
     line-height: 16px;
@@ -154,8 +181,8 @@ li{
 
 .knotList{
     margin: 0px 0px 1px 0px;
-    background-color: #ffffee;
-    border: 1px solid lightgray;
+    /*background-color: #ffffee;*/
+    /*border: 1px solid lightgray;*/
     border-left: none;
     border-top:none;
 }
@@ -163,35 +190,29 @@ li{
 #knotsListItemTemplate{
     display: block;
     min-width: 300px;
-    border-top:1px solid lightgray;
-    padding: 1px;
+    padding: 5px;
 }
-#knotsListItemTemplate:nth-child(1){
-    border-top:none;
-}
-#knotsListItemTemplate:nth-child(even){
-    background-color: #ffffee;
-}
-#knotsListItemTemplate:nth-child(odd){
-    background-color: #eeffee;
+#knotsListItemTemplate div{
+    display: inline-block;
+    margin-right: 10px;
 }
 
-.collapsibleContent{
-    margin-left: 5px;
-}
+
 
 .fullScreen{
     position: absolute;
     z-index: 100;
 
     top:0px; left:0px; right: 0px; bottom: 0px;
-    background-color: rgba(255,255,255, 0.8);
+    background-color: rgba(0,0,0, 0.8);
 
     display: none;;
 }
 .fullScreen>div{
-    background-color: lightgoldenrodyellow;
-    border:1px solid lightgray;
+    background-color: #2d2d37;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px black;
+
     position: absolute;
     padding: 10px 0px;
     top:20%;
