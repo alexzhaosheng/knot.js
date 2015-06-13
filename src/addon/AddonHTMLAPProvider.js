@@ -44,6 +44,8 @@
             if(target instanceof HTMLElement){
                 if(target.tagName.toLowerCase()=="select" && (__private.Utility.startsWith(apName,"options") || apName == "selectedData"))
                     return true;
+                else if(apName == "class")
+                    return true;
             }
 
             return false;
@@ -60,6 +62,9 @@
                     return selectedOption.__knot?selectedOption.__knot.dataContext:undefined;
                 else
                     return undefined;
+            }
+            if(apName == "class"){
+                return target.className;
             }
             if(__private.Utility.startsWith(apName,"options")){
                 return target.options;
@@ -79,6 +84,31 @@
                     }
                 }
                 target.selectedIndex = -1;
+            }
+            if(apName == "class"){
+                if(value){
+                    var origClassNames = target.className.split(" ");
+                    var values = value.split(" ");
+                    for(var i=0; i< values.length; i++){
+                        var v = values[i];
+                        if(v[0] == "-"){
+                            v = v.substr(1).trim();
+                            if(origClassNames.indexOf(v)>=0)
+                                origClassNames.splice(origClassNames.indexOf(v), 1);
+                        }
+                        else{
+                            if(v[0] == "+"){
+                                v = v.substr(1).trim();
+                            }
+                            if(origClassNames.indexOf(v)<0)
+                                origClassNames.push(v);
+                        }
+                    }
+                    target.className = origClassNames.join(" ");
+                }
+                else{
+                    target.className = "";
+                }
             }
             else if(__private.Utility.startsWith(apName,"options")){
                 var def = __private.HTMLAPHelper.parseInAPNameDefinition(apName);

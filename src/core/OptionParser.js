@@ -43,7 +43,7 @@
     var __private = window.Knot.getPrivateScope();
 
 
-    function createEmbeddedPipeFunction(text){
+    function createEmbeddedFunction(text){
         var func = "(function(value){" + text + "})";
         try{
             var newName = __private.GlobalSymbolHelper.registerSymbol(eval(func))
@@ -76,7 +76,7 @@
             var blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             while(blockInfo){
                 var funcText = text.substr(blockInfo.start+1, blockInfo.end - blockInfo.start - 1);
-                var registeredName = createEmbeddedPipeFunction(funcText);
+                var registeredName = createEmbeddedFunction(funcText);
                 text = text.substr(0, blockInfo.start) + registeredName + text.substr(blockInfo.end+1);
                 blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             }
@@ -113,6 +113,10 @@
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
+            if(__private.GlobalSymbolHelper.isGlobalSymbol(AP)){
+                pipes.splice(0,0,AP);
+                AP = "*";
+            }
             return {description:AP, pipes:pipes};
         },
 

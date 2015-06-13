@@ -26,12 +26,37 @@
             return true;
         },
         getValue: function(target, apName){
-            return __private.Utility.getValueOnPath(target, apName);
+            var returnFunc = false;
+            if(apName[0] == "@"){
+                returnFunc = true;
+                apName = apName.substr(1);
+            }
+            var value =  __private.Utility.getValueOnPath(target, apName);
+            if(typeof(value) == "function" && !returnFunc){
+                try{
+                    return value.apply(target);
+                }
+                catch(err){
+                    __private.Log.error("Call get value function failed.", err);
+                    return undefined;
+                }
+            }
+            else{
+                return value;
+            }
         },
         setValue: function(target, apName, value){
             return __private.Utility.setValueOnPath(target, apName, value);
         },
         doesSupportMonitoring: function(target, apName){
+            if(__private.GlobalSymbolHelper.isGlobalSymbol(apName)){
+                var symbol = __private.GlobalSymbolHelper.getSymbol(apName);
+                if(typeof(symbol) == "function"){
+                    //do nothing
+                    return false;
+                }
+            }
+
             if(typeof(target) != "object" && typeof(target) != "array"){
                 return false;
             }

@@ -18,7 +18,11 @@
     <script src="../core/AccessPointManager.js"></script>
     <script src="../core/HTMLAPProvider.js"></script>
     <script src="../core/HTMLKnotManager.js"></script>
+
+    <script src="../addon/AddonHTMLAPProvider.js"></script>
+
     <script src="../core/KnotInterface.js"></script>
+
 
     <script src="debugger.js"></script>
 
@@ -26,6 +30,7 @@
 </head>
 <body>
 <div>
+    <div id="ownerWindowInfo"></div>
     <select id="viewerSelection">
         <option selected>DOM Viewer</option>
         <option>Log Viewer</option>
@@ -36,13 +41,13 @@
     <div>
         <div class="domViewerToolBar">
             <input id="searchText" type="text" placeholder="Search html node">
-            <i id="searchButton" class="fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
-            <i id="locateElementButton" class="fa fa-crosshairs" title="Locate this element on page"></i>
+            <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
+            <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
 
             <div class="legend">
                 <ul>
-                    <li><i class="fa fa-flag"></i> <span class="nodeTitle">HTML Node</span> </li>
-                    <li><i class="fa fa-flag"></i> <span class="knotOption">Knot Options</span> </li>
+                    <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Node</span> </li>
+                    <li><i class="type-indicator fa fa-wrench"></i></i> <span class="knotOption">Knot Options</span> </li>
                 </ul>
             </div>
         </div>
@@ -54,21 +59,21 @@
             <div>
                 <div>
                     <div class="expander">
-                        <i class="fa fa-plus-circle"></i>
+                        <i class="iconButton fa fa-plus-circle"></i>
                     </div>
                     <i class="type-indicator fa fa-share-alt"></i>
-                    <span class="nodeTitle"></span>
+                    <span class="nodeTitle selectable"></span>
                     <i class="highlightMark fa fa-chevron-circle-left"></i>
 
-                    <i class="locateElementButton fa fa-crosshairs" title="Locate this element on page"></i>
-                    <i class="checkDataContextButton fa fa-comment" title="Locate this element on page"></i>
+                    <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i>
+                    <i class="checkDataContextButton iconButton fa fa-indent" title="View current data context"></i>
 
                 </div>
                 <div class="collapsibleContent">
                     <ul class="knotList" >
                         <li id="knotsListItemTemplate" knot-template>
-                            <i class="type-indicator fa fa-cog"></i>
-                            <span class="knotOption"></span>
+                            <i class="type-indicator fa fa-wrench"></i>
+                            <span class="knotOption selectable"></span>
                         </li>
                     </ul>
                     <ul class="nodeChildren"></ul>

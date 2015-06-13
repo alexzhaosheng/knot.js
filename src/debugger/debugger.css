@@ -1,3 +1,20 @@
+body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+.selectable{
+    -webkit-touch-callout: text;
+    -webkit-user-select: text;
+    -khtml-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
 
 section{
     background-color: whitesmoke;
@@ -12,7 +29,6 @@ ul{
     margin: 0px 0px 0px 10px;
     padding: 0px;
     font-family: Verdana, Geneva, sans-serif;
-    font-size: 0.95em;
 }
 li{
     padding: 0px;
@@ -42,24 +58,37 @@ li{
     }
 }
 
-.domViewerToolBar{
-    height: 30px;
-    line-height: 30px;
-}
-.domViewerToolBar>i{
+.iconButton{
     cursor: pointer;
-    margin: auto 4px;
+    margin: auto 2px;
 }
-.domViewerToolBar>i:active{
+.iconButton:active{
     -webkit-transform: scale(0.9, 0.9);
     -moz-transform: scale(0.9, 0.9);
     -ms-transform: scale(0.9, 0.9);
     -o-transform: scale(0.9, 0.9);
     transform: scale(0.9, 0.9);
 }
+.iconButton:hover{
+    text-shadow:  0px 0px 4px #FFAAAA;
+}
+
+#ownerWindowInfo{
+    background-color:#aaFF99;
+    border: 1px solid lightgray;
+    padding: 10px 3px;
+    margin:0px 0px 5px 0px;
+}
+
+.domViewerToolBar{
+    height: 40px;
+    line-height: 40px;
+}
 
 .type-indicator{
     color:lightcoral;
+    font-size: 0.8em;
+    margin: 0px 2px;
 }
 
 .highlightMark{
@@ -87,12 +116,13 @@ li{
 
 .nodeTitle{
     font-weight: bold;
+    font-size: 11px;
     color:#660000;
 }
 .knotOption{
     color:#008800;
+    font-size: 11px;
 }
-
 
 
 #domTree{
@@ -113,34 +143,13 @@ li{
     color:#222288;
     display:inline-block;
     margin: 2px;
-    cursor: pointer;
-
     width: 16px;
     height: 16px;
     line-height: 16px;
     text-align: center;
 }
 #nodeTemplate .locateElementButton{
-    cursor: pointer;
     margin-left: 30px;
-}
-#nodeTemplate .checkDataContextButton{
-    cursor: pointer;
-    margin-left: 5px;
-}
-#nodeTemplate .checkDataContextButton:active{
-    -webkit-transform: scale(0.9, 0.9);
-    -moz-transform: scale(0.9, 0.9);
-    -ms-transform: scale(0.9, 0.9);
-    -o-transform: scale(0.9, 0.9);
-    transform: scale(0.9, 0.9);
-}
-#nodeTemplate .locateElementButton:active{
-    -webkit-transform: scale(0.9, 0.9);
-    -moz-transform: scale(0.9, 0.9);
-    -ms-transform: scale(0.9, 0.9);
-    -o-transform: scale(0.9, 0.9);
-    transform: scale(0.9, 0.9);
 }
 
 .knotList{
@@ -170,9 +179,6 @@ li{
 .collapsibleContent{
     margin-left: 5px;
 }
-
-
-
 
 .fullScreen{
     position: absolute;

@@ -24,6 +24,9 @@
                 v = v[sections[i]];
             }
             return v;
+        },
+        isGlobalSymbol:function(name){
+            return __private.Utility.startsWith(name, "__knot_global.");
         }
     }
 })((function() {

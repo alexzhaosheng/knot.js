@@ -153,6 +153,8 @@
             return;
         }
 
+        $("#ownerWindowInfo").text((window.opener.document.title?window.opener.document.title:"untitled") + " ["+ window.opener.location+"]");
+
         $("#locateElementButton").click(function(){
             $("#fullWindowMessage").show().find("div").text("Use mouse left button to pick an element from the original page.");
             var downHandler = function(arg){

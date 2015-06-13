@@ -69,6 +69,16 @@
         knots = scope.OptionParser.parse("options[display:name;value:id]:users;text:name;");
         assert.equal(knots.length, 2, "parse complex AP name")
         assert.equal(knots[0].leftAP.description, "options[display:name;value:id]", "parse complex AP name");
+
+
+        var knot = scope.OptionParser.parse('@click:@{alert("clicked");}')[0];
+        assert.equal(knot.rightAP.description[0], "@", "Use a single function as access point");
+        assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.description.substr(1)), true, "Use a single function as access point");
+
+        var knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
+        assert.equal(knot.rightAP.description, "*", "Use a single function as access point");
+        assert.equal(knot.rightAP.pipes.length, 1, "Use a single function as access point");
+        assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.pipes[0]), true, "Use a single function as access point");
     });
 })((function() {
         return this;

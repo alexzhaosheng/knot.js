@@ -8,7 +8,7 @@ body{
 
 #listItem input{
     checked:isDone;
-    @change:/updateRemaining
+    @change:@/updateRemaining
 }
 #listItem span{
     className:isDone>{

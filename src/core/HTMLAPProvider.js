@@ -139,10 +139,6 @@
             if(apName[0] == "#"){
                 return true;
             }
-            //@ is start of dom event
-            if(apName[0] == "@"){
-                return true;
-            }
 
             //!is error status binding with must comes with an id selector
             if(apName[0] == "!"){

@@ -17,8 +17,8 @@ body{
 
 
 #nodeTemplate .expander>i{
-    @click:{this.isExpanded = !this.isExpanded;};
-    className:isExpanded>{return value?"fa fa-minus":"fa fa-plus";}
+    @click:@{this.isExpanded = !this.isExpanded;};
+    class:isExpanded>{return value?"+fa-minus -fa-plus":"-fa-minus +fa-plus";}
 }
 
 #nodeTemplate .nodeTitle{
@@ -29,16 +29,15 @@ body{
 }
 
 #nodeTemplate .locateElementButton{
-    @click:/debuggerModel.locateElement
+    @click:@/debuggerModel.locateElement
 }
 #nodeTemplate .checkDataContextButton{
     style.display:dataContext>{return value?"inline-block":"none"};
-    @click:/debuggerModel.checkDataContext
+    @click:@/debuggerModel.checkDataContext
 }
 
 #nodeTemplate .knotList{
     foreach<knotsListItemTemplate :options;
-    /* only show knot list when it is expanded and has knot options*/
     style.display:options>{return (value&&value.length>0)?"block":"none";}
 }
 

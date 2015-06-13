@@ -430,7 +430,7 @@
 
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
             'body {dataContext:/eventTestData;}'+
-            '#testButton{@click:{window.eventClickedCount++;window.latestThisPointer=this;};@mouseover:/eventTestOnMouseOver}'+
+            '#testButton{@click:@{window.eventClickedCount++;window.latestThisPointer=this;};@mouseover:@/eventTestOnMouseOver}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 

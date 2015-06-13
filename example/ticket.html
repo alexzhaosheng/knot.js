@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title></title>
+    <title>Knot.js Example - Ticket</title>
 
     <link rel="stylesheet" href="example.css">
 
@@ -50,7 +50,7 @@
 
         /* For Ticket 1*/
         #classSelect2{
-            options[displayMember:*>{return value.name+"("+value.price+")";}]:tickets;
+            options[displayMember:{return this.name+"("+this.price+")";}]:tickets;
             selectedData:selected;
         }
     </script>
