@@ -35,9 +35,6 @@
         knotUntied:function(leftTarget, rightTarget, knotOption){
 
         },
-        dataContextChanged:function(node){
-
-        },
 
         nodeAdded: function(node){
 

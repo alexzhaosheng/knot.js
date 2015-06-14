@@ -107,7 +107,8 @@
                     target.className = origClassNames.join(" ");
                 }
                 else{
-                    target.className = "";
+                    if(value == "-")
+                        target.className = "";
                 }
             }
             else if(__private.Utility.startsWith(apName,"options")){

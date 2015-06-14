@@ -1,34 +1,46 @@
 (function(window){
-    var debugWindow;
+    var _debugWindow;
+
+    var _cachedLogs = [];
+    window.knotjsDebugger ={
+        getCachedLogs:function(){
+            return _cachedLogs;
+        }
+    };
+
+    var logger = function(level, msg, exception){
+        var log = {level:level, message:msg, exception:exception, time:new Date()};
+
+        _cachedLogs.push(log);
+        if(_debugWindow)
+            _debugWindow.calledByOpener.log(log);
+    }
 
     function showDebugWindow(dir){
         var url = dir + "debugger.html";
-        debugWindow = window.open(url, "KnotDebuggerWindow", "width=600,height=500,resizable=yes,scrollbars=yes");
-
-        //window.Knot.Advanced.registerLog(debugWindow.calledByOpener.log);
+        _debugWindow = window.open(url, "knotDebugger_" + window.location, "width=600,height=500,resizable=yes,scrollbars=yes");
         window.Knot.Advanced.registerDebugger(debuggerProxy);
     }
 
     var debuggerProxy = {
         knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
-            debugWindow.calledByOpener.debugger.knotChanged.apply(debugWindow.calledByOpener.debugger, arguments);
+            _debugWindow.calledByOpener.debugger.knotChanged.apply(_debugWindow.calledByOpener.debugger, arguments);
         },
         knotTied: function(leftTarget, rightTarget, knotOption){
+            _debugWindow.calledByOpener.debugger.knotTied.apply(_debugWindow.calledByOpener.debugger, arguments);
         },
         knotUntied:function(leftTarget, rightTarget, knotOption){
-
+            _debugWindow.calledByOpener.debugger.knotUntied.apply(_debugWindow.calledByOpener.debugger, arguments);
         },
-        dataContextChanged:function(node){
-
-        },
-
         nodeAdded: function(node){
-
+            _debugWindow.calledByOpener.debugger.nodeAdded.apply(_debugWindow.calledByOpener.debugger, arguments);
         },
         nodeRemoved: function(node){
-
+            _debugWindow.calledByOpener.debugger.nodeRemoved.apply(_debugWindow.calledByOpener.debugger, arguments);
         }
     };
+
+    window.Knot.Advanced.registerLog(logger);
 
     window.addEventListener("load", function(){
         var blocks = window.document.querySelectorAll("script");

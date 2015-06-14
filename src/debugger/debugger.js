@@ -1,4 +1,6 @@
 (function(window){
+    var _isFilterEnabled = false;
+
     function parseHTMLInOpener (html){
         var div = window.opener.document.createElement('div');
         div.innerHTML = html;
@@ -13,7 +15,9 @@
     var _mouseTip = $(parseHTMLInOpener('<div style="z-index: 99999999; position: absolute; background-color: lightgoldenrodyellow;border: 1px solid lightgray;padding: 2px 5px;font-size: 0.9em"></div>'));
     var _currentMaskTimeoutHandler = 0;
     window.debuggerModel ={
-        domTree:null,
+        logs:[],
+
+        knotChangeLog:[],
 
         locateElement:function(){
             try{
@@ -40,9 +44,7 @@
 
         checkDataContext: function(){
             var content = JSON.stringify(this.dataContext, null, 4);
-            $("#dataContextViewer").show()
-                .find("textarea").val(content);
-            $("#dataContextViewer").find(".nodeDescription").text(this.description);
+            showJson("Current data context for \""+ this.description + "\"", content);
         },
 
         showKnotDetail:function(){
@@ -57,9 +59,12 @@
                 content += getDes(this.historyValueInfo[i]);
             }
 
-            $("#dataContextViewer").show()
-                .find("textarea").val(content);
-            $("#dataContextViewer").find(".nodeDescription").text("");
+            showJson("Value changed history for knot \"" + this.description + "\"" , content);
+        },
+
+        showKnotValueLogDetail:function(){
+            var content = JSON.stringify(this.value, null, 4);
+            showJson("Current data context for \""+ this.nodeDescription + " " + this.knotOption.description + "\"", content);
         }
     };
 
@@ -82,6 +87,11 @@
         }
     }
 
+    function showJson(message, json){
+        $("#jsonViewer").show()
+            .find("textarea").val(json);
+        $("#jsonViewer").find(".jsonViewerMessage").text(message);
+    }
 
     function getClosestVisibleElement(element){
         if(element.offset().left == 0 && element.offset().top == 0){
@@ -124,8 +134,10 @@
 
         for(var i=0; i<node.children.length; i++){
             var info =generateDOMTree(node.children[i]);
-            if(info)
+            if(info){
                 nodeInfo.childrenInfo.push(info);
+                info.parent = nodeInfo;
+            }
         }
 
         if(!node.__knot && nodeInfo.childrenInfo.length == 0)
@@ -144,6 +156,9 @@
                     });
                 }
             }
+        }
+        else{
+            nodeInfo.noKnotSetting = true;
         }
 
         nodeInfo.description = getHTMLElementDescription(node);
@@ -168,6 +183,11 @@
 
     function searchInNode(node, keyword){
         node.isHighlighted = keyword? (node.description.toLowerCase().indexOf(keyword)>=0):false;
+        if(node.options){
+            for(var i=0; i< node.options.length; i++){
+                node.options[i].isHighlighted = (node.options[i].description.toLowerCase().indexOf(keyword) >=0);
+            }
+        }
         for(var i=0;i<node.childrenInfo.length; i++){
             searchInNode(node.childrenInfo[i], keyword);
         }
@@ -179,10 +199,43 @@
                 found = true;
         }
 
+        if(node.options){
+            for(var i=0; i< node.options.length; i++){
+                node.options[i].isHighlighted = false;
+            }
+        }
         if(!found)
             node.isHighlighted = (node.node == targetNode);
         return found || node.isHighlighted;
     }
+
+    function collapseIrrelevantNodes(node){
+        var collapse = true;
+        for(var i=0;i<node.childrenInfo.length; i++){
+            if(collapseIrrelevantNodes(node.childrenInfo[i]))
+                collapse = false;
+        }
+
+        var highlighted = node.isHighlighted;
+        if(!highlighted && node.options){
+            for(var i=0; i<node.options.length;i++){
+                if(node.options[i].isHighlighted)
+                {
+                    highlighted = true;
+                    break;
+                }
+            }
+        }
+        node.isExpanded = highlighted || !collapse;
+        return node.isExpanded;
+    }
+    function expandAll(node){
+        for(var i=0;i<node.childrenInfo.length; i++){
+            expandAll(node.childrenInfo[i]);
+        }
+        node.isExpanded = true;
+    }
+
 
     window.Knot.ready(function(succ, err){
         if(!succ){
@@ -194,6 +247,10 @@
             alert("This page should only be opened by Knot debugger.")
             return;
         }
+
+        var arr = window.opener.knotjsDebugger.getCachedLogs();
+        for(var i= arr.length-1; i>=0; i--)
+            window.debuggerModel.logs.push(arr[i]);
 
         $("#ownerWindowInfo").text((window.opener.document.title?window.opener.document.title:"untitled") + " ["+ window.opener.location+"]");
 
@@ -207,6 +264,9 @@
                 arg.preventDefault();
                 $("#fullWindowMessage").hide();
                 _mouseTip.remove();
+
+                if(_isFilterEnabled)
+                    collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
             };
             window.opener.addEventListener("mousedown",downHandler , true);
 
@@ -223,14 +283,34 @@
 
         $("#searchButton").click(function(){
             searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
+            if(_isFilterEnabled)
+                collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
         });
         $("#searchText").keyup(function(e){
-            if(e.which == 13)
+            if(e.which == 13){
                 searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
+                if(_isFilterEnabled)
+                    collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+            }
         });
 
-        $("#closeDataContextViewer").click(function(){
-            $("#dataContextViewer").hide();
+        $("#closeJsonViewer").click(function(){
+            $("#jsonViewer").hide();
+        });
+
+        $("#enableFilterButton").click(function(){
+            _isFilterEnabled = !_isFilterEnabled;
+            if(_isFilterEnabled){
+                $("#enableFilterButton").addClass("iconButtonChecked");
+            }
+            else{
+                $("#enableFilterButton").removeClass("iconButtonChecked");
+            }
+
+            if(_isFilterEnabled)
+                collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+            else
+                expandAll(window.debuggerModel.domTreeNodes[0]);
         });
 
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
@@ -254,12 +334,10 @@
             var apName = apDescription.split(",")[0].trim();
             var colorFrom = apDescription.split(",")[1].trim();
             var colorTo = apDescription.split(",")[2].trim();
-            target[apName] = typeof(value)=="undefined"?"":value;
-            if(typeof(value) != "undefined"){
-                $(target).stop()
-                    .css("backgroundColor", colorFrom)
-                    .animate({backgroundColor:colorTo}, 3000);
-            }
+            target[apName] = value;
+            $(target).stop()
+                .css("backgroundColor", colorFrom)
+                .animate({backgroundColor:colorTo}, 3000);
         },
         doesSupportMonitoring: function(target, apName){
             return false;
@@ -269,13 +347,25 @@
 
     var _debugLogCount = 0;
     window.calledByOpener = {
-        hi:function(v){
-            alert(v);
-        },
-        log:function(level, msg, exception){
-
+        log:function(log){
+            window.debuggerModel.logs.unshift(log);
         },
         debugger:{
+            helper:{
+                setIsTiedUp:function(leftTarget,  knotOption, isTiedUp){
+                    var info = nodeDictionary.get(leftTarget);
+                    if(!info)
+                        return;
+
+                    for(var i=0; i<info.options.length; i++){
+                        if(info.options[i].knotOption == knotOption){
+                            this.options[i].isTiedUp = isTiedUp;
+                            return;
+                        }
+                    }
+                }
+            },
+
             knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
                 var info = nodeDictionary.get(leftTarget);
                 if(!info)
@@ -285,24 +375,47 @@
                         if(info.options[i].latestValueInfo)
                             info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
                         info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
+                        window.debuggerModel.knotChangeLog.unshift({
+                            id:info.options[i].latestValueInfo.id,
+                            nodeDescription: info.description,
+                            knotOption: info.options[i],
+                            value:latestValue,
+                            isFromLeftToRight:isFromLeftToRight
+                        });
                         return;
                     }
                 }
             },
+
             knotTied: function(leftTarget, rightTarget, knotOption){
+                //this.helper.setIsTiedUp(leftTarget, knotOption, true);
             },
             knotUntied:function(leftTarget, rightTarget, knotOption){
-
-            },
-            dataContextChanged:function(node){
-
+                //this.helper.setIsTiedUp(leftTarget, knotOption, false);
             },
 
             nodeAdded: function(node){
-
+                var n = node;
+                while(n && !nodeDictionary.get(n.parentNode)){
+                    n = n.parentNode;
+                }
+                if(n){
+                    var info = generateDOMTree(n);
+                    var parentInfo = nodeDictionary.get(n.parentNode);
+                    var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
+                    parentInfo.childrenInfo.splice(index, 0, info);
+                    info.parent = parentInfo;
+                }
             },
             nodeRemoved: function(node){
-
+                var info = nodeDictionary.get(node);
+                if(!info)
+                    return;
+                if(info.parent){
+                    info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
+                    info.parent = null;
+                }
+                nodeDictionary.remove(info.node);
             }
         }
     }

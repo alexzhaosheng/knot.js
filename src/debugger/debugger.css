@@ -8,6 +8,8 @@ body {
 
     background-color: #222235;
     color:whitesmoke;
+
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
 }
 
 .selectable{
@@ -26,10 +28,35 @@ body {
     box-shadow: 0px 0px 3px black;
 }
 
+.section .divider{
+    border: none;
+    border-top: 1px solid #222222;
+}
+
 .contentSection{
     position: absolute;
     top:90px; left:10px; right:10px; bottom: 10px;
+}
 
+.fullScreen{
+    position: absolute;
+    z-index: 100;
+
+    top:0px; left:0px; right: 0px; bottom: 0px;
+    background-color: rgba(0,0,0, 0.8);
+
+    display: none;;
+}
+.fullScreen>div{
+    background-color: #2d2d37;
+    border-radius: 5px;
+    box-shadow: 0px 0px 3px black;
+
+    position: absolute;
+    padding: 10px 0px;
+    top:100px;
+    width: 100%;
+    text-align: center;
 }
 
 
@@ -37,7 +64,7 @@ ul{
     list-style: none;
     margin: 0px 0px 0px 10px;
     padding: 0px;
-    font-family: Verdana, Geneva, sans-serif;
+
 }
 li{
     padding: 0px;
@@ -80,7 +107,11 @@ li{
     transform: scale(0.9, 0.9);
 }
 .iconButton:hover{
-    text-shadow:  0px 0px 4px #ed4d4d;
+    text-shadow:  0px 0px 4px #BBBBBB;
+}
+
+.iconButtonChecked{
+    color:#0381ff;
 }
 
 #ownerWindowInfo{
@@ -96,6 +127,12 @@ li{
     float: right;
 }
 
+
+#domViewer .divider{
+    bottom: 235px;
+    position: absolute;
+    width: 100%;
+}
 .domViewerToolBar{
     height: 30px;
     line-height: 30px;
@@ -108,7 +145,7 @@ li{
 }
 .treeContainer {
     position: absolute;
-    top:40px;left:5px;right:5px;bottom: 5px;
+    top:40px;left:5px;right:5px;bottom: 250px;
     overflow:auto;
 }
 
@@ -140,17 +177,20 @@ li{
 
 
 .nodeTitle{
-    font-size: 11px;
+    font-size: 13px;
     color:#ff6400;
 }
 .knotOption{
-    font-size: 11px;
+    font-size: 13px;
     color:#61ce3c;
+
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
-.knotValue{
-    font-size: 11px;
-    color:white;
-    padding: 2px 4px;
+.emptyNode{
+    opacity: 0.4;
 }
 
 
@@ -191,31 +231,65 @@ li{
     display: block;
     min-width: 300px;
     padding: 5px;
+    line-height: 11px
 }
 #knotsListItemTemplate div{
     display: inline-block;
-    margin-right: 10px;
+}
+.knotValue{
+    font-size: 11px;
+    color:white;
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-
-
-.fullScreen{
-    position: absolute;
-    z-index: 100;
-
-    top:0px; left:0px; right: 0px; bottom: 0px;
-    background-color: rgba(0,0,0, 0.8);
-
-    display: none;;
+.knotValueDirection{
+    margin-right: 0px;
+    margin-left: 20px;
+    color: #DDDDDD;
 }
-.fullScreen>div{
-    background-color: #2d2d37;
-    border-radius: 5px;
-    box-shadow: 0px 0px 3px black;
 
+/* Knot change log */
+
+#knotChangeLog{
     position: absolute;
-    padding: 10px 0px;
-    top:20%;
-    width: 100%;
+    height: 230px;
+    left:5px;right:5px;bottom: 5px;
+    overflow:auto;
+    background-color: #222222;
+}
+#knotChangeLogItemTemplate >div{
+    display: inline-block;
+}
+#knotChangeLogItemTemplate .id{
+    width: 50px;
     text-align: center;
 }
+
+
+/* log window */
+.logContainer {
+    position: absolute;
+    top:5px;left:5px;right:5px;bottom: 5px;
+    overflow-y:auto;
+}
+#logTemplate{
+    font-size: 13px;
+    margin: 3px 0px;
+    padding: 3px;
+    line-height: 20px;
+}
+#logTemplate .level, #logTemplate .time, #logTemplate .at{
+    font-size: 0.9em;
+    color:lightgreen;
+}
+
+#logTemplate .exception{
+    font-size: 0.9em;
+    color:#ffaaaa;
+}
+
+
+

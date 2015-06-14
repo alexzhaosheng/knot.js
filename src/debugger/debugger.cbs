@@ -15,14 +15,14 @@ body{
     foreach < nodeTemplate: domTreeNodes
 }
 
-
 #nodeTemplate .expander>i{
     @click:@{this.isExpanded = !this.isExpanded;};
-    class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle":"-fa-minus-circle +fa-plus-circle";}
+    class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
 }
 
 #nodeTemplate .nodeTitle{
-    textContent: description
+    textContent: description;
+     class:noKnotSetting>{return value?"+emptyNode":"";}
 }
 #nodeTemplate .highlightMark{
     style.display:isHighlighted>{return value?"inline-block":"none";}
@@ -65,11 +65,71 @@ body{
 }
 
 #knotsListItemTemplate .knotValue{
-    colorSet_innerText,#0bac45,transparent: latestValueInfo.value >{return JSON.stringify(value);}
+    colorSet_innerText,#0bac45,transparent: latestValueInfo.value >{return JSON.stringify(value);};
+    title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
 }
 
  #knotsListItemTemplate .knotValueDetail{
     @click:@/debuggerModel.showKnotDetail
  }
 
+
+/* knot change history log*/
+#knotChangeLog{
+    foreach<knotChangeLogItemTemplate: knotChangeLog
+}
+#knotChangeLog .id{
+    textContent: id
+}
+#knotChangeLog .nodeTitle{
+    textContent: nodeDescription
+}
+#knotChangeLog .knotOption{
+    textContent: knotOption.description
+}
+#knotChangeLog  .knotValueDirection{
+    class:isFromLeftToRight>{return value?"+fa-angle-double-right -fa-angle-double-left":"-fa-angle-double-right +fa-angle-double-left";}
+}
+#knotChangeLog .knotValue{
+    textContent: value>{return JSON.stringify(value);};
+}
+#knotChangeLog .knotValueDetail{
+    @click:@/debuggerModel.showKnotValueLogDetail
+ }
+
+
+
+ /* Log */
+
+#logContainer{
+    foreach<logTemplate: logs
+}
+
+#logTemplate{
+    style.backgroundColor: level>{
+        switch(value){
+            case "Info":
+                return "transparent";
+            case "Warning":
+                return "#b58900";
+            case "Error":
+                return "#dc322f";
+        }
+    };
+}
+#logTemplate .level{
+    textContent:level
+}
+#logTemplate .time{
+    textContent:time>{
+        return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
+                " " + value.getMilliseconds();
+    }
+}
+#logTemplate .message{
+    textContent: message
+}
+#logTemplate .exception{
+    textContent: exception>{return value.toString();}
+}
 

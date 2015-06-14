@@ -28,6 +28,7 @@
     <script src="debugger.js"></script>
 
     <script src="debugger.cbs" type="text/cbs"></script>
+
 </head>
 <body>
 <div class="section">
@@ -41,10 +42,10 @@
 <section id="domViewer" class="contentSection section">
     <div>
         <div class="domViewerToolBar">
-            <input id="searchText" type="text" placeholder="Search html node">
+            <input id="searchText" type="text" placeholder="Search">
             <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
             <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
-
+            <i id="enableFilterButton" class="iconButton fa fa-filter" title="Toggle automatically collapsing irrelevant nodes"></i>
             <div class="legend">
                 <ul>
                     <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Node</span> </li>
@@ -65,6 +66,7 @@
                         </div>
                         <i class="type-indicator fa fa-share-alt"></i>
                         <span class="nodeTitle selectable"></span>
+
                         <i class="highlightMark fa fa-chevron-circle-left"></i>
 
                         <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i>
@@ -76,8 +78,10 @@
                             <li id="knotsListItemTemplate" knot-template>
                                 <i class="type-indicator fa fa-wrench"></i>
                                 <div class="knotOption selectable"></div>
-                                <div class="knotValue selectable"></div>
+                                <i class="highlightMark fa fa-chevron-circle-left"></i>
                                 <i class="knotValueDirection fa fa-angle-double-left"></i>
+                                <div class="knotValue selectable"></div>
+
                                 <i class="iconButton knotValueDetail fa fa-indent" title="Details"></i>
                             </li>
                         </ul>
@@ -88,20 +92,42 @@
         </ul>
     </div>
 
-    <div id="fullWindowMessage" class="fullScreen"><div></div></div>
-    <div id="dataContextViewer" class="fullScreen">
-        <div>
-            <p>Current data context for "<span class="nodeDescription"></span>"</p>
-            <p><textarea cols="50" rows="15" style="overflow: scroll"></textarea></p>
-            <button id="closeDataContextViewer">Close</button>
+    <hr class="divider">
+
+    <div id="knotChangeLog">
+        <div id="knotChangeLogItemTemplate" knot-template>
+            <div class="id"></div>
+            <i class="type-indicator fa fa-share-alt"></i>
+            <span class="nodeTitle selectable"></span>
+
+            <i class="type-indicator fa fa-wrench"></i>
+            <div class="knotOption selectable"></div>
+
+            <i class="knotValueDirection fa fa-angle-double-left"></i>
+            <div class="knotValue selectable"></div>
+            <i class="iconButton knotValueDetail fa fa-indent" title="Details"></i>
         </div>
     </div>
+
 </section>
 
-<section id="logViewer" class="contentSection section">
-    log Viewer
+<section id="logViewer" class="contentSection">
+    <div id="logContainer">
+        <div id="logTemplate" class="section" knot-template>
+            <div>[<span class="level"></span><span class="at">@</span><span class="time"></span>] <span class="message"></span></div>
+            <div class="exception"></div>
+        </div>
+    </div>
+
 </section>
 
 
-
+<div id="fullWindowMessage" class="fullScreen"><div></div></div>
+<div id="jsonViewer" class="fullScreen">
+    <div>
+        <p class="jsonViewerMessage"></p>
+        <p><textarea cols="50" rows="25" style="overflow: scroll"></textarea></p>
+        <button id="closeJsonViewer">Close</button>
+    </div>
+</div>
 </body>
