@@ -89,8 +89,10 @@
 
     function showJson(message, json){
         $("#jsonViewer").show()
-            .find("textarea").val(json);
+            .find("code").html(json);
         $("#jsonViewer").find(".jsonViewerMessage").text(message);
+
+        hljs.highlightBlock($("#jsonViewer code")[0]);
     }
 
     function getClosestVisibleElement(element){

@@ -293,3 +293,12 @@ li{
 
 
 
+
+/* JSON viewer */
+.jsonCode{
+    max-height: 500px;
+    overflow: auto;
+    width: 600px;
+    text-align: left;
+    display: inline-block;
+}

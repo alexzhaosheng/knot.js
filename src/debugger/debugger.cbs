@@ -61,7 +61,7 @@ body{
 }
 
 #knotsListItemTemplate .knotValueDirection{
-    class:latestValueInfo.isFromLeftToRight>{return value?"+fa-angle-double-right -fa-angle-double-left":"-fa-angle-double-right +fa-angle-double-left";}
+    class:latestValueInfo.isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
 }
 
 #knotsListItemTemplate .knotValue{
@@ -88,7 +88,7 @@ body{
     textContent: knotOption.description
 }
 #knotChangeLog  .knotValueDirection{
-    class:isFromLeftToRight>{return value?"+fa-angle-double-right -fa-angle-double-left":"-fa-angle-double-right +fa-angle-double-left";}
+    class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
 }
 #knotChangeLog .knotValue{
     textContent: value>{return JSON.stringify(value);};
