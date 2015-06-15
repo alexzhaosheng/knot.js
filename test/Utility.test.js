@@ -67,6 +67,10 @@
         assert.equal(arr.length, 2, "split with block check");
         assert.equal(arr[0], "abc(sdf:[123:456])", "split with block check");
         assert.equal(arr[1], "e", "split with block check");
+
+        arr = scope.Utility.splitWithBlockCheck("abc(sdf:[123:456])", ":");
+        assert.equal(arr.length, 1, "split with block check");
+        assert.equal(arr[0], "abc(sdf:[123:456])", "split with block check");
     });
 
 })((function() {

@@ -138,6 +138,7 @@
             removeNodeCreatedFromTemplate(node.children[i])
         }
     }
+
     __private.HTMLAPProvider={
         //this provider support error status handling.
         doesSupportErrorStatus:true,
@@ -158,7 +159,7 @@
             }
             return false;
         },
-        getValue: function(target, apName){
+        getValue: function(target, apName, options){
             if(apName[0] == "@"){
                 return;
             }
@@ -188,7 +189,7 @@
                 return;
             return __private.HTMLAPHelper.getPropertyFromElemnt(target, apName);
         },
-        setValue: function(target, apName, value){
+        setValue: function(target, apName, value, options){
             if(apName[0] == "@"){
                 if(typeof(value) != "function"){
                     __private.Log.error( "Event listener must be a function!");

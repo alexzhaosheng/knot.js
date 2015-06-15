@@ -21,11 +21,28 @@
 
     var _APProviders = [];
 
+    function raiseAPEvent(target, options, eventName, params){
+        if(!options || !options[eventName])
+            return;
+        var f = __private.Utility.getValueOnPath(null, options[eventName]);
+        if(!f || typeof(f) != "function"){
+            __private.Log.error("'"+options[options[eventName]]+"' must be a function.");
+        }
+        else{
+            try{
+                f.apply(target, params);
+            }
+            catch (err){
+                __private.Log.error("Call AP event handler '"+options[options[eventName]]+"' failed.", err);
+            }
+        }
+    };
+
     __private.DefaultProvider = {
         doesSupport:function(target, apName){
             return true;
         },
-        getValue: function(target, apName){
+        getValue: function(target, apName, options){
             var returnFunc = false;
             if(apName[0] == "@"){
                 returnFunc = true;
@@ -45,8 +62,11 @@
                 return value;
             }
         },
-        setValue: function(target, apName, value){
-            return __private.Utility.setValueOnPath(target, apName, value);
+
+
+
+        setValue: function(target, apName, value, options){
+            __private.Utility.setValueOnPath(target, apName, value);
         },
         doesSupportMonitoring: function(target, apName){
             if(__private.GlobalSymbolHelper.isGlobalSymbol(apName)){
@@ -62,21 +82,26 @@
             }
             return true;
         },
-        monitor: function(target, apName, callback){
+        monitor: function(target, apName, callback, options){
             if(apName && apName[0] == "/"){
                 target = window;
                 apName = apName.substr(1);
             }
-            if(target)
+            if(target){
                 __private.DataMonitor.monitor(target, apName, callback);
+            }
         },
-        stopMonitoring: function(target, apName, callback){
+        stopMonitoring: function(target, apName, callback, options){
             if(apName && apName[0] == "/"){
                 target = window;
                 apName = apName.substr(1);
             }
-            if(target)
+            if(target && options && options.options.__knotAPEventCallbacks["@change"]){
+                __private.DataMonitor.stopMonitoring(target, apName, options.__knotAPEventCallbacks["@change"]);
+            }
+            else if(target){
                 __private.DataMonitor.stopMonitoring(target, apName, callback);
+            }
         }
     };
 
@@ -107,7 +132,7 @@
         getValueThroughPipe: function(target, ap){
             if(!ap.provider)
                 ap.provider = this.getProvider(target, ap.description);
-            var value = ap.provider.getValue(target, ap.description);
+            var value = ap.provider.getValue(target, ap.description, ap.options);
             try{
                 if(ap.pipes){
                     for(var i=0; i< ap.pipes.length; i++){
@@ -129,6 +154,39 @@
             return value;
         },
 
+        safeSetValue: function(target, ap, value){
+            if(ap.ignoreSettingValue){
+                return;
+            }
+            ap.ignoreSettingValue = true;
+            try{
+                if(!ap.provider)
+                    ap.provider = this.getProvider(target, ap.description);
+
+                ap.provider.setValue(target, ap.description, value, ap.options);
+                raiseAPEvent(target, ap.options, "@set", [ap.description, value]);
+            }
+            finally{
+                delete ap.ignoreSettingValue;
+            }
+        },
+
+        notifyKnotChanged:function(left, right, option, value, isSetFromLeftToRight){
+            if(option && option.knotEvent && option.knotEvent["@change"]){
+                for(var i=0; i<option.knotEvent["@change"].length; i++){
+                    try{
+                        var handler = __private.Utility.getValueOnPath(null, option.knotEvent["@change"][i].substr(1));
+                        handler(left, right, option, value, isSetFromLeftToRight);
+                    }
+                    catch (err){
+                        __private.Log.error("Call knot event 'change' handler failed.", err);
+                    }
+                }
+            }
+
+            __private.Debugger.knotChanged(left, right, option, value, isSetFromLeftToRight);
+        },
+
         monitor:function(src, srcAP, target, targetAP, knotInfo){
             if(!srcAP.provider)
                 srcAP.provider = this.getProvider(src, srcAP.description);
@@ -136,16 +194,27 @@
                 targetAP.provider = this.getProvider(target, targetAP.description);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)){
                 srcAP.changedCallback = function(){
-                    var v = __private.AccessPointManager.getValueThroughPipe(src,  srcAP)
-                    targetAP.provider.setValue(target, targetAP.description, v);
+                    if(targetAP.ignoreSettingValue)
+                        return;
+
+                    var v = __private.AccessPointManager.getValueThroughPipe(src,  srcAP);
                     if(knotInfo.leftAP == srcAP){
-                        __private.Debugger.knotChanged(src, target, knotInfo, v, true);
+                        __private.AccessPointManager.notifyKnotChanged(src, target, knotInfo, v, true);
                     }
                     else{
-                        __private.Debugger.knotChanged(target, src, knotInfo, v, false);
+                        __private.AccessPointManager.notifyKnotChanged(target, src, knotInfo, v, false);
                     }
+
+                    srcAP.ignoreSettingValue = true;
+                    try{
+                        __private.AccessPointManager.safeSetValue(target, targetAP, v);
+                    }
+                    finally{
+                        delete srcAP.ignoreSettingValue;
+                    }
+                    raiseAPEvent(src, srcAP.options, "@change", arguments);
                 };
-                srcAP.provider.monitor(src, srcAP.description, srcAP.changedCallback);
+                srcAP.provider.monitor(src, srcAP.description, srcAP.changedCallback, srcAP.options);
             }
         },
 
@@ -153,7 +222,7 @@
             if(!ap.provider)
                 ap.provider = this.getProvider(target, ap.description);
             if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback){
-                ap.provider.stopMonitoring(target, ap.description, ap.changedCallback);
+                ap.provider.stopMonitoring(target, ap.description, ap.changedCallback, ap.options);
                 delete  ap.changedCallback;
             }
         },
@@ -185,15 +254,17 @@
                     if(typeof(p) != "function"){
                         __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
                     }
-                    var lastValue = p.apply(compositeAP, [values]);
+                    var latestValue = p.apply(compositeAP, [values]);
 
-                    normalTarget.provider.setValue(normalTarget, normalAP.description, lastValue);
-                    __private.Debugger.knotChanged(leftTarget, rightTarget, knotInfo, lastValue, normalTarget == rightTarget);
+                    __private.AccessPointManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget == rightTarget);
+                    __private.AccessPointManager.safeSetValue(normalTarget, normalAP, latestValue);
+
+                    raiseAPEvent(normalTarget, normalAP, "@change", arguments);
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
                     if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)){
-                        compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback);
+                        compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback, compositeAP.childrenAPs[i].options);
                     }
                 }
                 //set the initial value
@@ -204,8 +275,10 @@
                 knotInfo.rightAP.provider = this.getProvider(rightTarget, knotInfo.rightAP.description);
 
                 //set initial value, always use the left side value as initial value
-                knotInfo.leftAP.provider.setValue(leftTarget, knotInfo.leftAP.description,
-                    this.getValueThroughPipe(rightTarget,  knotInfo.rightAP));
+                var v = this.getValueThroughPipe(rightTarget,  knotInfo.rightAP);
+
+                this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
+                this.safeSetValue(leftTarget, knotInfo.leftAP, v);
 
                 this.monitor(leftTarget, knotInfo.leftAP, rightTarget, knotInfo.rightAP, knotInfo);
                 this.monitor(rightTarget, knotInfo.rightAP, leftTarget, knotInfo.leftAP, knotInfo);
@@ -227,16 +300,16 @@
                 if(compositeAP.changedCallback){
                     for(var i=0; i< compositeAP.childrenAPs.length; i++){
                         if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)){
-                            compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback);
+                            compositeAP.childrenAPs[i].provider.stopMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback, compositeAP.childrenAPs[i].options);
                         }
                     }
                 }
                 delete compositeAP.changedCallback;
             }
             else{
-                this.stopMonitoring(leftTarget, knotInfo.leftAP);
+                this.stopMonitoring(leftTarget, knotInfo.leftAP, knotInfo.leftAP.options);
                 delete knotInfo.leftAP.changedCallback;
-                this.stopMonitoring(rightTarget, knotInfo.rightAP);
+                this.stopMonitoring(rightTarget, knotInfo.rightAP, knotInfo.rightAP.options);
                 delete knotInfo.rightAP.changedCallback;
             }
             __private.Debugger.knotUntied(leftTarget, rightTarget, knotInfo);

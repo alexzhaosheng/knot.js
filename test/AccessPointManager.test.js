@@ -253,6 +253,90 @@
         //target2.isVisible = false;
         //assert.equal(target1.display, "none", "Directly tie to function");
 
+    });
+
+    QUnit.test( "private.AccessPointerManager.knotEvent", function( assert ) {
+        var target1, target2;
+        var latestLeft, latestRight, latestChangedKnot, latestValue, latestIsFromLeftToRight, latestTarget,fireCount=0;
+
+        window.accessPointerEventTest = {
+            nameChanged: function(left, right, knot, value, isFromleftToRight){
+                latestLeft = left;
+                latestRight = right;
+                latestChangedKnot = knot;
+                latestValue= value;
+                fireCount++;
+            },
+            valueSetForAP:function(apDescription, value){
+                latestTarget = this; latestChangedKnot = apDescription; latestValue=value;
+            },
+            valueChangeForAP:function(ap, oldValue, newValue){
+                latestTarget = this; latestChangedKnot = ap; latestValue = newValue;
+            }
+        }
+
+        knot = scope.OptionParser.parse("value:name|@change:@/accessPointerEventTest.nameChanged")[0];
+        target1 = {value: ""};
+        target2 = {name: "satoshi"};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.value, "satoshi", "Knot event works");
+        assert.equal(latestLeft, target1, "Knot event works");
+        assert.equal(latestRight, target2, "Knot event works");
+        assert.equal(latestValue, "satoshi", "Knot event works");
+        assert.equal(fireCount,1, "Knot event works");
+
+        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        fireCount=0;
+        target2.name = "laozi";
+        assert.equal(target1.value, "laozi", "Knot event works");
+        assert.equal(latestLeft, target1, "Knot event works");
+        assert.equal(latestRight, target2, "Knot event works");
+        assert.equal(latestValue, "laozi", "Knot event works");
+        assert.equal(fireCount,1, "Knot event works");
+
+        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        target1.value = "einstein";
+        assert.equal(target2.name, "einstein", "Knot event works");
+        assert.equal(latestLeft, target1, "Knot event works");
+        assert.equal(latestRight, target2, "Knot event works");
+        assert.equal(latestValue, "einstein", "Knot event works");
+
+
+        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        knot = scope.OptionParser.parse("value[@set:@/accessPointerEventTest.valueSetForAP]:name")[0];
+        target1 = {value: ""};
+        target2 = {name: "satoshi"};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.value, "satoshi", "ap event @set works");
+        assert.equal(latestTarget, target1, "ap event @set works");
+        assert.equal(latestChangedKnot, "value", "ap event @set works");
+        assert.equal(latestValue, "satoshi", "ap event @set works");
+
+        latestTarget = latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        target2.name = "einstein";
+        assert.equal(target1.value, "einstein", "ap event @set works");
+        assert.equal(latestTarget, target1, "ap event @set works");
+        assert.equal(latestChangedKnot, "value", "ap event @set works");
+        assert.equal(latestValue, "einstein", "ap event @set works");
+
+        latestTarget = latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        target1.value = "laozi";
+        assert.equal(target2.name, "laozi", "ap event @set works");
+        assert.equal(latestTarget, undefined, "ap event @set works");
+
+        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        knot = scope.OptionParser.parse("value[@change:@/accessPointerEventTest.valueChangeForAP]:name")[0];
+        target1 = {value: ""};
+        target2 = {name: "satoshi"};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.value, "satoshi", "ap event @change works");
+        assert.equal(latestTarget, null, "ap event @change works");
+
+        target1.value = "laozi";
+        assert.equal(target2.name, "laozi", "ap event @change works");
+        assert.equal(latestTarget, target1, "ap event @change works");
+        assert.equal(latestChangedKnot, "value", "ap event @change works");
+        assert.equal(latestValue, "laozi", "ap event @change works");
 
     });
 })((function() {

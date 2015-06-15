@@ -29,22 +29,34 @@
             if(path == "*" || path =="")
                 return rootData;
 
-            if(this.startsWith(path,"__knot_global")){
-                return __private.GlobalSymbolHelper.getSymbol(path);
-            }
-
-            var data = rootData;
-            if(path[0] == "/"){
-                data= window;
+            var isFunction = false;
+            if(path[0] == "@"){
+                isFunction = true;
                 path = path.substr(1);
             }
-            while (path.indexOf(".") >= 0 && data) {
-                data = data[path.substr(0, path.indexOf("."))];
-                path = path.substr(path.indexOf(".") + 1);
+
+            var res;
+            if(this.startsWith(path,"__knot_global")){
+                res =  __private.GlobalSymbolHelper.getSymbol(path);
             }
-            if (data)
-                return data[path];
-            return undefined;
+            else{
+                var data = rootData;
+                if(path[0] == "/"){
+                    data= window;
+                    path = path.substr(1);
+                }
+                while (path.indexOf(".") >= 0 && data) {
+                    data = data[path.substr(0, path.indexOf("."))];
+                    path = path.substr(path.indexOf(".") + 1);
+                }
+                if (data)
+                    res= data[path];
+            }
+            if(isFunction && typeof(res) != "function"){
+                    __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
+                    return undefined;
+            }
+            return res;
         },
 
         setValueOnPath: function(data, path, value){

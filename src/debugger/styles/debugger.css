@@ -145,7 +145,7 @@ li{
 }
 .treeContainer {
     position: absolute;
-    top:40px;left:5px;right:5px;bottom: 250px;
+    top:40px;left:5px;right:5px;
     overflow:auto;
 }
 
@@ -155,7 +155,7 @@ li{
 }
 
 .highlightMark{
-    color:#ec334d;
+    color:#eccc4d;
     -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
 }
 
@@ -231,7 +231,7 @@ li{
     display: block;
     min-width: 300px;
     padding: 5px;
-    line-height: 11px
+    line-height: 13px
 }
 #knotsListItemTemplate div{
     display: inline-block;
@@ -253,10 +253,9 @@ li{
 
 /* Knot change log */
 
-#knotChangeLog{
+.knotChangeLog{
     position: absolute;
-    height: 230px;
-    left:5px;right:5px;bottom: 5px;
+    top:32px;left:0px;right:0px;bottom: 0px;
     overflow:auto;
     background-color: #222222;
 }
@@ -267,6 +266,39 @@ li{
     width: 50px;
     text-align: center;
 }
+
+/* Knot change log expander*/
+#knotChangeLogExpander{
+    position: absolute;
+    left:5px;right:5px;bottom: 5px;
+    border: 1px solid #222222;
+    color:#aaaaaa;
+}
+#knotChangeLogExpander .expanderButton{
+    cursor: pointer;
+    height: 30px;
+    line-height: 30px;
+}
+#knotChangeLogExpander .expanderButton:hover{
+    background-color: #333333;
+}
+.expander-top-collapsed{
+    bottom: 40px;
+}
+.expander-top-expanded{
+    bottom: 350px;
+}
+.expander-bottom-collapsed{
+    height: 30px;
+}
+.expander-bottom-collapsed .knotChangeLog{
+    display: none;
+}
+.expander-bottom-expanded{
+    height: 330px;
+}
+
+
 
 
 /* log window */

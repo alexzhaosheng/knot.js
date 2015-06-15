@@ -19,6 +19,8 @@
 
         knotChangeLog:[],
 
+        isKnotLogExpanded:false,
+
         locateElement:function(){
             try{
                 var closestVisibleEle = getClosestVisibleElement($(this.node));
@@ -55,7 +57,7 @@
             }
             var content = getDes(this.latestValueInfo);
             for(var i=this.historyValueInfo.length-1; i>=0 ; i--){
-                content += "\n--------------------------------------\n";
+                content += "\n\n";
                 content += getDes(this.historyValueInfo[i]);
             }
 
@@ -65,8 +67,24 @@
         showKnotValueLogDetail:function(){
             var content = JSON.stringify(this.value, null, 4);
             showJson("Current data context for \""+ this.nodeDescription + " " + this.knotOption.description + "\"", content);
+        },
+
+        onKnotValueChanged: function(apDes, value){
+            if(!value){
+                $(this).stop();
+            }
+            else{
+                $(this).stop()
+                    .css("backgroundColor", "#0bac45")
+                    .animate({backgroundColor:"transparent"}, 3000);
+            }
         }
     };
+
+    window.Knot.monitorObject(window.debuggerModel, "isKnotLogExpanded", function(p, oldValue, newValue){
+        $.cookie('knot-debugger-knot-log-expanded', newValue?"1":"0", { expires: 365 });
+    });
+    window.debuggerModel.isKnotLogExpanded = $.cookie("knot-debugger-knot-log-expanded") == "1";
 
 
     var nodeDictionary = {
@@ -119,9 +137,21 @@
         else{
             var pipes = ap.pipes?ap.pipes.join(" > "):"";
             if(pipes)
-                return ap.description+" > " + pipes;
-            else
-                return ap.description;
+                pipes =" > " + pipes;
+
+            var options = "";
+            if(ap.options){
+                for(var p in ap.options){
+                    if(options)
+                        options += "; ";
+                    options += p+": "+ap.options[p];
+                }
+                if(options){
+                    options = "[" + options + "]";
+                }
+            }
+
+            return ap.description+options + pipes;
         }
     }
     function getKnotOptionsStr(options){
@@ -318,34 +348,6 @@
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
     })
 
-
-    function startsWith(s, startStr){
-        return s.substr(0, startStr.length) == startStr;
-    };
-
-    var SetWithColorAnmation = {
-        doesSupport:function(target, apName){
-            if(target instanceof HTMLElement && startsWith(apName, "colorSet_"))
-                return true;
-            return false;
-        },
-        getValue: function(target, apName){
-        },
-        setValue: function(target, apDescription, value){
-            apDescription = apDescription.substr("colorSet_".length);
-            var apName = apDescription.split(",")[0].trim();
-            var colorFrom = apDescription.split(",")[1].trim();
-            var colorTo = apDescription.split(",")[2].trim();
-            target[apName] = value;
-            $(target).stop()
-                .css("backgroundColor", colorFrom)
-                .animate({backgroundColor:colorTo}, 3000);
-        },
-        doesSupportMonitoring: function(target, apName){
-            return false;
-        }
-    };
-    window.Knot.Advanced.registerAPProvider(SetWithColorAnmation);
 
     var _debugLogCount = 0;
     window.calledByOpener = {

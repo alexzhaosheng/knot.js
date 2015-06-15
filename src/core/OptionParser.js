@@ -65,9 +65,15 @@
             var sections = __private.Utility.splitWithBlockCheck(optionText, ";");
 
             for(var i=0; i<sections.length; i++){
-                var knot = this.parseKnot(sections[i]);
-                if(knot)
-                    options.push(knot);
+                var optionSections =  __private.Utility.splitWithBlockCheck(sections[i], "|");
+                var knot = this.parseKnot(optionSections[0]);
+                if(!knot)
+                    continue;
+
+                if(optionSections.length > 1){
+                    knot.knotEvent = this.parseEvent(optionSections[1]);
+                }
+                options.push(knot);
             }
             return options;
         },
@@ -81,6 +87,41 @@
                 blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             }
             return text;
+        },
+
+        parseEvent: function(eventsStr){
+            var events = eventsStr.split(",");
+            var res ={};
+            for(var i=0; i< events.length; i++){
+                if(!__private.Utility.trim(events[i]))
+                    continue;
+
+                var arr = events[i].split(":");
+                if(arr.length != 2){
+                    __private.Log.error("Invalid knot event option:" + events[i]);
+                    continue;
+                }
+                var eventDes =  __private.Utility.trim(arr[0]);
+                if(eventDes[0] != "@"){
+                    __private.Log.error("Invalid knot event :'"+ eventDes+ "', it must start with '@'." );
+                    continue;
+                }
+                var handlerDes = __private.Utility.trim(arr[1]).split("&");
+                var handlers = [];
+                for(var j=0; j<handlerDes.length; j++){
+                    var h = __private.Utility.trim(handlerDes[j]);
+                    if(h[0] != "@"){
+                        __private.Log.error("Invalid knot event handler:'"+ eventDes+ "', it must start with '@'." );
+                        continue;
+                    }
+                    handlers.push(h);
+                }
+                if(handlers.length == 0)
+                    continue ;
+
+                res[eventDes] = handlers;
+            }
+            return res;
         },
 
         parseKnot: function(text){
@@ -113,11 +154,39 @@
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
             var pipes = parts.map(function(t){return __private.Utility.trim(t)});
+            var options = null;
+            //if AP is a global symbol, that means AP is a function. so there's actually no AP is specified.
+            //in this case, use "*" as AP and take everything as pipes
             if(__private.GlobalSymbolHelper.isGlobalSymbol(AP)){
                 pipes.splice(0,0,AP);
                 AP = "*";
             }
-            return {description:AP, pipes:pipes};
+            else{
+                if(AP[AP.length-1] == "]"){
+                    var optionBlock = __private.Utility.getBlockInfo(AP, 0, "[", "]");
+                    if(optionBlock){
+                        options = this.getAPOptions(AP.substr(optionBlock.start+1, optionBlock.end-optionBlock.start-1));
+                        AP = AP.substr(0, optionBlock.start);
+                    }
+
+                }
+            }
+            return {description:AP, pipes:pipes, options:options};
+        },
+
+        getAPOptions: function(optionStr){
+            var options = {};
+            var arr = __private.Utility.splitWithBlockCheck(optionStr, ";");
+            for(var i=0; i< arr.length; i++){
+                var kv = arr[i].split(":");
+                if(kv.length != 2 || !kv[0] ||  !kv[1]){
+                    __private.Log.error("Invalid AP option:" + arr[i]);
+                }
+                else{
+                    options[__private.Utility.trim(kv[0])] = __private.Utility.trim(kv[1]);
+                }
+            }
+            return options;
         },
 
         parseCompositeAP: function(text){

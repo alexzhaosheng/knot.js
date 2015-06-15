@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
     <script src="http://code.jquery.com/color/jquery.color-2.1.2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-cookie/1.4.1/jquery.cookie.min.js"></script>
+
 
     <link rel="stylesheet" href="./styles/tomorrow-night-bright.css">
     <script src="highlight.pack.js"></script>
@@ -61,7 +63,7 @@
 
 
     </div>
-    <div class="treeContainer">
+    <div class="treeContainer expander-top-collapsed">
         <ul id="domTree">
             <li id="nodeTemplate" knot-template>
                 <div>
@@ -97,23 +99,26 @@
         </ul>
     </div>
 
-    <hr class="divider">
+    <div id="knotChangeLogExpander" class="expander-bottom-collapsed">
+        <div class="expanderButton">
+            <i class="fa fa-chevron-circle-down"></i>
+            <span>Knot change log</span>
+        </div>
+        <div class="knotChangeLog">
+            <div id="knotChangeLogItemTemplate" knot-template>
+                <div class="id"></div>
+                <i class="type-indicator fa fa-share-alt"></i>
+                <span class="nodeTitle selectable"></span>
 
-    <div id="knotChangeLog">
-        <div id="knotChangeLogItemTemplate" knot-template>
-            <div class="id"></div>
-            <i class="type-indicator fa fa-share-alt"></i>
-            <span class="nodeTitle selectable"></span>
+                <i class="type-indicator fa fa-wrench"></i>
+                <div class="knotOption selectable"></div>
 
-            <i class="type-indicator fa fa-wrench"></i>
-            <div class="knotOption selectable"></div>
-
-            <i class="knotValueDirection fa fa-long-arrow-left"></i>
-            <div class="knotValue selectable"></div>
-            <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
+                <i class="knotValueDirection fa fa-long-arrow-left"></i>
+                <div class="knotValue selectable"></div>
+                <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
+            </div>
         </div>
     </div>
-
 </section>
 
 <section id="logViewer" class="contentSection">

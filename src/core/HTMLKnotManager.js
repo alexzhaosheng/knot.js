@@ -264,7 +264,7 @@
                     }
 
                     if((dataContextOption.data ||dataContextOption.rightAP.description[0]=="/")  && dataContextOption.changedCallback){
-                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
+                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback,  dataContextOption.rightAP.options);
                     }
 
                     dataContextOption.data = data;
@@ -273,7 +273,7 @@
                             __private.HTMLKnotManager.updateDataContext(node, data);
                         };
 
-                        dataContextOption.rightAP.provider.monitor(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
+                        dataContextOption.rightAP.provider.monitor(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback,  dataContextOption.rightAP.options);
                     }
                     else{
                         dataContextOption.changedCallback = null;
@@ -282,11 +282,12 @@
                 }
                 this.removeKnots(node);
 
+                __private.AccessPointManager.notifyKnotChanged(node, data, dataContextOption, contextData, false);
+
                 for(var i=0; i<node.childNodes.length; i++)
                     this.updateDataContext(node.childNodes[i], contextData);
 
                 node.__knot.dataContext = contextData;
-                __private.Debugger.knotChanged(node, data, dataContextOption, contextData, false);
                 this.tieKnots(node);
             }
             else{
@@ -309,7 +310,7 @@
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 if(dataContextOption){
                     if((dataContextOption.data || dataContextOption.rightAP.description[0] == "/") && dataContextOption.changedCallback){
-                        __private.DefaultProvider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback);
+                        dataContextOption.rightAP.provider.stopMonitoring(dataContextOption.data, dataContextOption.rightAP.description,dataContextOption.changedCallback, dataContextOption.rightAP.options);
                     }
 
                     dataContextOption.data = null;

@@ -65,7 +65,7 @@ body{
 }
 
 #knotsListItemTemplate .knotValue{
-    colorSet_innerText,#0bac45,transparent: latestValueInfo.value >{return JSON.stringify(value);};
+    innerText[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
     title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
 }
 
@@ -74,28 +74,42 @@ body{
  }
 
 
-/* knot change history log*/
-#knotChangeLog{
+/* knot change log*/
+.knotChangeLog{
     foreach<knotChangeLogItemTemplate: knotChangeLog
 }
-#knotChangeLog .id{
+.knotChangeLog .id{
     textContent: id
 }
-#knotChangeLog .nodeTitle{
+.knotChangeLog .nodeTitle{
     textContent: nodeDescription
 }
-#knotChangeLog .knotOption{
+.knotChangeLog .knotOption{
     textContent: knotOption.description
 }
-#knotChangeLog  .knotValueDirection{
+.knotChangeLog  .knotValueDirection{
     class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
 }
-#knotChangeLog .knotValue{
+.knotChangeLog .knotValue{
     textContent: value>{return JSON.stringify(value);};
 }
-#knotChangeLog .knotValueDetail{
+.knotChangeLog .knotValueDetail{
     @click:@/debuggerModel.showKnotValueLogDetail
- }
+}
+
+/*knot change log expander */
+.treeContainer{
+    class: isKnotLogExpanded>{return value?"-expander-top-collapsed +expander-top-expanded":"+expander-top-collapsed -expander-top-expanded";}
+}
+#knotChangeLogExpander{
+    class: isKnotLogExpanded>{return value?"-expander-bottom-collapsed +expander-bottom-expanded":"+expander-bottom-collapsed -expander-bottom-expanded";}
+}
+#knotChangeLogExpander .expanderButton>i{
+    class: isKnotLogExpanded>{return value?"+fa-chevron-circle-down -fa-chevron-circle-up":"-fa-chevron-circle-down +fa-chevron-circle-up";}
+}
+#knotChangeLogExpander .expanderButton{
+    @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
+}
 
 
 

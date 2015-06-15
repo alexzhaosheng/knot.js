@@ -66,11 +66,6 @@
         assert.equal(knots.length,0, "invalid option string get empty result");
 
 
-        knots = scope.OptionParser.parse("options[display:name;value:id]:users;text:name;");
-        assert.equal(knots.length, 2, "parse complex AP name")
-        assert.equal(knots[0].leftAP.description, "options[display:name;value:id]", "parse complex AP name");
-
-
         var knot = scope.OptionParser.parse('@click:@{alert("clicked");}')[0];
         assert.equal(knot.rightAP.description[0], "@", "Use a single function as access point");
         assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.description.substr(1)), true, "Use a single function as access point");
@@ -79,6 +74,31 @@
         assert.equal(knot.rightAP.description, "*", "Use a single function as access point");
         assert.equal(knot.rightAP.pipes.length, 1, "Use a single function as access point");
         assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.pipes[0]), true, "Use a single function as access point");
+
+
+        //knot event
+        knot = scope.OptionParser.parse("text:name | @change: @nameChanged, @error: @nameError")[0];
+        assert.equal(knot.rightAP.description, "name", "parse options with event");
+        assert.equal(knot.knotEvent != null, true, "parse options with event");
+        assert.equal(knot.knotEvent["@change"][0], "@nameChanged", "parse options with event");
+        assert.equal(knot.knotEvent["@error"][0], "@nameError", "parse options with event");
+
+        knot = scope.OptionParser.parse('@click:@{alert("clicked");} | @change: @nameChanged, @error: @nameError')[0];
+        assert.equal(knot.knotEvent["@change"][0], "@nameChanged", "parse options with event");
+        assert.equal(knot.knotEvent["@error"][0], "@nameError", "parse options with event");
+
+        knot = scope.OptionParser.parse("text:name | @change: @nameChanged & @valueChanged")[0];
+        assert.equal(knot.rightAP.description, "name", "parse options with event");
+        assert.equal(knot.knotEvent != null, true, "parse options with event");
+        assert.equal(knot.knotEvent["@change"][0], "@nameChanged", "parse options with event");
+        assert.equal(knot.knotEvent["@change"][1], "@valueChanged", "parse options with event");
+
+        //parse ap with options
+        knot = scope.OptionParser.parse('value[@set:@global.onSet; @change: @global.onChange]:name')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with options");
+        assert.equal(knot.leftAP.options != null, true, "parse ap with options");
+        assert.equal(knot.leftAP.options["@set"], "@global.onSet", "parse ap with options");
+        assert.equal(knot.leftAP.options["@change"], "@global.onChange", "parse ap with options");
     });
 })((function() {
         return this;

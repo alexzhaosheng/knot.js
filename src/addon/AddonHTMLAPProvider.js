@@ -70,7 +70,7 @@
                 return target.options;
             }
         },
-        setValue: function(target, apName, value){
+        setValue: function(target, apName, value, options){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -112,7 +112,9 @@
                 }
             }
             else if(__private.Utility.startsWith(apName,"options")){
-                var def = __private.HTMLAPHelper.parseInAPNameDefinition(apName);
+                if(!options){
+                    options = {};
+                }
                 if(!value)
                     value = [];
                 for(var i=0; i<value.length; i++){
@@ -121,14 +123,14 @@
                         option = document.createElement("option");
                         __private.HTMLKnotManager.setOnNodeDataContext(option, value[i]);
                         if(value[i]){
-                            if(def.options["displayMember"]){
-                                setupBinding(option, "text", value[i], def.options["displayMember"]);
+                            if(options["displayMember"]){
+                                setupBinding(option, "text", value[i], options["displayMember"]);
                             }
                             else{
                                 option.text = value[i];
                             }
-                            if(def.options["valueMember"]){
-                                setupBinding(option, "value", value[i], def.options["valueMember"]);
+                            if(options["valueMember"]){
+                                setupBinding(option, "value", value[i], options["valueMember"]);
                             }
                             else{
                                 option.value = value[i];

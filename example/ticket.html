@@ -25,13 +25,16 @@
         body{
             dataContext:/model;
         }
+
         .clearButton{
             disabled:selected>{return value?false:true;}
         }
 
+
         .selectionResult{
              dataContext:selected;
         }
+
         .selectionResult>b{
             innerText:name
         }
@@ -39,11 +42,14 @@
             innerText:price
         }
 
+
         /* For Ticket 1*/
+
         #classSelect{
             foreach<optionTemplate: tickets;
             selectedData:selected;
         }
+
         #optionTemplate{
             text:*>{return value.name+"("+value.price+")";}
         }

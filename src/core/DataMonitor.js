@@ -75,19 +75,22 @@
                 attachedInfo.changedProperties.push(path);
 
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
-                for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
+                //clone the array. it may change the array during the callback is executed;
+                var callbacks = attachedInfo.changedCallbacks[path].slice(0);
+                for (var i = 0; i < callbacks.length; i++) {
                     try{
-                        attachedInfo.changedCallbacks[path][i].callback.apply(data, [path, oldValue, newValue]);
+                        callbacks[i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
                         __private.Log.warning("Call changed callback failed.", error);
                     }
                 }
             }
-            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks["*"]) {
-                for (var i = 0; i < attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF].length; i++) {
+            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF]) {
+                var callbacks = attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF].slice(0);
+                for (var i = 0; i < callbacks.length; i++) {
                     try{
-                        attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF][i].callback.apply(data, [path, oldValue, newValue]);
+                        callbacks[i].callback.apply(data, [path, oldValue, newValue]);
                     }
                     catch(error){
                         __private.Log.warning("Call changed callback failed.", error);
