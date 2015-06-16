@@ -1,0 +1,77 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="example.css">
+    <script src="../src/core/PrivateScope.js"></script>
+    <script src="../src/core/Utility.js"></script>
+    <script src="../src/core/Deferred.js"></script>
+    <script src="../src/core/AttachedData.js"></script>
+    <script src="../src/core/DataObserver.js"></script>
+    <script src="../src/core/ArrayMonitor.js"></script>
+    <script src="../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../src/core/OptionParser.js"></script>
+    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/HTMLAPProvider.js"></script>
+    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/KnotInterface.js"></script>
+
+    <script src="../src/debugger/knot.debug.js"></script>
+
+    <style type="text/css">
+        .section{
+            margin: 5px;
+        }
+
+        .errMessage{
+            color:red;
+        }
+
+        .errorInput {
+            box-shadow: 0px 0px 5px red;
+        }
+    </style>
+
+    <script type="text/cbs">
+        #nameSection input{
+            value>{
+                    if(value.length < 3)
+                        throw new Error("Name must be more than 3 characters");
+                    if(value.length > 10)
+                        throw new Error("Name must be no more than 10 characters");
+                }: name;
+
+            class: !#(#nameSection input).value>{return value?"+errorInput":"-errorInput";}
+        }
+
+        #nameSection .errMessage{
+            textContent:!#(#nameSection input).value>{return value?value.message:"";}
+        }
+    </script>
+    <script>
+        window.pageModel={};
+    </script>
+</head>
+<body>
+<div class="knot_example">
+    <h2>Knot.js example - input validate</h2>
+    <form>
+        <div class="section" id="nameSection">
+            <input type="text" placeholder="Name">  <span class="errMessage"></span>
+        </div>
+        <div class="section" id="ageSection">
+            <input type="text" placeholder="Age">  <span class="errMessage"></span>
+        </div>
+        <div class="section" id="sexSection">
+            <label>Sex:</label> <select><option>Male</option><option>Female</option></select>  <span class="errMessage"></span>
+        </div>
+        <div class="section" id="emailSection">
+            <input type="text" placeholder="Email">  <span class="errMessage"></span>
+        </div>
+
+        <input type="submit">
+    </form>
+
+</div>
+</body>
+</html>

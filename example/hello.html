@@ -17,11 +17,11 @@
 
     <script type="text/cbs">
         #hello1Msg{
-            innerText:#nameInput.value>{return value?"Hello " + value:"";}
+            innerText:#nameInput.value[immediately:1]>{return value?"Hello " + value:"";}
         }
 
         #hello2Msg span{
-            innerText:(#firstNameInput.value & #lastNameInput.value) > {return value[0]+' '+value[1];}
+            innerText:(#firstNameInput.value[immediately:1] & #lastNameInput.value[immediately:1]) > {return value[0]+' '+value[1];}
         }
     </script>
 </head>

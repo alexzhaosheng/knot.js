@@ -39,8 +39,8 @@
     }
 
     __private.HTMLKnotManager = {
-        normalizedCBS:[],
-        templates:[],
+        normalizedCBS:{},
+        templates:{},
         parseCBS:function(){
             var deferred = new __private.Deferred();
             var blocks = window.document.querySelectorAll("script");
@@ -162,6 +162,9 @@
         applyCBS: function(){
             for(var selector in this.normalizedCBS){
                 var elements = document.querySelectorAll(selector);
+                if(elements.length == 0){
+                    __private.Log.warning("There is no element selected with selector:" + selector);
+                }
                 for(var i=0; i<elements.length; i++){
                     var cbsOptions = this.normalizedCBS[selector].slice(0);
                     if(!elements[i].__knot){

@@ -2,7 +2,8 @@
     var __private = window.Knot.getPrivateScope();
 
     var htmlEventInfo = [];
-    htmlEventInfo["input.value"] = "change,keyup";
+    htmlEventInfo["input.value"] = "change";
+    htmlEventInfo["textarea.value"] = "change";
     htmlEventInfo["input.checked"] = "change";
     htmlEventInfo["select.selectedindex"] = "change";
     htmlEventInfo["select.value"] = "change";
@@ -60,15 +61,15 @@
             return result;
         },
 
-        queryElement: function(cssSelctor){
-            if(cssSelctor.indexOf("(")>0){
-                var info = __private.Utility.getBlockInfo(cssSelctor, 0, "(", ")");
+        queryElement: function(cssSelector){
+            if(cssSelector.indexOf("(")>0){
+                var info = __private.Utility.getBlockInfo(cssSelector, 0, "(", ")");
                 if(!info){
-                    __private.Log.error("Unknown selector:" +  cssSelctor);
+                    __private.Log.error("Unknown selector:" +  cssSelector);
                     return undefined;
                 }
                 try{
-                    var actualCSS = cssSelctor.substr(info.start+1, info.end-info.start-1);
+                    var actualCSS = cssSelector.substr(info.start+1, info.end-info.start-1);
                     return document.querySelector(actualCSS);
                 }
                 catch(err){
@@ -78,7 +79,7 @@
 
             }
             else{
-                return document.querySelector(cssSelctor);
+                return document.querySelector(cssSelector);
             }
         }
     }
@@ -301,7 +302,7 @@
             else
                 return false;
         },
-        monitor: function(target, apName, callback){
+        monitor: function(target, apName, callback, options){
             if(apName[0] == "!"){
                 if(apName[1] == "#"){
                     target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
@@ -325,9 +326,15 @@
                 var events = htmlEventInfo[eventKey].split(",");
                 for(var i=0; i<events.length; i++)
                     target.addEventListener(events[i], callback);
+
+                if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
+                    (options &&
+                        (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
+                    target.addEventListener("keyup", callback);
+                }
             }
         },
-        stopMonitoring: function(target, apName, callback){
+        stopMonitoring: function(target, apName, callback, options){
             if(apName[0] == "!"){
                 if(apName[1] == "#"){
                     target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
@@ -348,6 +355,12 @@
                 var events = htmlEventInfo[eventKey].split(",");
                 for(var i=0; i<events.length; i++)
                     target.removeEventListener(events[i], callback);
+
+                if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
+                    (options &&
+                        (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
+                    target.removeEventListener("keyup", callback);
+                }
             }
         },
 
