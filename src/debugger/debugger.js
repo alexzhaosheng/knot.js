@@ -1,27 +1,63 @@
+/*
+Knot.js debugger
+ */
 (function(window){
     var _isFilterEnabled = false;
 
+    //this is the red rectangle to indicate the element in opener window
+    var _elementPositionMask = $(parseHTMLInOpener('<div style="position: absolute; z-index: 99999999; border: 1px solid darkred">' +
+        '<div style="width: 100%;height:100%; background-color: rgba(255,0,0,0.3);border:1px solid lightpink;"></div>' +
+        '<div style="position: absolute; background-color: lightgoldenrodyellow;border: 1px solid lightgray;padding: 2px 5px;font-size: 0.9em"></div>' +
+        '</div>'));
+    var _currentMaskTimeoutHandler = 0;
+
+    //this is the tip that follows the mouse cursor in openner window
+    var _mouseTip = $(parseHTMLInOpener('<div style="z-index: 99999999; position: absolute; background-color: lightgoldenrodyellow;border: 1px solid lightgray;padding: 2px 5px;font-size: 0.9em"></div>'));
+
+    //parse html by using the document object from opener, otherwise when the parsed element is added to
+    //the opener window, exception may happen.
     function parseHTMLInOpener (html){
         var div = window.opener.document.createElement('div');
         div.innerHTML = html;
         return div.childNodes[0];
     };
 
-    var _elementPositionMask = $(parseHTMLInOpener('<div style="position: absolute; z-index: 99999999; border: 1px solid darkred">' +
-        '<div style="width: 100%;height:100%; background-color: rgba(255,0,0,0.3);border:1px solid lightpink;"></div>' +
-        '<div style="position: absolute; background-color: lightgoldenrodyellow;border: 1px solid lightgray;padding: 2px 5px;font-size: 0.9em"></div>' +
-        '</div>'));
+    function getClosestVisibleElement(element){
+        if(element.offset().left == 0 && element.offset().top == 0){
+            if(element[0].tagName.toLocaleLowerCase() == "body"){
+                return element;
+            }
+            else{
+                return getClosestVisibleElement(element.parent());
+            }
+        }
+        else{
+            return element;
+        }
+    }
 
-    var _mouseTip = $(parseHTMLInOpener('<div style="z-index: 99999999; position: absolute; background-color: lightgoldenrodyellow;border: 1px solid lightgray;padding: 2px 5px;font-size: 0.9em"></div>'));
-    var _currentMaskTimeoutHandler = 0;
+    //show JSON with syntax highlight
+    function showJson(message, json){
+        $("#jsonViewer").show()
+            .find("code").html(json);
+        $("#jsonViewer").find(".jsonViewerMessage").text(message);
+
+        hljs.highlightBlock($("#jsonViewer code")[0]);
+    }
+
+    //binding target. this will be the data context of "BODY"
     window.debuggerModel ={
+        //runtime log
         logs:[],
 
+        //log for the changes of the knots
         knotChangeLog:[],
 
+        //expander status
         isKnotLogExpanded:false,
 
-        locateElement:function(){
+        //locate element on opener window by mouse clicking
+        onLocateElement:function(){
             try{
                 var closestVisibleEle = getClosestVisibleElement($(this.node));
                 var pos = closestVisibleEle.offset();
@@ -44,12 +80,12 @@
             _elementPositionMask[0].scrollIntoView();
         },
 
-        checkDataContext: function(){
+        onShowDataContext: function(){
             var content = JSON.stringify(this.dataContext, null, 4);
             showJson("Current data context for \""+ this.description + "\"", content);
         },
 
-        showKnotDetail:function(){
+        onShowKnotDetail:function(){
             function getDes(info){
                 var msg  = "id:" +  info.id + " " +  (info.isFromLeftToRight?"output":"input") +"\n";
                 msg += JSON.stringify(info.value);
@@ -64,11 +100,12 @@
             showJson("Value changed history for knot \"" + this.description + "\"" , content);
         },
 
-        showKnotValueLogDetail:function(){
+        onShowKnotValueLogDetail:function(){
             var content = JSON.stringify(this.value, null, 4);
             showJson("Current data context for \""+ this.nodeDescription + " " + this.knotOption.description + "\"", content);
         },
 
+        //play the color animation when value is changed
         onKnotValueChanged: function(apDes, value){
             if(!value){
                 $(this).stop();
@@ -81,52 +118,105 @@
         }
     };
 
+
+    // save/restore the status of the expander
     window.Knot.monitorObject(window.debuggerModel, "isKnotLogExpanded", function(p, oldValue, newValue){
         $.cookie('knot-debugger-knot-log-expanded', newValue?"1":"0", { expires: 365 });
     });
     window.debuggerModel.isKnotLogExpanded = $.cookie("knot-debugger-knot-log-expanded") == "1";
 
 
-    var nodeDictionary = {
-        _nodeArray:[],
-        _nodeInfoArray:[],
-        add:function(nodeInfo){
-            this._nodeArray.push(nodeInfo.node); this._nodeInfoArray.push(nodeInfo);
-        },
-        remove:function(node){
-            var index = this._nodeArray.indexOf(node);
-            if(index >= 0){
-                this._nodeArray.splice(index, 1);
-                this._nodeInfoArray.splice(index, 1);
-            }
-        },
-        get:function(node){
-            return this._nodeInfoArray[this._nodeArray.indexOf(node)];
-        }
-    }
 
-    function showJson(message, json){
-        $("#jsonViewer").show()
-            .find("code").html(json);
-        $("#jsonViewer").find(".jsonViewerMessage").text(message);
+    //////////////////////////////////////////////////////////
+    //search, highlight and collapse/expand tree
+    //////////////////////////////////////////////////////////
 
-        hljs.highlightBlock($("#jsonViewer code")[0]);
-    }
-
-    function getClosestVisibleElement(element){
-        if(element.offset().left == 0 && element.offset().top == 0){
-            if(element[0].tagName.toLocaleLowerCase() == "body"){
-                return element;
-            }
-            else{
-                return getClosestVisibleElement(element.parent());
+    //use keyword to search DOM, then highlight the result
+    function searchInNode(node, keyword){
+        node.isHighlighted = keyword? (node.description.toLowerCase().indexOf(keyword)>=0):false;
+        if(node.options){
+            for(var i=0; i< node.options.length; i++){
+                node.options[i].isHighlighted = (node.options[i].description.toLowerCase().indexOf(keyword) >=0);
             }
         }
-        else{
-            return element;
+        for(var i=0;i<node.childrenInfo.length; i++){
+            searchInNode(node.childrenInfo[i], keyword);
         }
     }
+    //highlight the target node while remove highlight from the other nodes
+    function searchByNode(node, targetNode){
+        var found = false;
+        for(var i=0;i<node.childrenInfo.length; i++){
+            if(searchByNode(node.childrenInfo[i], targetNode))
+                found = true;
+        }
 
+        if(node.options){
+            for(var i=0; i< node.options.length; i++){
+                node.options[i].isHighlighted = false;
+            }
+        }
+        if(!found)
+            node.isHighlighted = (node.node == targetNode);
+        return found || node.isHighlighted;
+    }
+
+    //collapse node as many as possible to emphasis the highlighted ones
+    function collapseIrrelevantNodes(node){
+        var collapse = true;
+        for(var i=0;i<node.childrenInfo.length; i++){
+            if(collapseIrrelevantNodes(node.childrenInfo[i]))
+                collapse = false;
+        }
+
+        var highlighted = node.isHighlighted;
+        if(!highlighted && node.options){
+            for(var i=0; i<node.options.length;i++){
+                if(node.options[i].isHighlighted)
+                {
+                    highlighted = true;
+                    break;
+                }
+            }
+        }
+        node.isExpanded = highlighted || !collapse;
+        return node.isExpanded;
+    }
+    function expandAll(node){
+        for(var i=0;i<node.childrenInfo.length; i++){
+            expandAll(node.childrenInfo[i]);
+        }
+        node.isExpanded = true;
+    }
+
+
+    //////////////////////////////////////////////////////////
+    //find node in tree
+    //////////////////////////////////////////////////////////
+
+    function findNodeInTree(nodeInfo, node){
+        if(nodeInfo.node == node)
+            return nodeInfo;
+        for(var i=0; i<nodeInfo.childrenInfo.length; i++){
+            var info = findNodeInTree(nodeInfo.childrenInfo[i], node)
+            if(info)
+                return  info;
+        }
+        return null;
+    }
+    function getNodeInfo(node){
+        for(var i=0; i<window.debuggerModel.domTreeNodes.length; i++){
+            var info = findNodeInTree(window.debuggerModel.domTreeNodes[i], node);
+            if(info)
+                return info;
+        }
+        return null;
+    }
+
+
+    ///////////////////////////////////////////////////////////
+    // generate the information tree of the DOM
+    //////////////////////////////////////////////////////////
 
     function getAPDescription(ap){
         if(ap.isComposite){
@@ -158,6 +248,7 @@
         return getAPDescription(options.leftAP) + " : " + getAPDescription(options.rightAP);
     }
 
+    //get description tree for the DOM tree start from node
     function generateDOMTree(node){
         var nodeInfo = {
             isExpanded:true,
@@ -195,7 +286,6 @@
 
         nodeInfo.description = getHTMLElementDescription(node);
         nodeInfo.node = node;
-        nodeDictionary.add(nodeInfo);
         return nodeInfo;
     }
 
@@ -213,62 +303,92 @@
         return description;
     }
 
-    function searchInNode(node, keyword){
-        node.isHighlighted = keyword? (node.description.toLowerCase().indexOf(keyword)>=0):false;
-        if(node.options){
-            for(var i=0; i< node.options.length; i++){
-                node.options[i].isHighlighted = (node.options[i].description.toLowerCase().indexOf(keyword) >=0);
-            }
-        }
-        for(var i=0;i<node.childrenInfo.length; i++){
-            searchInNode(node.childrenInfo[i], keyword);
-        }
-    }
-    function searchByNode(node, targetNode){
-        var found = false;
-        for(var i=0;i<node.childrenInfo.length; i++){
-            if(searchByNode(node.childrenInfo[i], targetNode))
-                found = true;
-        }
 
-        if(node.options){
-            for(var i=0; i< node.options.length; i++){
-                node.options[i].isHighlighted = false;
-            }
-        }
-        if(!found)
-            node.isHighlighted = (node.node == targetNode);
-        return found || node.isHighlighted;
-    }
 
-    function collapseIrrelevantNodes(node){
-        var collapse = true;
-        for(var i=0;i<node.childrenInfo.length; i++){
-            if(collapseIrrelevantNodes(node.childrenInfo[i]))
-                collapse = false;
-        }
+    ///////////////////////////////////////////////////////
+    // log and debugger that called by the opener
+    //////////////////////////////////////////////////////
+    var _debugLogCount = 0;
+    window.calledByOpener = {
+        log:function(log){
+            window.debuggerModel.logs.unshift(log);
+        },
+        debugger:{
+            helper:{
+                setIsTiedUp:function(leftTarget,  knotOption, isTiedUp){
+                    var info = getNodeInfo(leftTarget);
+                    if(!info)
+                        return;
 
-        var highlighted = node.isHighlighted;
-        if(!highlighted && node.options){
-            for(var i=0; i<node.options.length;i++){
-                if(node.options[i].isHighlighted)
-                {
-                    highlighted = true;
-                    break;
+                    for(var i=0; i<info.options.length; i++){
+                        if(info.options[i].knotOption == knotOption){
+                            this.options[i].isTiedUp = isTiedUp;
+                            return;
+                        }
+                    }
+                }
+            },
+
+            knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+                var info = getNodeInfo(leftTarget);
+                if(!info)
+                    return;
+                for(var i=0; i<info.options.length; i++){
+                    if(info.options[i].knotOption == knotOption){
+                        if(info.options[i].latestValueInfo)
+                            info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
+                        info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
+                        window.debuggerModel.knotChangeLog.unshift({
+                            id:info.options[i].latestValueInfo.id,
+                            nodeDescription: info.description,
+                            knotOption: info.options[i],
+                            value:latestValue,
+                            isFromLeftToRight:isFromLeftToRight
+                        });
+                        return;
+                    }
+                }
+            },
+
+            knotTied: function(leftTarget, rightTarget, knotOption){
+                //not used now
+                //this.helper.setIsTiedUp(leftTarget, knotOption, true);
+            },
+            knotUntied:function(leftTarget, rightTarget, knotOption){
+                //not used now
+                //this.helper.setIsTiedUp(leftTarget, knotOption, false);
+            },
+
+            nodeAdded: function(node){
+                var n = node;
+                while(n && !getNodeInfo(n.parentNode)){
+                    n = n.parentNode;
+                }
+                if(n){
+                    var info = generateDOMTree(n);
+                    var parentInfo = getNodeInfo(n.parentNode);
+                    var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
+                    parentInfo.childrenInfo.splice(index, 0, info);
+                    info.parent = parentInfo;
+                }
+            },
+            nodeRemoved: function(node){
+                var info = getNodeInfo(node);
+                if(!info)
+                    return;
+                if(info.parent){
+                    info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
+                    info.parent = null;
                 }
             }
         }
-        node.isExpanded = highlighted || !collapse;
-        return node.isExpanded;
-    }
-    function expandAll(node){
-        for(var i=0;i<node.childrenInfo.length; i++){
-            expandAll(node.childrenInfo[i]);
-        }
-        node.isExpanded = true;
     }
 
 
+
+    /////////////////////////////////////////////////////
+    //initialize
+    ////////////////////////////////////////////////////
     window.Knot.ready(function(succ, err){
         if(!succ){
             alert(err.message);
@@ -280,6 +400,7 @@
             return;
         }
 
+        //get the cached logs from opener
         var arr = window.opener.knotjsDebugger.getCachedLogs();
         for(var i= arr.length-1; i>=0; i--)
             window.debuggerModel.logs.push(arr[i]);
@@ -348,81 +469,6 @@
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
     })
 
-
-    var _debugLogCount = 0;
-    window.calledByOpener = {
-        log:function(log){
-            window.debuggerModel.logs.unshift(log);
-        },
-        debugger:{
-            helper:{
-                setIsTiedUp:function(leftTarget,  knotOption, isTiedUp){
-                    var info = nodeDictionary.get(leftTarget);
-                    if(!info)
-                        return;
-
-                    for(var i=0; i<info.options.length; i++){
-                        if(info.options[i].knotOption == knotOption){
-                            this.options[i].isTiedUp = isTiedUp;
-                            return;
-                        }
-                    }
-                }
-            },
-
-            knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
-                var info = nodeDictionary.get(leftTarget);
-                if(!info)
-                    return;
-                for(var i=0; i<info.options.length; i++){
-                    if(info.options[i].knotOption == knotOption){
-                        if(info.options[i].latestValueInfo)
-                            info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
-                        info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
-                        window.debuggerModel.knotChangeLog.unshift({
-                            id:info.options[i].latestValueInfo.id,
-                            nodeDescription: info.description,
-                            knotOption: info.options[i],
-                            value:latestValue,
-                            isFromLeftToRight:isFromLeftToRight
-                        });
-                        return;
-                    }
-                }
-            },
-
-            knotTied: function(leftTarget, rightTarget, knotOption){
-                //this.helper.setIsTiedUp(leftTarget, knotOption, true);
-            },
-            knotUntied:function(leftTarget, rightTarget, knotOption){
-                //this.helper.setIsTiedUp(leftTarget, knotOption, false);
-            },
-
-            nodeAdded: function(node){
-                var n = node;
-                while(n && !nodeDictionary.get(n.parentNode)){
-                    n = n.parentNode;
-                }
-                if(n){
-                    var info = generateDOMTree(n);
-                    var parentInfo = nodeDictionary.get(n.parentNode);
-                    var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
-                    parentInfo.childrenInfo.splice(index, 0, info);
-                    info.parent = parentInfo;
-                }
-            },
-            nodeRemoved: function(node){
-                var info = nodeDictionary.get(node);
-                if(!info)
-                    return;
-                if(info.parent){
-                    info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
-                    info.parent = null;
-                }
-                nodeDictionary.remove(info.node);
-            }
-        }
-    }
 })((function() {
         return this;
     })());

@@ -119,6 +119,7 @@
             }
         },
 
+        _nodesWithTemplate:[],
         applyCBSForNode: function(node){
             var cbsOptions = null;
             if(node.__knot && node.__knot.cbsOptions){
@@ -142,12 +143,20 @@
                     var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
                     if(parsedOption.length != 0){
                         node.__knot.options.push(parsedOption[0]);
+                        if(this.isTemplateRelevantOption(parsedOption[0].leftAP) || this.isTemplateRelevantOption(parsedOption[0].rightAP)){
+                            if(this._nodesWithTemplate.indexOf(node)<0)
+                                this._nodesWithTemplate.push(node);
+                        }
                     }
                 }
             }
 
             for(var i=0; i< node.children.length; i++)
                 this.applyCBSForNode(node.children[i]);
+        },
+
+        isTemplateRelevantOption: function(ap){
+            return (ap.description == "foreach" || ap.description == "content");
         },
 
         applyCBS: function(){
@@ -168,18 +177,70 @@
             this.applyCBSForNode(document.body);
         },
 
+        _templateNameCount:0,
         processTemplateNodes: function(){
             var templateNodes = document.querySelectorAll("*[knot-template]");
             for(var i=0; i<templateNodes.length; i++){
-                var id = templateNodes[i].id;
-                if(!id){
-                    __private.Log.error("Template id is not specified.");
-                    continue;
+                var name;
+                if(templateNodes[i].id){
+                    name = templateNodes[i].id;
                 }
-                this.templates[id] = templateNodes[i];
-                templateNodes[i].parentNode.removeChild(this.templates[id]);
+                else{
+                    name = "knot_template_" + this._templateNameCount++;
+                }
+                this.templates[name] = templateNodes[i];
+                templateNodes[i].__knot_template_id = name;
+            }
+
+            for(var i=0; i<this._nodesWithTemplate.length; i++){
+                for(var j=0; j<this._nodesWithTemplate[i].__knot.options.length; j++){
+                    if(this.isTemplateRelevantOption(this._nodesWithTemplate[i].__knot.options[j].leftAP))
+                        this.processTemplateOption(this._nodesWithTemplate[i], this._nodesWithTemplate[i].__knot.options[j].leftAP);
+                    if(this.isTemplateRelevantOption(this._nodesWithTemplate[i].__knot.options[j].rightAP))
+                        this.processTemplateOption(this._nodesWithTemplate[i], this._nodesWithTemplate[i].__knot.options[j].rightAP);
+                }
+            }
+
+            this._nodesWithTemplate.length = 0;
+            for(var i=0; i<templateNodes.length; i++){
+                delete templateNodes[i].__knot_template_id;
+                templateNodes[i].removeAttribute("knot-template");
+                templateNodes[i].parentNode.removeChild(templateNodes[i]);
             }
         },
+        processTemplateOption: function(node, ap){
+            var templateNode
+            if(!ap.options || !ap.options["template"]){
+                templateNode = node.children[0];
+                if(node.children.length > 1){
+                    __private.Log.warning("More than one child is found within '" + __private.HTMLAPHelper.getNodeDescription(node) + '", only the first will be taken as template and the reset will be removed.')
+                }
+                if(!templateNode){
+                    __private.Log.error("Can't find template within'" + __private.HTMLAPHelper.getNodeDescription(node) + "'");
+                    return;
+                }
+            }
+            else{
+                var template = ap.options["template"];
+                //if template is a dynamic template, do nothing
+                if(template[0] == "@"){
+                    return;
+                }
+                templateNode = __private.HTMLAPHelper.queryElement(template);
+                if(!templateNode){
+                    __private.Log.error("Can't find template with selector'" + template + "'");
+                    return;
+                }
+            }
+
+            if(!templateNode.__knot_template_id){
+                __private.Log.error("The template node must be marked with 'knot-template'. Current node:'" + __private.HTMLAPHelper.getNodeDescription(node) + "'");
+            }
+            if(!ap.options)
+                ap.options = {};
+            ap.options["template"] = templateNode.__knot_template_id;
+        },
+
         copyAttachedData: function(n, c){
             if(n.__knot){
                 c.__knot =  JSON.parse(JSON.stringify( n.__knot));
@@ -215,6 +276,7 @@
                 }
                 else{
                     __private.Log.error( "Unknown template:"+templateId);
+                    return;
                 }
             }
             else{

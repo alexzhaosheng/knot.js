@@ -19,7 +19,7 @@
     <script src="../core/Utility.js"></script>
     <script src="../core/Deferred.js"></script>
     <script src="../core/AttachedData.js"></script>
-    <script src="../core/DataMonitor.js"></script>
+    <script src="../core/DataObserver.js"></script>
     <script src="../core/ArrayMonitor.js"></script>
     <script src="../core/GlobalSymbolHelper.js"></script>
     <script src="../core/OptionParser.js"></script>
@@ -65,7 +65,7 @@
     </div>
     <div class="treeContainer expander-top-collapsed">
         <ul id="domTree">
-            <li id="nodeTemplate" knot-template>
+            <li knot-template>
                 <div>
                     <div class="nonCollapsibleContent">
                         <div class="expander">
@@ -82,7 +82,7 @@
                     </div>
                     <div class="collapsibleContent">
                         <ul class="knotList" >
-                            <li id="knotsListItemTemplate" knot-template>
+                            <li knot-template>
                                 <i class="type-indicator fa fa-wrench"></i>
                                 <div class="knotOption selectable"></div>
                                 <i class="highlightMark fa fa-hand-o-left"></i>

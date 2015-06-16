@@ -31,19 +31,19 @@
     };
 
     window.Knot.notifyObjectChanged = function(object, path, oldValue, newValue){
-        __private.DataMonitor.notifyDataChanged(object, path, oldValue, newValue);
+        __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
     }
     window.Knot.monitorObject = function(object, path, callback){
-        __private.DataMonitor.monitorObject(object, path, callback);
+        __private.DataObserver.monitorObject(object, path, callback);
     }
     window.Knot.stopMonitoringObject = function(object, path, callback){
-        __private.DataMonitor.stopMonitoring(object, path, callback);
+        __private.DataObserver.stopMonitoring(object, path, callback);
     }
     window.Knot.getPropertiesChangeRecords = function(object){
-        return __private.DataMonitor.getPropertiesChangeRecords(object);
+        return __private.DataObserver.getPropertiesChangeRecords(object);
     }
     window.Knot.clearPropertiesChangeRecords = function(object){
-        return __private.DataMonitor.clearPropertiesChangeRecords(object);
+        return __private.DataObserver.clearPropertiesChangeRecords(object);
     }
 
     window.Knot.createFromTemplate = function(id){

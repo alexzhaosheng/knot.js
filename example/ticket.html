@@ -9,7 +9,7 @@
     <script src="../src/core/Utility.js"></script>
     <script src="../src/core/Deferred.js"></script>
     <script src="../src/core/AttachedData.js"></script>
-    <script src="../src/core/DataMonitor.js"></script>
+    <script src="../src/core/DataObserver.js"></script>
     <script src="../src/core/ArrayMonitor.js"></script>
     <script src="../src/core/GlobalSymbolHelper.js"></script>
     <script src="../src/core/OptionParser.js"></script>
@@ -46,11 +46,11 @@
         /* For Ticket 1*/
 
         #classSelect{
-            foreach<optionTemplate: tickets;
+            foreach: tickets;
             selectedData:selected;
         }
 
-        #optionTemplate{
+        #classSelect option{
             text:*>{return value.name+"("+value.price+")";}
         }
 
@@ -84,7 +84,7 @@
         this example uses template to fill the options of the combobox
     </p>
     <p>
-        Choose a ticket class: <select id="classSelect"><option id="optionTemplate" knot-template></option></select>
+        Choose a ticket class: <select id="classSelect"><option knot-template></option></select>
         <button class="clearButton" onclick="clearSelection();">clear</button>
     </p>
     <p class="selectionResult">

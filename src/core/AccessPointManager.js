@@ -6,14 +6,13 @@
     this is the interface of access point provider:
     {
         doesSupport:function(target, accessPointName);  //required. return true if the access point on the target is supported
-        getValue:function(target, accessPointName); //required. get current value for the access point on the target
-        setValue:function(target, accessPointName, value); //required. get current value for the access point on the target
+        getValue:function(target, accessPointName, options); //required. get current value for the access point on the target
+        setValue:function(target, accessPointName, value, options); //required. get current value for the access point on the target
         doesSupportMonitoring:function(target, accessPointName); //required. return true if the access point support data awareness
 
-        monitor:function(target, accessPointName, callback); //optional. monitor the change of the access point (on the target)
-        stopMonitoring:function(target, accessPointName, callback) //optional. stop monitoring the change of the access point(on the target)
+        monitor:function(target, accessPointName, callback, options); //optional. monitor the change of the access point (on the target)
+        stopMonitoring:function(target, accessPointName, callback, options) //optional. stop monitoring the change of the access point(on the target)
     }
-
  */
 
 (function(window){
@@ -88,7 +87,7 @@
                 apName = apName.substr(1);
             }
             if(target){
-                __private.DataMonitor.monitor(target, apName, callback);
+                __private.DataObserver.monitor(target, apName, callback);
             }
         },
         stopMonitoring: function(target, apName, callback, options){
@@ -97,10 +96,10 @@
                 apName = apName.substr(1);
             }
             if(target && options && options.options.__knotAPEventCallbacks["@change"]){
-                __private.DataMonitor.stopMonitoring(target, apName, options.__knotAPEventCallbacks["@change"]);
+                __private.DataObserver.stopMonitoring(target, apName, options.__knotAPEventCallbacks["@change"]);
             }
             else if(target){
-                __private.DataMonitor.stopMonitoring(target, apName, callback);
+                __private.DataObserver.stopMonitoring(target, apName, callback);
             }
         }
     };

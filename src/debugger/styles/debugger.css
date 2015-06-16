@@ -200,14 +200,14 @@ li{
     border-left: none;
 }
 
-#nodeTemplate .collapsibleContent{
+#domTree>li .collapsibleContent{
     margin-left: 16px;
 }
-#nodeTemplate .nonCollapsibleContent{
+#domTree>li .nonCollapsibleContent{
     padding: 4px 0px;
 
 }
-#nodeTemplate .expander{
+#domTree>li .expander{
     /*color:#222288;*/
     display:inline-block;
     width: 16px;
@@ -215,7 +215,7 @@ li{
     line-height: 16px;
     text-align: center;
 }
-#nodeTemplate .locateElementButton{
+#domTree>li .locateElementButton{
     margin-left: 30px;
 }
 
@@ -227,13 +227,13 @@ li{
     border-top:none;
 }
 
-#knotsListItemTemplate{
+.knotList>li{
     display: block;
     min-width: 300px;
     padding: 5px;
-    line-height: 13px
+    line-height: 15px
 }
-#knotsListItemTemplate div{
+.knotList>li div{
     display: inline-block;
 }
 .knotValue{

@@ -1,14 +1,15 @@
+/*
+    DataObserver provides the ability of monitoring the change of object
+    Note it is not only able to detecting the change or the property, but also
+     be able to observe a "path" so that you can get the change in it's children
+ */
 (function(window){
     var __private = window.Knot.getPrivateScope();
 
-    ///////////////////////////////////////////////////////
-    // Value changed callbacks management
-    ///////////////////////////////////////////////////////
-
     var PATH_FOR_OBJECT_ITSELF = "*";
-    __private.DataMonitor = {
+    __private.DataObserver = {
         //if property is "*", callback will be executed when any property is changed.
-        register: function(data, path, callback, attachedData) {
+        on: function(data, path, callback, attachedData) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks) {
                 attachedInfo.changedCallbacks = {};
@@ -23,7 +24,7 @@
 
             attachedInfo.changedCallbacks[path].push({callback: callback, attachedData:attachedData});
         },
-        unregister: function(data, path, callback) {
+        off: function(data, path, callback) {
             if(!path)
                 path = PATH_FOR_OBJECT_ITSELF;
 
@@ -134,7 +135,7 @@
                         if(oldValue == v)
                             return;
                         attached.dataHookInfo.data[property] = v;
-                        __private.DataMonitor.notifyDataChanged(this, property, oldValue, v);
+                        __private.DataObserver.notifyDataChanged(this, property, oldValue, v);
                     },
                     get:function(){
                         return attached.dataHookInfo.data[property];
@@ -192,29 +193,29 @@
             }
 
             var attachedData = {};
-            __private.DataMonitor.register(object, path, callback, attachedData);
+            __private.DataObserver.on(object, path, callback, attachedData);
 
             if(restPath){
                 attachedData.childChangedCallback = function(p, oldValue, newValue){
                     var path = property +"." + restPath;
-                    __private.DataMonitor.notifyDataChanged(object, path, oldValue, newValue);
+                    __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
                 }
                 attachedData.monitorChildChangedCallback = function(p, oldValue, newValue){
                     if(oldValue){
-                        __private.DataMonitor.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
+                        __private.DataObserver.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
                     }
                     if(newValue){
-                        __private.DataMonitor.monitorObject(newValue, restPath, attachedData.childChangedCallback, true);
+                        __private.DataObserver.monitorObject(newValue, restPath, attachedData.childChangedCallback, true);
                     }
 
                     var path = property + "." + restPath;
                     var newChildValue = __private.Utility.getValueOnPath(newValue, restPath);
                     var oldChildValue = __private.Utility.getValueOnPath(oldValue, restPath);
-                    __private.DataMonitor.notifyDataChanged(object, path, oldChildValue, newChildValue);
+                    __private.DataObserver.notifyDataChanged(object, path, oldChildValue, newChildValue);
                 };
-                __private.DataMonitor.register(object, property, attachedData.monitorChildChangedCallback);
+                __private.DataObserver.on(object, property, attachedData.monitorChildChangedCallback);
                 if(object[property]){
-                    __private.DataMonitor.monitorObject(object[property], restPath, attachedData.childChangedCallback, true);
+                    __private.DataObserver.monitorObject(object[property], restPath, attachedData.childChangedCallback, true);
                 }
             }
 
@@ -225,17 +226,17 @@
                 //the array object when it is set with an array object
                 attachedData.changedCallback = function(p, oldValue, newValue){
                     if(oldValue instanceof  Array){
-                        __private.DataMonitor.unregister(oldValue, "*", attachedData.arrayChangedCallback);
+                        __private.DataObserver.off(oldValue, "*", attachedData.arrayChangedCallback);
                         delete attachedData.arrayChangedCallback;
                     }
                     if(newValue instanceof Array){
                         attachedData.arrayChangedCallback = function(){
-                            __private.DataMonitor.notifyDataChanged(object, path, newValue, newValue);
+                            __private.DataObserver.notifyDataChanged(object, path, newValue, newValue);
                         }
-                        __private.DataMonitor.register(newValue, "*", attachedData.arrayChangedCallback);
+                        __private.DataObserver.on(newValue, "*", attachedData.arrayChangedCallback);
                     }
                 }
-                __private.DataMonitor.register(object, path, attachedData.changedCallback, attachedData);
+                __private.DataObserver.on(object, path, attachedData.changedCallback, attachedData);
 
                 var curValue = __private.Utility.getValueOnPath(object, path);
                 if(curValue instanceof Array){
@@ -243,7 +244,7 @@
                 }
             }
 
-            __private.DataMonitor.hookProperty(object, property);
+            __private.DataObserver.hookProperty(object, property);
         },
 
         monitor: function(object, path, callback){
@@ -255,13 +256,13 @@
                this.monitorObject(object, path, callback);
             }
             else{
-                __private.DataMonitor.register(object, null, callback);
+                __private.DataObserver.on(object, null, callback);
             }
         },
 
         stopMonitoring:function(object, path, callback){
             if(!path){
-                __private.DataMonitor.unregister(object, path, callback);
+                __private.DataObserver.off(object, path, callback);
             }
             else{
                 if(path[0] == "/"){
@@ -279,25 +280,25 @@
                     restPath = path.substr(path.indexOf(".")+1);
                 }
 
-                var attachedData = __private.DataMonitor.getAttachedData(object, path, callback);
+                var attachedData = __private.DataObserver.getAttachedData(object, path, callback);
                 if(attachedData){
                     if(attachedData.monitorChildChangedCallback){
-                        __private.DataMonitor.unregister(object, property, attachedData.monitorChildChangedCallback);
+                        __private.DataObserver.off(object, property, attachedData.monitorChildChangedCallback);
                     }
 
                     if(attachedData.childChangedCallback && object[property]){
-                        __private.DataMonitor.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
+                        __private.DataObserver.stopMonitoring(object[property], restPath, attachedData.childChangedCallback);
                     }
 
                     if(attachedData.changedCallback){
-                        __private.DataMonitor.unregister(object, path, attachedData.changedCallback);
+                        __private.DataObserver.off(object, path, attachedData.changedCallback);
                     }
                     if(attachedData.arrayChangedCallback){
-                        __private.DataMonitor.unregister(__private.Utility.getValueOnPath(object, path), "*", attachedData.arrayChangedCallback);
+                        __private.DataObserver.off(__private.Utility.getValueOnPath(object, path), "*", attachedData.arrayChangedCallback);
                     }
                 }
-                __private.DataMonitor.unregister(object, path, callback);
-                __private.DataMonitor.unhookProperty(object, property);
+                __private.DataObserver.off(object, path, callback);
+                __private.DataObserver.unhookProperty(object, property);
             }
         }
     }

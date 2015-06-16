@@ -205,7 +205,7 @@
         data.user.name = "feynman";
         assert.equal(userNameInput.value, "feynman", "change to another object and check the relevant values on html element");
         userNameInput.value = "satoshi nakamoto";
-        KnotTestUtility.raiseDOMEvent(userNameInput, "change", "change to another object and check the relevant values on html element");
+        KnotTestUtility.raiseDOMEvent(userNameInput, "change");
         assert.equal(data.user.name, "satoshi nakamoto", "change to another object and check the relevant values on html element");
 
         data.user = null;
@@ -224,6 +224,46 @@
         assert.equal(userNameInput.value, "", "clear works");
 
 
+
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+        scope.HTMLKnotManager.normalizedCBS = [];
+        KnotTestUtility.clearAllKnotInfo(document.body);
+    });
+
+    QUnit.test( "private.HTMLKnotManager.AP with complex selector ", function( assert ) {
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
+            '#cssSelectorInput{' +
+            'value:#(.cssSelectorTest>input:last-child).value>{return "Hello "+ value;}} \r\n'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        var node =  KnotTestUtility.parseHTML(
+            '<div class="cssSelectorTest">' +
+                '<input id="cssSelectorInput" type="text">' +
+                '<input type="text">' +
+                '</div>'
+            );
+        testDiv.appendChild(node);
+
+        scope.HTMLKnotManager.parseCBS();
+        scope.HTMLKnotManager.applyCBS();
+        scope.HTMLKnotManager.bind();
+
+        var cssInput1 = document.querySelector("#cssSelectorInput");
+        var cssInput2 = document.querySelector(".cssSelectorTest>input:last-child");
+        cssInput1.value = "einstein";
+        KnotTestUtility.raiseDOMEvent(cssInput1, "change");
+        assert.equal(cssInput2.value, "einstein", "test complex css selector");
+
+        cssInput2.value = "satoshi";
+        KnotTestUtility.raiseDOMEvent(cssInput2, "change");
+        assert.equal(cssInput1.value, "Hello satoshi", "test complex css selector");
+
+
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
         scope.HTMLKnotManager.normalizedCBS = [];
@@ -238,14 +278,19 @@
         var templateDiv = KnotTestUtility.parseHTML('<div id="userTemplate" knot-template ><span></span>.<span></span></div>');
         testDiv.appendChild(templateDiv);
 
+        var template2 = KnotTestUtility.parseHTML('<selec id="templateTest2"><option knot-template/></div>');
+        testDiv.appendChild(template2);
+
         testDiv.appendChild(KnotTestUtility.parseHTML('<div><div id="selectedUser"></div><div id="userList"></div></div>'));
 
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">' +
             'body {dataContext:/templateTestData;}'+
             '#userTemplate>span:first-child{innerText:firstName}'+
             '#userTemplate>span:last-child{innerText:lastName}'+
-            '#selectedUser{content<userTemplate:selectedUser}'+
-            '#userList{foreach<userTemplate:userList}'+
+            '#selectedUser{content[template:#userTemplate]:selectedUser}'+
+            '#userList{foreach[template:#userTemplate]:userList}'+
+            '#templateTest2{foreach:optionsList}'+
+            '#templateTest2 option{value:name;text:name}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 
@@ -325,6 +370,11 @@
         window.templateTestData.selectedUser =null;
         assert.equal(selected.childNodes.length, 0, "change data binding by content");
 
+        window.templateTestData.optionsList = [{name:"einstein"}, {name:"satoshi"}, {name:"laozi"}];
+        assert.equal(template2.children.length, 3, "embedded template works");
+        assert.equal(template2.children[0].value, "einstein", "embedded template works");
+
+
         delete window.templateTestData;
 
         scope.HTMLKnotManager.clear();
@@ -353,8 +403,8 @@
             '#westernUserTemplate>span:last-of-type{innerText:lastName}'+
             '#easternUserTemplate>span:first-child{innerText:lastName}'+
             '#easternUserTemplate>span:last-of-type{innerText:firstName}'+
-            '#selectedUser{content</testTemplateSelector:selectedUser}'+
-            '#userList{foreach</testTemplateSelector:userList}'+
+            '#selectedUser{content[template:@/testTemplateSelector]:selectedUser}'+
+            '#userList{foreach[template:@/testTemplateSelector]:userList}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 

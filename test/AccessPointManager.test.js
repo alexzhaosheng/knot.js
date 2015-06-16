@@ -21,10 +21,10 @@
         return true;
     };
     TestAccessPointerProvider.prototype.monitor = function(target, apName, callback){
-        scope.DataMonitor.monitor(target, apName, callback);
+        scope.DataObserver.monitor(target, apName, callback);
     }
     TestAccessPointerProvider.prototype.stopMonitoring = function(target, apName, callback){
-        scope.DataMonitor.stopMonitoring(target, apName, callback);
+        scope.DataObserver.stopMonitoring(target, apName, callback);
     }
 
 

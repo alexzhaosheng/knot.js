@@ -99,6 +99,12 @@
         assert.equal(knot.leftAP.options != null, true, "parse ap with options");
         assert.equal(knot.leftAP.options["@set"], "@global.onSet", "parse ap with options");
         assert.equal(knot.leftAP.options["@change"], "@global.onChange", "parse ap with options");
+
+
+        //parse ap with complex css selector
+        knot = scope.OptionParser.parse('value:#(.nameInputSection> input).value')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with css selector");
+        assert.equal(knot.rightAP.description, "#(.nameInputSection> input).value", "parse ap with css selector");
     });
 })((function() {
         return this;

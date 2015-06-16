@@ -1,10 +1,12 @@
+/*
+    AttachedData is an object attached to the data. It's used to store the necessary information that
+    keeps knots working.
+    If "Setting.enablePropertyHook" is enabled, attached data is directly stored on object as a non-enumerable
+    property named "__knot_attachedData", other with it's stored in an dictionary structure which takes the object as the
+    key
+ */
 (function(window){
     var __private = window.Knot.getPrivateScope();
-
-
-    /////////////////////////////////////
-    // Attached data management
-    /////////////////////////////////////
     __private.AttachedData = {
         _dataInMonitoring: [],
         _attachedInfoOfData: [],

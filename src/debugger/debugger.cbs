@@ -12,71 +12,71 @@ body{
 
 
 #domTree{
-    foreach < nodeTemplate: domTreeNodes
+    foreach: domTreeNodes
 }
 
-#nodeTemplate .expander>i{
+#domTree>li .expander>i{
     @click:@{this.isExpanded = !this.isExpanded;};
     class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
 }
 
-#nodeTemplate .nodeTitle{
+#domTree>li .nodeTitle{
     textContent: description;
-     class:noKnotSetting>{return value?"+emptyNode":"";}
+    class:noKnotSetting>{return value?"+emptyNode":"";}
 }
-#nodeTemplate .highlightMark{
+#domTree>li .highlightMark{
     style.display:isHighlighted>{return value?"inline-block":"none";}
 }
 
-#nodeTemplate .locateElementButton{
-    @click:@/debuggerModel.locateElement
+#domTree>li .locateElementButton{
+    @click:@/debuggerModel.onLocateElement
 }
-#nodeTemplate .checkDataContextButton{
+#domTree>li .checkDataContextButton{
     style.display:dataContext>{return value?"inline-block":"none"};
-    @click:@/debuggerModel.checkDataContext
+    @click:@/debuggerModel.onShowDataContext
 }
 
-#nodeTemplate .knotList{
-    foreach<knotsListItemTemplate :options;
+#domTree>li .knotList{
+    foreach :options;
     style.display:options>{return (value&&value.length>0)?"block":"none";}
 }
 
-#nodeTemplate .nodeChildren{
-    foreach < nodeTemplate: childrenInfo;
+#domTree>li .nodeChildren{
+    foreach[template: #(#domTree>li)]: childrenInfo;
     style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
 }
 
-#nodeTemplate .collapsibleContent{
+#domTree>li .collapsibleContent{
     style.display : isExpanded>{return value?"block":"none";}
 }
 
 
 
-#knotsListItemTemplate .knotOption{
+.knotList>li .knotOption{
     textContent:description
 }
 
-#knotsListItemTemplate .knotValueDirection, #knotsListItemTemplate .knotValue, #knotsListItemTemplate .knotValueDetail{
+.knotList>li .knotValueDirection, .knotList>li .knotValue, .knotList>li .knotValueDetail{
     style.display:latestValueInfo>{return value?"inline-block":"none";};
 }
 
-#knotsListItemTemplate .knotValueDirection{
+.knotList>li .knotValueDirection{
     class:latestValueInfo.isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
 }
 
-#knotsListItemTemplate .knotValue{
+.knotList>li .knotValue{
     innerText[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
     title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
 }
 
- #knotsListItemTemplate .knotValueDetail{
-    @click:@/debuggerModel.showKnotDetail
+ .knotList>li .knotValueDetail{
+    @click:@/debuggerModel.onShowKnotDetail
  }
 
 
 /* knot change log*/
 .knotChangeLog{
-    foreach<knotChangeLogItemTemplate: knotChangeLog
+    foreach: knotChangeLog
 }
 .knotChangeLog .id{
     textContent: id
@@ -94,7 +94,7 @@ body{
     textContent: value>{return JSON.stringify(value);};
 }
 .knotChangeLog .knotValueDetail{
-    @click:@/debuggerModel.showKnotValueLogDetail
+    @click:@/debuggerModel.onShowKnotValueLogDetail
 }
 
 /*knot change log expander */
@@ -116,7 +116,7 @@ body{
  /* Log */
 
 #logContainer{
-    foreach<logTemplate: logs
+    foreach[template:#logTemplate]: logs
 }
 
 #logTemplate{

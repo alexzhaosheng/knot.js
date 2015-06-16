@@ -1,7 +1,7 @@
-/////////////////////////////////////
-//Deferred
-//This is simplified Deferred object for asynchronous validating and initialization.
-/////////////////////////////////////
+/*
+    Deferred
+    This is simplified Deferred object for asynchronous validating and initialization.
+*/
 
 (function(window){
     var __private = window.Knot.getPrivateScope();

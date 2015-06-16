@@ -3,7 +3,7 @@
     QUnit.test( "private.ArrayMonitor", function( assert ) {
         var testArray = [];
         var changed = false;
-        scope.DataMonitor.monitor(testArray, null, function(){
+        scope.DataObserver.monitor(testArray, null, function(){
             changed = true;
         });
         testArray.push("test");
