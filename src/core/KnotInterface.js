@@ -14,8 +14,16 @@
         },
         registerDebugger: function(dbg){
             __private.Debugger = dbg;
+        },
+        synchronizeItems: function(parentNode, valueArray, template, onCreated, onRemoved){
+            __private.HTMLAPProvider.syncItems(parentNode, valueArray, template, onCreated, onRemoved);
+        },
+        createFromTemplate:function(template, data){
+            return __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, data);
+        },
+        getValueOnPath: function(data, path){
+            return __private.Utility.getValueOnPath(data, path);
         }
-
     }
 
     //get the error status for the rootNode and all of the children nodes within it
@@ -25,6 +33,9 @@
     window.Knot.getErrorStatusInformation = function(rootNode){
         if(!rootNode)
             rootNode = document.body;
+
+        __private.HTMLKnotManager.forceUpdateValues(rootNode);
+
         var result = [];
         __private.HTMLAPProvider.getErrorStatusInformation(rootNode, result);
         return result;
@@ -46,9 +57,6 @@
         return __private.DataObserver.clearPropertiesChangeRecords(object);
     }
 
-    window.Knot.createFromTemplate = function(id){
-        return __private.HTMLKnotManager.createFromTemplate(id);
-    }
 
     window.Knot.clear = function(){
         __private.HTMLKnotManager.clear();
@@ -56,6 +64,11 @@
 
     window.Knot.getDataContext = function(htmlElement){
         return __private.HTMLKnotManager.getDataContextOfHTMLNode(htmlElement);
+    }
+    window.Knot.findElementBindToData= function(elements, data){
+        for(var i=0; i<elements.length; i++)
+            if(window.Knot.getDataContext(elements[i]) == data)
+                return elements;
     }
 
     //automatically initialize when loading

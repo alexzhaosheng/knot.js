@@ -20,10 +20,14 @@
         },
 
         startsWith:function(s, startStr){
+            if(!s)
+                return false;
             return s.substr(0, startStr.length) == startStr;
         },
 
         getValueOnPath: function(rootData, path) {
+            if(!path && path !== "")
+                return;
             if(path == "*NULL")
                 return null;
             if(path == "*" || path =="")

@@ -119,8 +119,9 @@
                         __private.Debugger.nodeAdded(n);
                     }
                 }
-
-                __private.HTMLKnotManager.updateDataContext(currentContent, value);
+                else{
+                    __private.HTMLKnotManager.updateDataContext(currentContent, value);
+                }
                 if(currentContent.__knot)
                     currentContent.__knot={};
                 currentContent.__knot.dataContext = value;
@@ -143,14 +144,10 @@
             node.insertBefore(child, node.children[index]);
     }
 
-    function setForeach(node, values, options){
-        if(!options || !options["template"]){
-            __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
-            return;
-        }
-        var templateName = options["template"];
+
+    function syncItems(node, values, template, onItemCreated, onItemRemoved) {
         //take null values as empty array.
-        if(!values){
+        if (!values) {
             values = [];
         }
         for (var i = 0; i < values.length; i++) {
@@ -162,17 +159,29 @@
                 }
             }
             else {
-                var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(templateName, values[i])
-                if(n){
+                var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, values[i]);
+                if (n) {
                     addChildTo(node, n, i);
                     __private.Debugger.nodeAdded(n);
+                    if(onItemCreated)
+                        onItemCreated.apply(node, [n]);
                 }
             }
         }
 
         for (var i = node.children.length - 1; i >= values.length; i--) {
             removeNodeCreatedFromTemplate(node.children[i])
+            if(onItemRemoved)
+                onItemRemoved.apply(node, [n]);
         }
+    }
+
+    function setForeach(node, values, options){
+        if(!options || !options["template"]){
+            __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
+            return;
+        }
+        syncItems(node, values, options["template"], __private.Utility.getValueOnPath(window, options["added"]), __private.Utility.getValueOnPath(window, options["added"]));
     }
 
     __private.HTMLAPProvider={
@@ -304,9 +313,10 @@
         },
         monitor: function(target, apName, callback, options){
             if(apName[0] == "!"){
-                if(apName[1] == "#"){
-                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
+                apName = apName.substr(1);
+                if(apName[0] == "#"){
+                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
                 }
                 if(!target.__knot_errorStatusInfo)
                     target.__knot_errorStatusInfo = {};
@@ -373,7 +383,10 @@
             for(var i=0; i<node.children.length; i++){
                 this.getErrorStatusInformation(node.children[i], result)
             }
-        }
+        },
+
+        //expose to interface
+        syncItems:syncItems
     };
 
     __private.AccessPointManager.registerAPProvider(__private.HTMLAPProvider);

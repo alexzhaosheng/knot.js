@@ -1,7 +1,15 @@
 <!doctype html>
 <html>
 <head>
-    <link rel="stylesheet" href="example.css">
+    <link rel="stylesheet" href="styles/example.css">
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <link rel="stylesheet" href="./styles/github.css">
+    <script src="highlight.pack.js"></script>
+    <script type="text/cbs" src="sourceTab.cbs"></script>
+
     <script src="../src/core/PrivateScope.js"></script>
     <script src="../src/core/Utility.js"></script>
     <script src="../src/core/Deferred.js"></script>
@@ -13,9 +21,12 @@
     <script src="../src/core/AccessPointManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
     <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
-    <script type="text/cbs">
+    <script src="../src/debugger/knot.debug.js"></script>
+
+    <script type="text/cbs" id="exampleCBS">
         #hello1Msg{
             innerText:#nameInput.value[immediately:1]>{return value?"Hello " + value:"";}
         }
@@ -26,7 +37,7 @@
     </script>
 </head>
 <body>
-<div>
+
     <div class="knot_example">
         <h2>Knot.js example - hello 1</h2>
         <p class="comment">
@@ -48,6 +59,9 @@
         <p>Last name: <input id="lastNameInput"  value="Earth"/></p>
         <h3 id="hello2Msg">Hello, <span> </span>!</h3>
     </div>
-</div>
+
+    <script src="tabpage.js"></script>
+    <script type="text/javascript" src="sourceTab.js"></script>
+
 </body>
 </html>

@@ -47,6 +47,8 @@ Knot.js debugger
 
     //binding target. this will be the data context of "BODY"
     window.debuggerModel ={
+        highestLogLevel:"Info",
+
         //runtime log
         logs:[],
 
@@ -115,6 +117,11 @@ Knot.js debugger
                     .css("backgroundColor", "#0bac45")
                     .animate({backgroundColor:"transparent"}, 3000);
             }
+        },
+
+        onClearLogs: function(){
+            window.debuggerModel.knotChangeLog.length = 0;
+            window.debuggerModel.knotChangeLog.notifyChanged();
         }
     };
 
@@ -309,8 +316,12 @@ Knot.js debugger
     // log and debugger that called by the opener
     //////////////////////////////////////////////////////
     var _debugLogCount = 0;
+    var _logLevels =  ["Info", "Warning", "Error"]
     window.calledByOpener = {
         log:function(log){
+            if(_logLevels.indexOf(log.level) > _logLevels.indexOf(window.debuggerModel.highestLogLevel)){
+                window.debuggerModel.highestLogLevel = log.level;
+            }
             window.debuggerModel.logs.unshift(log);
         },
         debugger:{
@@ -400,11 +411,6 @@ Knot.js debugger
             return;
         }
 
-        //get the cached logs from opener
-        var arr = window.opener.knotjsDebugger.getCachedLogs();
-        for(var i= arr.length-1; i>=0; i--)
-            window.debuggerModel.logs.push(arr[i]);
-
         $("#ownerWindowInfo").text((window.opener.document.title?window.opener.document.title:"untitled") + " ["+ window.opener.location+"]");
 
         $("#locateElementButton").click(function(){
@@ -467,7 +473,10 @@ Knot.js debugger
         });
 
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
-    })
+
+        //ask opener sending the cached logs
+        window.opener.knotjsDebugger.pushCached();
+    });
 
 })((function() {
         return this;

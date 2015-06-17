@@ -3,7 +3,14 @@
 <head>
     <title>Knot.js Example - Ticket</title>
 
-    <link rel="stylesheet" href="example.css">
+    <link rel="stylesheet" href="styles/example.css">
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <link rel="stylesheet" href="./styles/github.css">
+    <script src="highlight.pack.js"></script>
+    <script type="text/cbs" src="sourceTab.cbs"></script>
 
     <script src="../src/core/PrivateScope.js"></script>
     <script src="../src/core/Utility.js"></script>
@@ -15,63 +22,63 @@
     <script src="../src/core/OptionParser.js"></script>
     <script src="../src/core/AccessPointManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
-    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
     <script src="../src/debugger/knot.debug.js"></script>
 
-    <script type="text/cbs">
-        body{
-            dataContext:/model;
-        }
+    <script type="text/cbs" id="exampleCBS">
+    body{
+        dataContext:/model;
+    }
 
-        .clearButton{
-            disabled:selected>{return value?false:true;}
-        }
-
-
-        .selectionResult{
-             dataContext:selected;
-        }
-
-        .selectionResult>b{
-            innerText:name
-        }
-        .selectionResult>span{
-            innerText:price
-        }
+    .clearButton{
+        disabled:selected>{return value?false:true;}
+    }
 
 
-        /* For Ticket 1*/
+    .selectionResult{
+         dataContext:selected;
+    }
 
-        #classSelect{
-            foreach: tickets;
-            selectedData:selected;
-        }
+    .selectionResult>b{
+        innerText:name
+    }
+    .selectionResult>span{
+        innerText:price
+    }
 
-        #classSelect option{
-            text:*>{return value.name+"("+value.price+")";}
-        }
 
-        /* For Ticket 1*/
-        #classSelect2{
-            options[displayMember:{return this.name+"("+this.price+")";}]:tickets;
-            selectedData:selected;
-        }
+    /* For Ticket 1*/
+
+    #classSelect{
+        foreach: tickets;
+        selectedData:selected;
+    }
+
+    #classSelect option{
+        text:*>{return value.name+"("+value.price+")";}
+    }
+
+    /* For Ticket 1*/
+    #classSelect2{
+        options[displayMember:{return this.name+"("+this.price+")";}]:tickets;
+        selectedData:selected;
+    }
     </script>
-    <script>
-        var model = {
-            tickets: [
-                { name: "Economy", price: 199.95 },
-                { name: "Business", price: 449.22 },
-                { name: "First Class", price: 1199.99 }
-            ],
-            selected:null
-        }
-        function clearSelection(){
-            model.selected = null;
-        }
+    <script id="exampleJS">
+    window.model = {
+        tickets: [
+            { name: "Economy", price: 199.95 },
+            { name: "Business", price: 449.22 },
+            { name: "First Class", price: 1199.99 }
+        ],
+        selected:null
+    }
+    function clearSelection(){
+        model.selected = null;
+    }
     </script>
 </head>
 <body>
@@ -107,5 +114,8 @@
         ($<span></span>)
     </p>
 </div>
+
+<script src="tabpage.js"></script>
+<script type="text/javascript" src="sourceTab.js"></script>
 </body>
 </html>

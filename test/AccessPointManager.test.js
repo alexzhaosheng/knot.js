@@ -337,8 +337,42 @@
         assert.equal(latestTarget, target1, "ap event @change works");
         assert.equal(latestChangedKnot, "value", "ap event @change works");
         assert.equal(latestValue, "laozi", "ap event @change works");
-
     });
-})((function() {
+
+    QUnit.test( "private.AccessPointerManager.target modifier", function( assert ) {
+        var target1, target2;
+
+        knot = scope.OptionParser.parse("valueCopy:*LEFT.value>{return value+', copy';}")[0];
+        target1 = {value: "knot.js", valueCopy:""};
+        scope.AccessPointManager.tieKnot(target1, null,  knot);
+        assert.equal(target1.value,"knot.js", "target modifier works");
+        assert.equal(target1.valueCopy,"knot.js, copy", "target modifier works");
+        target1.value = "good";
+        assert.equal(target1.value,"good", "target modifier works");
+        assert.equal(target1.valueCopy,"good, copy", "target modifier works");
+        target1.valueCopy = "set copy";
+        assert.equal(target1.value,"set copy", "target modifier works");
+        assert.equal(target1.valueCopy,"set copy", "target modifier works");
+
+        knot = scope.OptionParser.parse("*RIGHT.value>{return value+', copy';}:valueCopy")[0];
+        target1 = {value: "knot.js", valueCopy:""};
+        target2 = {name: "satoshi"};
+        scope.AccessPointManager.tieKnot(target2, target1,  knot);
+        assert.equal(target1.value,"", "target modifier works");
+        assert.equal(target1.valueCopy,"", "target modifier works");
+        target1.value = "good";
+        assert.equal(target1.value,"good", "target modifier works");
+        assert.equal(target1.valueCopy,"good, copy", "target modifier works");
+        target1.valueCopy = "set copy";
+        assert.equal(target1.value,"set copy", "target modifier works");
+        assert.equal(target1.valueCopy,"set copy", "target modifier works");
+
+        knot = scope.OptionParser.parse("value:*LEFT.value>{return value+', copy';}")[0];
+        target1 = {value: "knot.js", valueCopy:""};
+        scope.AccessPointManager.tieKnot(target1.value, null,  knot);
+        assert.equal(target1.value,"knot.js", "use target modifier to bind to itself won't cause any problem");
+    });
+
+    })((function() {
         return this;
     })());

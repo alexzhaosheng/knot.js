@@ -1,0 +1,44 @@
+.knotdbg-tab{
+
+}
+
+.knotdbg-tab .page-headerArea .header{
+    border: 1px solid lightgrey;
+    border-top-right-radius : 4px;
+    border-top-left-radius : 4px;
+    min-width: 60px;
+    min-height: 20px;
+
+    padding: 2px 5px;
+    margin: 0px 1px;
+    color:black;
+    background-color: whitesmoke;
+
+    display: inline-block;
+
+    cursor: pointer;
+}
+
+.knotdbg-tab .page-headerArea{
+    padding-left: 2px;
+}
+.knotdbg-tab .page-headerArea .selected{
+    /*color:white;*/
+    /*background-color: #0381ff;*/
+    border-bottom:1px solid whitesmoke;
+}
+
+.knotdbg-tab .page-contentArea{
+    border-radius: 2px;
+    border:1px solid lightgray;
+    margin-top: -1px;
+
+    padding: 3px;
+}
+
+.knotdbg-tab .page-contentArea>*{
+    display:none
+}
+.knotdbg-tab .page-contentArea .selected{
+    display:block
+}

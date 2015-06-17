@@ -68,14 +68,6 @@
             __private.Utility.setValueOnPath(target, apName, value);
         },
         doesSupportMonitoring: function(target, apName){
-            if(__private.GlobalSymbolHelper.isGlobalSymbol(apName)){
-                var symbol = __private.GlobalSymbolHelper.getSymbol(apName);
-                if(typeof(symbol) == "function"){
-                    //do nothing
-                    return false;
-                }
-            }
-
             if(typeof(target) != "object" && typeof(target) != "array"){
                 return false;
             }
@@ -128,14 +120,72 @@
                 _APProviders.splice(_APProviders.indexOf(apProvider), 1);
         },
 
+        containsTargetModifier:function(ap){
+            var end;
+            if(!__private.Utility.startsWith(ap.description, "*LEFT")){
+                end = 5;
+                return false;
+            }
+            if(!__private.Utility.startsWith(ap.description, "*RIGHT")){
+                end = 6;
+                return false;
+            }
+
+            if(ap.description.length == end || [".", "[", "("].indexOf(ap.description[end])>=0)
+                return true;
+        },
+
+        correctAP:function(leftTarget, rightTarget, ap, isLeft){
+            if(ap.description && (ap.description[0] == "*" || ap.description[0] == "!") ){
+                var desToTest = ap.description;
+                var isBindingToError = false;
+                if(desToTest[0] == "!"){
+                    desToTest = __private.Utility.trim(desToTest.substr(1));
+                    isBindingToError = true;
+                    if(desToTest[0] != "*")
+                        return  {target:isLeft?leftTarget:rightTarget, ap:ap};
+                }
+                var newDescription;
+                if(__private.Utility.startsWith(desToTest, "*LEFT")){
+                    newDescription = desToTest.substr(5);
+                    isLeft = true;
+                }
+                if(__private.Utility.startsWith(desToTest, "*RIGHT")){
+                    newDescription =  desToTest.substr(6);
+                    isLeft = false;
+                }
+                if(newDescription === "")
+                    newDescription = "*";
+                //when there's path follows modifier
+                if(newDescription && newDescription[0] == ".")
+                    newDescription = newDescription.substr(1);
+
+                if(newDescription){
+                    if(isBindingToError)
+                        newDescription="!"+newDescription;
+                    var newAP = {};
+                    for(var p in ap) newAP[p] = ap[p];
+                    newAP.description = newDescription;
+                    ap = newAP;
+                }
+            }
+            return  {target:isLeft?leftTarget:rightTarget, ap:ap};
+        },
+        correctTarget:function(leftTarget, rightTarget, knotOption){
+            return {
+                left:this.correctAP(leftTarget, rightTarget, knotOption.leftAP, true),
+                right:this.correctAP(leftTarget, rightTarget, knotOption.rightAP, false)
+            };
+        },
+
+        objectToIndicateError:{},
         getValueThroughPipe: function(target, ap){
-            if(!ap.provider)
-                ap.provider = this.getProvider(target, ap.description);
+            this.checkProvider(target, ap);
             var value = ap.provider.getValue(target, ap.description, ap.options);
             try{
                 if(ap.pipes){
                     for(var i=0; i< ap.pipes.length; i++){
-                        var p = __private.GlobalSymbolHelper.getSymbol(ap.pipes[i]);
+                        var p = __private.Utility.getValueOnPath(window, ap.pipes[i]);
                         if(typeof(p) != "function"){
                             __private.Log.error( "Pipe must be a function. pipe name:" + ap.pipes[i]);
                         }
@@ -148,7 +198,7 @@
             catch (exception){
                 if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.description))
                     ap.provider.setValue(target, "!"+ap.description, exception);
-                return undefined;
+                return this.objectToIndicateError;
             }
             return value;
         },
@@ -159,8 +209,7 @@
             }
             ap.ignoreSettingValue = true;
             try{
-                if(!ap.provider)
-                    ap.provider = this.getProvider(target, ap.description);
+                this.checkProvider(target, ap);
 
                 ap.provider.setValue(target, ap.description, value, ap.options);
                 raiseAPEvent(target, ap.options, "@set", [ap.description, value]);
@@ -186,17 +235,21 @@
             __private.Debugger.knotChanged(left, right, option, value, isSetFromLeftToRight);
         },
 
+        checkProvider:function(target, ap){
+            if(!ap.provider)
+                ap.provider = this.getProvider(target, ap.description);
+        },
         monitor:function(src, srcAP, target, targetAP, knotInfo){
-            if(!srcAP.provider)
-                srcAP.provider = this.getProvider(src, srcAP.description);
-            if(!targetAP.provider)
-                targetAP.provider = this.getProvider(target, targetAP.description);
+            this.checkProvider(src, srcAP);
+            this.checkProvider(target, targetAP);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)){
                 srcAP.changedCallback = function(){
                     if(targetAP.ignoreSettingValue)
                         return;
 
                     var v = __private.AccessPointManager.getValueThroughPipe(src,  srcAP);
+                    if(v == __private.AccessPointManager.objectToIndicateError)
+                        return;
                     if(knotInfo.leftAP == srcAP){
                         __private.AccessPointManager.notifyKnotChanged(src, target, knotInfo, v, true);
                     }
@@ -218,8 +271,7 @@
         },
 
         stopMonitoring:function(target, ap){
-            if(!ap.provider)
-                ap.provider = this.getProvider(target, ap.description);
+            this.checkProvider(target, ap);
             if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback){
                 ap.provider.stopMonitoring(target, ap.description, ap.changedCallback, ap.options);
                 delete  ap.changedCallback;
@@ -227,15 +279,19 @@
         },
 
         tieKnot:function(leftTarget, rightTarget, knotInfo){
-            if(knotInfo.leftAP.isComposite || knotInfo.rightAP.isComposite){
+            var r = this.correctTarget(leftTarget, rightTarget, knotInfo);
+            leftTarget = r.left.target; rightTarget = r.right.target;
+            var leftAP = r.left.ap, rightAP = r.right.ap;
+
+            if(leftAP.isComposite || rightAP.isComposite){
                 var compositeAP, compositeAPTarget, normalAP, normalTarget;
-                if(knotInfo.leftAP.isComposite){
-                    compositeAP = knotInfo.leftAP; compositeAPTarget = leftTarget;
-                    normalAP = knotInfo.rightAP; normalTarget = rightTarget;
+                if(leftAP.isComposite){
+                    compositeAP = leftAP; compositeAPTarget = leftTarget;
+                    normalAP = rightAP; normalTarget = rightTarget;
                 }
                 else{
-                    compositeAP = knotInfo.rightAP; compositeAPTarget = rightTarget;
-                    normalAP = knotInfo.leftAP; normalTarget = leftTarget;
+                    compositeAP = rightAP; compositeAPTarget = rightTarget;
+                    normalAP =leftAP; normalTarget = leftTarget;
                 }
 
                 for(var i=0; i< compositeAP.childrenAPs.length; i++){
@@ -246,10 +302,13 @@
                 compositeAP.changedCallback = function(){
                     var values=[];
                     for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                        values.push(__private.AccessPointManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]));
+                        var v = __private.AccessPointManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
+                        if(v == this.objectToIndicateError)
+                            return;
+                        values.push(v);
                     }
 
-                    var p = __private.GlobalSymbolHelper.getSymbol(compositeAP.nToOnePipe);
+                    var p = __private.Utility.getValueOnPath(window, compositeAP.nToOnePipe);
                     if(typeof(p) != "function"){
                         __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
                     }
@@ -270,30 +329,35 @@
                 compositeAP.changedCallback();
             }
             else{
-                knotInfo.leftAP.provider = this.getProvider(leftTarget, knotInfo.leftAP.description);
-                knotInfo.rightAP.provider = this.getProvider(rightTarget, knotInfo.rightAP.description);
+                this.checkProvider(leftTarget,  leftAP);
+                this.checkProvider(rightTarget,  rightAP);
 
                 //set initial value, always use the left side value as initial value
-                var v = this.getValueThroughPipe(rightTarget,  knotInfo.rightAP);
-
+                var v = this.getValueThroughPipe(rightTarget,  rightAP);
+                if(v == this.objectToIndicateError)
+                    return;
                 this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
-                this.safeSetValue(leftTarget, knotInfo.leftAP, v);
+                this.safeSetValue(leftTarget, leftAP, v);
 
-                this.monitor(leftTarget, knotInfo.leftAP, rightTarget, knotInfo.rightAP, knotInfo);
-                this.monitor(rightTarget, knotInfo.rightAP, leftTarget, knotInfo.leftAP, knotInfo);
+                this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
+                this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
             }
 
             __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },
 
         untieKnot: function(leftTarget, rightTarget, knotInfo){
-            if(knotInfo.leftAP.isComposite || knotInfo.rightAP.isComposite){
+            var r = this.correctTarget(leftTarget, rightTarget, knotInfo);
+            leftTarget = r.left.target; rightTarget = r.right.target;
+            var leftAP = r.left.ap, rightAP = r.right.ap;
+
+            if(leftAP.isComposite || rightAP.isComposite){
                 var compositeAP, compositeAPTarget;
-                if(knotInfo.leftAP.isComposite){
-                    compositeAP = knotInfo.leftAP; compositeAPTarget = leftTarget;
+                if(leftAP.isComposite){
+                    compositeAP = leftAP; compositeAPTarget = leftTarget;
                 }
                 else{
-                    compositeAP = knotInfo.rightAP; compositeAPTarget = rightTarget;
+                    compositeAP = rightAP; compositeAPTarget = rightTarget;
                 }
 
                 if(compositeAP.changedCallback){
@@ -306,12 +370,17 @@
                 delete compositeAP.changedCallback;
             }
             else{
-                this.stopMonitoring(leftTarget, knotInfo.leftAP, knotInfo.leftAP.options);
-                delete knotInfo.leftAP.changedCallback;
-                this.stopMonitoring(rightTarget, knotInfo.rightAP, knotInfo.rightAP.options);
-                delete knotInfo.rightAP.changedCallback;
+                this.stopMonitoring(leftTarget, leftAP, leftAP.options);
+                delete leftAP.changedCallback;
+                this.stopMonitoring(rightTarget, rightAP, rightAP.options);
+                delete rightAP.changedCallback;
             }
             __private.Debugger.knotUntied(leftTarget, rightTarget, knotInfo);
+        },
+
+        forceUpdateValue: function(ap){
+            if(ap.changedCallback)
+                ap.changedCallback();
         }
     };
 })((function() {

@@ -35,7 +35,7 @@ body {
 
 .contentSection{
     position: absolute;
-    top:90px; left:10px; right:10px; bottom: 10px;
+    top:70px; left:10px; right:10px; bottom: 10px;
 }
 
 .fullScreen{
@@ -118,7 +118,7 @@ li{
     display: inline-block;
     padding: 10px 3px;
     margin:0px 0px 5px 0px;
-    max-width: calc(100% - 150px);
+    max-width: calc(100% - 7px);
     overflow: hidden;
     white-space: nowrap;
 }
@@ -126,6 +126,60 @@ li{
     margin-top: 12px;
     float: right;
 }
+
+
+
+#tabPage .page-headerArea .header{
+    min-width: 60px;
+    min-height: 20px;
+
+    padding: 2px 5px;
+    margin: 0px 1px;
+    color:white;
+
+    display: inline-block;
+
+    cursor: pointer;
+}
+
+#tabPage .page-headerArea{
+    padding-left: 2px;
+}
+#tabPage .page-headerArea .selected{
+    border: 1px solid #2d2d37;
+    border-top-right-radius : 4px;
+    border-top-left-radius : 4px;
+    border-bottom:1px solid #2d2d37;
+    background-color: #2d2d37;
+}
+
+#tabPage .page-contentArea{
+    border-radius: 2px;
+    border:1px solid #333333;
+    margin-top: -1px;
+    padding: 3px;
+    height: calc(100% - 35px);
+    background-color: #2d2d37;
+}
+
+#tabPage .page-contentArea>*{
+    display:none
+}
+#tabPage .page-contentArea .selected{
+    display:block
+}
+
+#tabPage .page-headerArea>.header .Error{
+    color:red;
+    -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
+}
+#tabPage .page-headerArea>.header .Warning{
+    color:yellow;
+}
+#tabPage .page-headerArea>.header .Info{
+    color:#333333;
+}
+
 
 
 #domViewer .divider{
@@ -145,7 +199,7 @@ li{
 }
 .treeContainer {
     position: absolute;
-    top:40px;left:5px;right:5px;
+    top:60px;left:5px;right:5px;
     overflow:auto;
 }
 
@@ -277,10 +331,15 @@ li{
 #knotChangeLogExpander .expanderButton{
     cursor: pointer;
     height: 30px;
+    width: calc(100% - 30px);
     line-height: 30px;
+    display: inline-block;
 }
 #knotChangeLogExpander .expanderButton:hover{
     background-color: #333333;
+}
+#knotChangeLogExpander .iconButton{
+    color:#aaaaaa;
 }
 .expander-top-collapsed{
     bottom: 40px;

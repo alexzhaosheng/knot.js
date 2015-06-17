@@ -1,0 +1,14 @@
+ #sourceTab{
+    knotdbg-tab[
+        template:codePageTemplate;
+        header-title:name;
+
+        //call highlightBlock to highlight the code
+        @pageAdded:@{hljs.highlightBlock($(this).find("code")[0]);}]
+        :/sourceInformation
+}
+
+#sourceTab code{
+    innerText:content;
+    className:name>{if(value=="CBS") return "css";  return value.toLowerCase();}
+}

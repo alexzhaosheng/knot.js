@@ -43,50 +43,48 @@
         templates:{},
         parseCBS:function(){
             var deferred = new __private.Deferred();
-            var blocks = window.document.querySelectorAll("script");
+            var blocks = window.document.querySelectorAll('script[type="text/cbs"]');
             var that =this;
             var scriptToLoad = 0;
 
             for(var i =0; i< blocks.length; i++){
-                if(blocks[i].type == "text/cbs"){
-                    if(blocks[i].src){
-                        scriptToLoad ++;
-                        (function(){
-                            var src = blocks[i].src;
-                            var hr = __private.Utility.getXHRS();
-                            hr.onreadystatechange = function(){
-                                if(hr.readyState == 4){
-                                    if(hr.status == 200){
-                                        try{
-                                            var text = removeComments(hr.responseText);
-                                            that.normalizeCBS(text);
-                                            scriptToLoad--;
-                                            if(scriptToLoad == 0)
-                                                deferred.resolve();
-                                        }
-                                        catch(err){
-                                            __private.Log.error( "Load CBS script error. url:" + src + " message:" + err.message, err);
-                                            deferred.reject(err);
-                                        }
+                if(blocks[i].src){
+                    scriptToLoad ++;
+                    (function(){
+                        var src = blocks[i].src;
+                        var hr = __private.Utility.getXHRS();
+                        hr.onreadystatechange = function(){
+                            if(hr.readyState == 4){
+                                if(hr.status == 200){
+                                    try{
+                                        var text = removeComments(hr.responseText);
+                                        that.normalizeCBS(text);
+                                        scriptToLoad--;
+                                        if(scriptToLoad == 0)
+                                            deferred.resolve();
                                     }
-                                    else{
-                                        __private.Log.error( "Load CBS script error. url:" + src + " message:" +hr.statusText);
-                                        deferred.reject(new Error( "Load CBS script error. url:" + src + " message:" +hr.statusText));
+                                    catch(err){
+                                        __private.Log.error( "Load CBS script error. url:" + src + " message:" + err.message, err);
+                                        deferred.reject(err);
                                     }
                                 }
+                                else{
+                                    __private.Log.error( "Load CBS script error. url:" + src + " message:" +hr.statusText);
+                                    deferred.reject(new Error( "Load CBS script error. url:" + src + " message:" +hr.statusText));
+                                }
                             }
-                            hr.open("GET", src, true);
-                            hr.send();
-                        })();
+                        }
+                        hr.open("GET", src, true);
+                        hr.send();
+                    })();
+                }
+                else{
+                    try{
+                        var text = removeComments(blocks[i].textContent);
+                        this.normalizeCBS(text);
                     }
-                    else{
-                        try{
-                            var text = removeComments(blocks[i].textContent);
-                            this.normalizeCBS(text);
-                        }
-                        catch (error){
-                            deferred.reject(error);
-                        }
+                    catch (error){
+                        deferred.reject(error);
                     }
                 }
             }
@@ -106,7 +104,7 @@
 
                 var options = text.substr(blockInfo.start+1,  blockInfo.end - blockInfo.start - 1);
                 options = __private.OptionParser.processEmbeddedFunctions(options);
-                var opArray = options.split(";");
+                var opArray = __private.Utility.splitWithBlockCheck(options, ";");
 
                 for(var i=0; i< opArray.length; i++){
                     var option = __private.Utility.trim(opArray[i]);
@@ -143,7 +141,8 @@
                     var parsedOption = __private.OptionParser.parse(cbsOptions[j]);
                     if(parsedOption.length != 0){
                         node.__knot.options.push(parsedOption[0]);
-                        if(this.isTemplateRelevantOption(parsedOption[0].leftAP) || this.isTemplateRelevantOption(parsedOption[0].rightAP)){
+                        //template relevant options are only available on the left side. therefore check lfetAP is enough
+                        if(this.isTemplateRelevantOption(parsedOption[0].leftAP)){
                             if(this._nodesWithTemplate.indexOf(node)<0)
                                 this._nodesWithTemplate.push(node);
                         }
@@ -270,20 +269,26 @@
             }
             return this.cloneTemplateNode(this.templates[templateId]);
         },
-        createFromTemplateAndUpdateData:function(templateId, data){
+        createFromTemplateAndUpdateData:function(template, data){
             var newNode;
-            if(!this.templates[templateId]){
-                var templateFunction = __private.Utility.getValueOnPath(data, templateId);
+            if((typeof(template) == "function") || !this.templates[template]){
+                var templateFunction;
+                if(typeof(template) == "function"){
+                    templateFunction = template;
+                }
+                else{
+                    templateFunction = __private.Utility.getValueOnPath(data, template);
+                }
                 if(typeof (templateFunction) == "function"){
                     newNode = templateFunction.apply(data, [data]);
                 }
                 else{
-                    __private.Log.error( "Unknown template:"+templateId);
+                    __private.Log.error( "Unknown template:"+template);
                     return;
                 }
             }
             else{
-                newNode = this.createFromTemplate(templateId);
+                newNode = this.createFromTemplate(template);
             }
             if(!newNode)
                 return;
@@ -324,6 +329,10 @@
                 var contextData = data;
                 if(dataContextOption){
                     contextData = __private.AccessPointManager.getValueThroughPipe(data, dataContextOption.rightAP);
+                    if(contextData == __private.AccessPointManager.objectToIndicateError){
+                        __private.Log.error("Get context data failed. node:" + __private.HTMLAPHelper.getNodeDescription(node));
+                        return;
+                    }
                     if(dataContextOption.hasTiedUpKnot && contextData === node.__knot.dataContext){
                         return;
                     }
@@ -406,6 +415,22 @@
         getOnNodeDataContext:function(node){
             if(node.__knot)
                 return node.__knot.dataContext;
+        },
+
+        forceUpdateValues:function(node){
+            if(node.__knot && node.__knot.options){
+                for(var i=0; i<node.__knot.options.length; i++){
+                    if(node.__knot.options[i].leftAP.description == "dataContext")
+                        continue;
+                    if(node.__knot.options[i].leftAP.description && node.__knot.options[i].leftAP.description[0] == "!")
+                        continue;
+                    __private.AccessPointManager.forceUpdateValue(node.__knot.options[i].leftAP);
+                }
+            }
+
+            for(var i=0; i< node.children.length; i++){
+                this.forceUpdateValues(node.children[i]);
+            }
         }
     }
 })((function() {

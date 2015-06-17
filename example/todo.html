@@ -2,7 +2,14 @@
 <html>
 <head>
     <title>Knot.js Example - Todo</title>
-    <link rel="stylesheet" href="example.css">
+    <link rel="stylesheet" href="styles/example.css">
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <link rel="stylesheet" href="./styles/github.css">
+    <script src="highlight.pack.js"></script>
+    <script type="text/cbs" src="sourceTab.cbs"></script>
 
     <script src="../src/core/PrivateScope.js"></script>
     <script src="../src/core/Utility.js"></script>
@@ -15,33 +22,37 @@
     <script src="../src/core/AccessPointManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
     <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
     <script src="../src/debugger/knot.debug.js"></script>
 
-    <script src="todo.js"></script>
-    <script type="text/cbs" src="todo.cbs"></script>
+    <script src="todo.js" id="exampleJS"></script>
+    <script type="text/cbs" src="todo.cbs" id="exampleCBS"></script>
 
 </head>
 <body>
-<div>
-    <section class="knot_example">
-        <h2>Knot.js example - todo</h2>
-        <div>
-            <span id="listBriefMsg"></span>
-            [ <a href="" onclick="archive();return false;">archive</a> ]
-            <ul id="todoList">
-                <li knot-template>
-                    <input type="checkbox">
-                    <span></span>
-                </li>
-            </ul>
 
-            <input type="text" placeholder="add new todo here">
-            <button onclick="addNewItem();">add</button>
-        </div>
-    </section>
-</div>
+<section class="knot_example">
+    <h2>Knot.js example - todo</h2>
+    <div>
+        <span id="listBriefMsg"></span>
+        [ <a href="" onclick="archive();return false;">archive</a> ]
+        <ul id="todoList">
+            <li knot-template>
+                <input type="checkbox">
+                <span></span>
+            </li>
+        </ul>
+
+        <input type="text" placeholder="add new todo here">
+        <button onclick="addNewItem();">add</button>
+    </div>
+</section>
+
+
+<script src="tabpage.js"></script>
+<script type="text/javascript" src="sourceTab.js"></script>
 </body>
 </div>
 </body>

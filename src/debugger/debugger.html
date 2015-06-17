@@ -40,96 +40,105 @@
 <body>
 <div class="section">
     <div id="ownerWindowInfo"></div>
-    <select id="viewerSelection">
-        <option selected>DOM Inspector</option>
-        <option>Log Viewer</option>
-    </select>
 </div>
 
-<section id="domViewer" class="contentSection section">
-    <div>
-        <div class="domViewerToolBar">
-            <input id="searchText" type="text" placeholder="Search">
-            <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
-            <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
-            <i id="enableFilterButton" class="iconButton fa fa-filter" title="Toggle automatically collapsing irrelevant nodes"></i>
-            <div class="legend">
-                <ul>
-                    <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Node</span> </li>
-                    <li><i class="type-indicator fa fa-wrench"></i></i> <span class="knotOption">Knot Options</span> </li>
+<div id="tabPage" class="contentSection">
+    <div class="page-headerArea">
+        <div class="header selected">DOM Inspector</div>
+        <div class="header"><span><i id="logLevel" class="fa fa-exclamation-circle"></i></span> Log Viewer</div>
+    </div>
+    <div class="page-contentArea">
+        <div id="domViewer" class="pageContent selected">
+            <div>
+                <div class="domViewerToolBar">
+                    <input id="searchText" type="text" placeholder="Search">
+                    <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
+                    <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
+                    <i id="enableFilterButton" class="iconButton fa fa-filter" title="Toggle automatically collapsing irrelevant nodes"></i>
+                    <div class="legend">
+                        <ul>
+                            <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Node</span> </li>
+                            <li><i class="type-indicator fa fa-wrench"></i></i> <span class="knotOption">Knot Options</span> </li>
+                        </ul>
+                    </div>
+                </div>
+
+
+            </div>
+            <div class="treeContainer expander-top-collapsed">
+                <ul id="domTree">
+                    <li knot-template>
+                        <div>
+                            <div class="nonCollapsibleContent">
+                                <div class="expander">
+                                    <i class="iconButton fa fa-plus-circle"></i>
+                                </div>
+                                <i class="type-indicator fa fa-share-alt"></i>
+                                <span class="nodeTitle selectable"></span>
+
+                                <i class="highlightMark fa fa-hand-o-left"></i>
+
+                                <i class="locateElementButton iconButton fa fa-lightbulb-o" title="Highlight this element on page"></i>
+                                <i class="checkDataContextButton iconButton fa fa-comment" title="View current data context"></i>
+
+                            </div>
+                            <div class="collapsibleContent">
+                                <ul class="knotList" >
+                                    <li knot-template>
+                                        <i class="type-indicator fa fa-wrench"></i>
+                                        <div class="knotOption selectable"></div>
+                                        <i class="highlightMark fa fa-hand-o-left"></i>
+                                        <i class="knotValueDirection fa fa-long-arrow-left"></i>
+                                        <div class="knotValue selectable"></div>
+
+                                        <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
+                                    </li>
+                                </ul>
+                                <ul class="nodeChildren"></ul>
+                            </div>
+                        </div>
+                    </li>
                 </ul>
             </div>
-        </div>
 
-
-    </div>
-    <div class="treeContainer expander-top-collapsed">
-        <ul id="domTree">
-            <li knot-template>
+            <div id="knotChangeLogExpander" class="expander-bottom-collapsed">
                 <div>
-                    <div class="nonCollapsibleContent">
-                        <div class="expander">
-                            <i class="iconButton fa fa-plus-circle"></i>
-                        </div>
+                    <div class="expanderButton">
+                        <i class="fa fa-chevron-circle-down"></i>
+                        <span>Knot change log</span>
+                    </div>
+                    <i class="iconButton fa fa-life-ring" title="Clear logs"></i>
+                </div>
+                <div class="knotChangeLog">
+                    <div id="knotChangeLogItemTemplate" knot-template>
+                        <div class="id"></div>
                         <i class="type-indicator fa fa-share-alt"></i>
                         <span class="nodeTitle selectable"></span>
 
-                        <i class="highlightMark fa fa-hand-o-left"></i>
+                        <i class="type-indicator fa fa-wrench"></i>
+                        <div class="knotOption selectable"></div>
 
-                        <i class="locateElementButton iconButton fa fa-lightbulb-o" title="Highlight this element on page"></i>
-                        <i class="checkDataContextButton iconButton fa fa-comment" title="View current data context"></i>
-
-                    </div>
-                    <div class="collapsibleContent">
-                        <ul class="knotList" >
-                            <li knot-template>
-                                <i class="type-indicator fa fa-wrench"></i>
-                                <div class="knotOption selectable"></div>
-                                <i class="highlightMark fa fa-hand-o-left"></i>
-                                <i class="knotValueDirection fa fa-long-arrow-left"></i>
-                                <div class="knotValue selectable"></div>
-
-                                <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
-                            </li>
-                        </ul>
-                        <ul class="nodeChildren"></ul>
+                        <i class="knotValueDirection fa fa-long-arrow-left"></i>
+                        <div class="knotValue selectable"></div>
+                        <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
                     </div>
                 </div>
-            </li>
-        </ul>
-    </div>
-
-    <div id="knotChangeLogExpander" class="expander-bottom-collapsed">
-        <div class="expanderButton">
-            <i class="fa fa-chevron-circle-down"></i>
-            <span>Knot change log</span>
+            </div>
         </div>
-        <div class="knotChangeLog">
-            <div id="knotChangeLogItemTemplate" knot-template>
-                <div class="id"></div>
-                <i class="type-indicator fa fa-share-alt"></i>
-                <span class="nodeTitle selectable"></span>
 
-                <i class="type-indicator fa fa-wrench"></i>
-                <div class="knotOption selectable"></div>
-
-                <i class="knotValueDirection fa fa-long-arrow-left"></i>
-                <div class="knotValue selectable"></div>
-                <i class="iconButton knotValueDetail fa fa-comment" title="Details"></i>
+        <div id="logViewer" class="pageContent">
+            <div id="logContainer">
+                <div id="logTemplate" class="section" knot-template>
+                    <div>[<span class="level"></span><span class="at">@</span><span class="time"></span>] <span class="message"></span></div>
+                    <div class="exception"></div>
+                </div>
             </div>
         </div>
     </div>
-</section>
 
-<section id="logViewer" class="contentSection">
-    <div id="logContainer">
-        <div id="logTemplate" class="section" knot-template>
-            <div>[<span class="level"></span><span class="at">@</span><span class="time"></span>] <span class="message"></span></div>
-            <div class="exception"></div>
-        </div>
-    </div>
 
-</section>
+</div>
+
 
 
 <div id="fullWindowMessage" class="fullScreen"><div></div></div>

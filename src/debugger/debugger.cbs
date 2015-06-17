@@ -2,14 +2,22 @@ body{
     dataContext:/debuggerModel;
 }
 
-#domViewer{
-    style.display:#viewerSelection.selectedIndex>{return value==0?"block":"none";}
+#tabPage .page-headerArea>.header:first-child{
+    @click:@{this.showLogViewer = false;}
+}
+#tabPage .page-headerArea>.header:last-child{
+    @click:@{this.showLogViewer = true;}
+}
+#tabPage .page-headerArea>.header:last-child>span{
+    className:highestLogLevel
 }
 
-#logViewer{
-    style.display:#viewerSelection.selectedIndex>{return value==1?"block":"none";}
+#tabPage .page-headerArea>.header:first-child, #tabPage .page-contentArea>.pageContent:first-child{
+    class:showLogViewer>{return value?"-selected":"+selected";}
 }
-
+#tabPage .page-headerArea>.header:last-child, #tabPage .page-contentArea>.pageContent:last-child{
+    class:showLogViewer>{return !value?"-selected":"+selected";}
+}
 
 #domTree{
     foreach: domTreeNodes
@@ -53,7 +61,8 @@ body{
 
 
 .knotList>li .knotOption{
-    textContent:description
+    textContent:description;
+    title:description
 }
 
 .knotList>li .knotValueDirection, .knotList>li .knotValue, .knotList>li .knotValueDetail{
@@ -110,6 +119,10 @@ body{
 #knotChangeLogExpander .expanderButton{
     @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
 }
+#knotChangeLogExpander .iconButton{
+    @click: @/debuggerModel.onClearLogs;
+}
+
 
 
 
