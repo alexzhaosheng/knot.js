@@ -1,0 +1,31 @@
+body{
+    dataContext:/mafiaSystem
+}
+
+#systemTree{
+    foreach[template:#treeNode]: gangs
+}
+
+#treeNode .expander{
+    innerText: collapsed>{return value?"+":"-"};
+    @click: @{this.collapsed = !this.collapsed;}
+}
+
+#treeNode .content{
+    content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
+}
+
+#treeNode .childrenList{
+    foreach[template:#treeNode]: children;
+}
+
+#gangTemplate .title,  #whiteBusinessTemplate .title,  #blackBusinessTemplate .title{
+    innerText: title;
+}
+#gangTemplate .leader, #whiteBusinessTemplate .leader,  #blackBusinessTemplate .leader{
+    content[template: @/mafiaSystem.nodeContentTemplateSelector]: leader;
+}
+
+#manTemplate, #womanTemplate{
+    innerText: title
+}

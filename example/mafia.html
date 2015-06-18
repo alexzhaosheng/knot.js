@@ -1,7 +1,7 @@
 <!doctype html>
 <html>
 <head>
-    <title>Knot.js Example - Todo</title>
+    <title>Knot.js Example - Mafia</title>
     <link rel="stylesheet" href="styles/example.css">
 
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -10,6 +10,8 @@
     <link rel="stylesheet" href="./styles/github.css">
     <script src="js/highlight.pack.js"></script>
     <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
+
+    <link rel="stylesheet" href="styles/mafia.css">
 
     <script src="../src/core/PrivateScope.js"></script>
     <script src="../src/core/Utility.js"></script>
@@ -27,27 +29,52 @@
 
     <script src="../src/debugger/knot.debug.js"></script>
 
-    <script src="js/todo.js" id="exampleJS"></script>
-    <script type="text/cbs" src="cbs/todo.cbs" id="exampleCBS"></script>
+    <script src="js/mafia.js" id="exampleJS"></script>
+    <script type="text/cbs" src="cbs/mafia.cbs" id="exampleCBS"></script>
 
 </head>
 <body>
 
 <section class="knot_example">
-    <h2>Knot.js example - todo</h2>
+    <h2>Knot.js example - Mafia</h2>
     <div>
-        <span id="listBriefMsg"></span>
-        [ <a href="" onclick="archive();return false;">archive</a> ]
-        <ul id="todoList">
-            <li knot-template>
-                <input type="checkbox">
-                <span></span>
-            </li>
-        </ul>
-
-        <input type="text" placeholder="add new todo here">
-        <button onclick="addNewItem();">add</button>
+        <div id="systemTreePanel">
+            <div>Family Tree</div>
+            <ul id="systemTree">
+            </ul>
+        </div>
     </div>
+
+    <li id="treeNode" knot-template>
+        <div>
+            <div class="expander"></div>
+            <div class="content"></div>
+        </div>
+        <ul class="childrenList">
+        </ul>
+    </li>
+
+    <div id="gangTemplate" knot-template>
+        <div class="title"></div>
+        <div class="leader"></div>
+    </div>
+
+    <div id="whiteBusinessTemplate" knot-template>
+        <div class="title"></div>
+        <div class="leader"></div>
+    </div>
+
+    <div id="blackBusinessTemplate" knot-template>
+        <div class="title"></div>
+        <div class="leader"></div>
+    </div>
+
+
+
+
+    <div id="manTemplate" knot-template></div>
+
+    <div id="womanTemplate" knot-template></div>
 </section>
 
 

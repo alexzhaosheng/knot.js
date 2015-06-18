@@ -372,6 +372,8 @@ Knot.js debugger
 
             nodeAdded: function(node){
                 var n = node;
+                if(getNodeInfo(n))
+                    return;
                 while(n && !getNodeInfo(n.parentNode)){
                     n = n.parentNode;
                 }
@@ -411,7 +413,9 @@ Knot.js debugger
             return;
         }
 
-        $("#ownerWindowInfo").text((window.opener.document.title?window.opener.document.title:"untitled") + " ["+ window.opener.location+"]");
+        var targetWindowTitle =window.opener.document.title?window.opener.document.title:"untitled";
+        $("#ownerWindowInfo").text(targetWindowTitle + " ["+ window.opener.location+"]");
+        document.title = "Knot.js Debugger - " + targetWindowTitle;
 
         $("#locateElementButton").click(function(){
             $("#fullWindowMessage").show().find("div").text("Use mouse left button to pick an element from the original page.");

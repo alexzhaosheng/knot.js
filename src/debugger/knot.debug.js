@@ -6,12 +6,13 @@
     var _cachedLogs = [];
     var _cachedDebugLogs = [];
     window.knotjsDebugger ={
+        //only clear the debug log cache, always keep the log cache
         pushCached:function(){
             _debuggerIsRead = true;
             for(var i=0; i<_cachedLogs.length; i++){
-                logger(_cachedLogs[i].level, _cachedLogs[i].level.message, _cachedLogs[i].level.exception);
+                logger(_cachedLogs[i].level, _cachedLogs[i].message, _cachedLogs[i].exception);
             }
-            _cachedLogs.length = 0;
+
             for(var i=0; i< _cachedDebugLogs.length; i++){
                 callDebugger(_cachedDebugLogs[i].func, _cachedDebugLogs[i].args);
             }
@@ -19,8 +20,13 @@
         }
     };
 
+    var _levels=["Info", "Warning", "Error"];
+    var _currentMaxLevel = 0;
     var logger = function(level, msg, exception){
         var log = {level:level, message:msg, exception:exception, time:new Date()};
+        _currentMaxLevel = Math.max(_currentMaxLevel, _levels.indexOf(level));
+        updateDebugButtonStyle();
+
         if(!_debuggerIsRead){
             _cachedLogs.push(log);
         }
@@ -35,22 +41,42 @@
         }
     }
 
-    function showDebugWindow(dir){
-        var url = dir + "debugger.html";
-        var name =  window.location.href + window.location.pathname;
-        _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=600,resizable=yes,scrollbars=yes");
+    function updateDebugButtonStyle(){
+        if(_currentMaxLevel <= 0){
+            _debugButton.className = "";
+            _debugButton.src = getBaseDir()+"debugger.png";
+        }
+        else{
+            _debugButton.className = "knotjs-debugger-flash";
+            if(_currentMaxLevel == 1){
+                _debugButton.src = getBaseDir()+"debugger_warning.png";
+            }
+            else{
+                _debugButton.src = getBaseDir()+"debugger_error.png";
+            }
+        }
     }
-    function startDebugger(){
+
+    function getBaseDir(){
         var blocks = window.document.querySelectorAll("script");
         for(var i=0; i<blocks.length; i++){
             if(blocks[i].src){
                 var src = blocks[i].src;
                 if(src.substr(src.length-"knot.debug.js".length) == "knot.debug.js"){
-                    showDebugWindow(src.substr(0,src.length-"knot.debug.js".length ));
-                    break;
+                    return src.substr(0,src.length-"knot.debug.js".length);
                 }
             }
         }
+        return "";
+    }
+
+    function showDebugWindow(){
+        var url = getBaseDir() + "debugger.html";
+        var name =  window.location.href + window.location.pathname;
+        _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=600,resizable=yes,scrollbars=yes");
+    }
+    function startDebugger(){
+        showDebugWindow();
         document.body.removeChild(_debugButton);
         setCookie(getCookieName(), "1");
 
@@ -127,9 +153,9 @@
         return "knot-debugger-show-debug-window";
     }
     window.addEventListener("load", function(){
-        _debugButton = parseHTML('<button style="padding: 3px 5px;position: absolute;bottom:4px;right:4px;z-index: 9999999999;box-shadow: 0px 0px 4px black">Knot.js Debugger</button>');
+        _debugButton = parseHTML('<img id="knotjs-debugger-debuggerButton" title="Show knot.js debugger">');
         document.body.appendChild(_debugButton);
-
+        updateDebugButtonStyle();
         if(getCookie(getCookieName())){
             startDebugger();
         }
@@ -137,6 +163,20 @@
             startDebugger();
         };
     });
+
+    document.writeln('<style type="text/css">');
+    document.writeln('@keyframes knotjs-debugger-flash-keyframes {');
+    document.writeln('     0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;}');
+    document.writeln('}');
+    document.writeln('@-webkit-keyframes knotjs-debugger-flash-keyframes {');
+    document.writeln('    0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;}');
+    document.writeln('}');
+    document.writeln('#knotjs-debugger-debuggerButton{' +
+        'width: 32px;height:32px; padding: 3px 5px;position: absolute;bottom:4px;right:4px;z-index: 9999999999;opacity: 0.8;cursor: pointer;' +
+        '}');
+    document.writeln("#knotjs-debugger-debuggerButton:hover{opacity:1}");
+    document.writeln('.knotjs-debugger-flash{-webkit-animation: knotjs-debugger-flash-keyframes 1s infinite;-o-animation: knotjs-debugger-flash-keyframes 1s infinite;animation: knotjs-debugger-flash-keyframes 1s infinite;}')
+    document.writeln('</style>');
 })((function() {
         return this;
     })());
