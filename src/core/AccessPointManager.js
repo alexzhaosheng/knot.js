@@ -278,55 +278,63 @@
             }
         },
 
+        tieCompositeAP: function (leftAP, leftTarget, rightAP, rightTarget, knotInfo) {
+            var compositeAP, compositeAPTarget, normalAP, normalTarget;
+            if (leftAP.isComposite) {
+                compositeAP = leftAP;
+                compositeAPTarget = leftTarget;
+                normalAP = rightAP;
+                normalTarget = rightTarget;
+            }
+            else {
+                compositeAP = rightAP;
+                compositeAPTarget = rightTarget;
+                normalAP = leftAP;
+                normalTarget = leftTarget;
+            }
+
+            for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
+                compositeAP.childrenAPs[i].provider = __private.AccessPointManager.getProvider(compositeAPTarget, compositeAP.childrenAPs[i].description);
+            }
+            normalTarget.provider = __private.AccessPointManager.getProvider(normalTarget, normalAP.description);
+
+            compositeAP.changedCallback = function () {
+                var values = [];
+                for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
+                    var v = __private.AccessPointManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
+                    if (v == this.objectToIndicateError)
+                        return;
+                    values.push(v);
+                }
+
+                var p = __private.Utility.getValueOnPath(window, compositeAP.nToOnePipe);
+                if (typeof(p) != "function") {
+                    __private.Log.error("Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
+                }
+                var latestValue = p.apply(compositeAP, [values]);
+
+                __private.AccessPointManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget == rightTarget);
+                __private.AccessPointManager.safeSetValue(normalTarget, normalAP, latestValue);
+
+                raiseAPEvent(normalTarget, normalAP, "@change", [leftTarget, rightTarget, knotInfo]);
+            }
+
+            for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
+                if (compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)) {
+                    compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback, compositeAP.childrenAPs[i].options);
+                }
+            }
+            //set the initial value
+            compositeAP.changedCallback();
+        },
+
         tieKnot:function(leftTarget, rightTarget, knotInfo){
             var r = this.correctTarget(leftTarget, rightTarget, knotInfo);
             leftTarget = r.left.target; rightTarget = r.right.target;
             var leftAP = r.left.ap, rightAP = r.right.ap;
 
             if(leftAP.isComposite || rightAP.isComposite){
-                var compositeAP, compositeAPTarget, normalAP, normalTarget;
-                if(leftAP.isComposite){
-                    compositeAP = leftAP; compositeAPTarget = leftTarget;
-                    normalAP = rightAP; normalTarget = rightTarget;
-                }
-                else{
-                    compositeAP = rightAP; compositeAPTarget = rightTarget;
-                    normalAP =leftAP; normalTarget = leftTarget;
-                }
-
-                for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    compositeAP.childrenAPs[i].provider = __private.AccessPointManager.getProvider(compositeAPTarget, compositeAP.childrenAPs[i].description);
-                }
-                normalTarget.provider = __private.AccessPointManager.getProvider(normalTarget, normalAP.description);
-
-                compositeAP.changedCallback = function(){
-                    var values=[];
-                    for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                        var v = __private.AccessPointManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
-                        if(v == this.objectToIndicateError)
-                            return;
-                        values.push(v);
-                    }
-
-                    var p = __private.Utility.getValueOnPath(window, compositeAP.nToOnePipe);
-                    if(typeof(p) != "function"){
-                        __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
-                    }
-                    var latestValue = p.apply(compositeAP, [values]);
-
-                    __private.AccessPointManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget == rightTarget);
-                    __private.AccessPointManager.safeSetValue(normalTarget, normalAP, latestValue);
-
-                    raiseAPEvent(normalTarget, normalAP, "@change", arguments);
-                }
-
-                for(var i=0; i< compositeAP.childrenAPs.length; i++){
-                    if(compositeAP.childrenAPs[i].provider.doesSupportMonitoring(compositeAPTarget, compositeAP.childrenAPs[i].description)){
-                        compositeAP.childrenAPs[i].provider.monitor(compositeAPTarget, compositeAP.childrenAPs[i].description, compositeAP.changedCallback, compositeAP.childrenAPs[i].options);
-                    }
-                }
-                //set the initial value
-                compositeAP.changedCallback();
+                this.tieCompositeAP(leftAP, leftTarget, rightAP, rightTarget, knotInfo);
             }
             else{
                 this.checkProvider(leftTarget,  leftAP);
@@ -342,7 +350,6 @@
                 this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
                 this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
             }
-
             __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },
 

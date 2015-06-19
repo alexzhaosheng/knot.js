@@ -19,6 +19,9 @@ body {
     user-select: text;
 }
 
+.clearFloat{
+    clear: both;
+}
 
 ul{
     list-style: none;
@@ -31,24 +34,58 @@ li{
     margin: 0px;
 }
 
+
+.iconButton{
+    cursor: pointer;
+    margin: auto 2px;
+    color:#39628b;
+}
+.iconButton:active{
+    -webkit-transform: scale(0.9, 0.9);
+    -moz-transform: scale(0.9, 0.9);
+    -ms-transform: scale(0.9, 0.9);
+    -o-transform: scale(0.9, 0.9);
+    transform: scale(0.9, 0.9);
+}
+.iconButton:hover{
+    text-shadow:  0px 0px 4px #BBBBBB;
+}
+
+.contentPanel{
+    padding: 2px 3px;
+    border-radius: 4px;
+    background-color: lightgoldenrodyellow;
+}
+
+.people>i{
+    float: left;
+    margin-top: 2px;
+}
+.people>div:first-of-type{
+    margin-left: 20px;
+}
+
+
 #systemTree{
 
 }
 
 #treeNode .expander{
     float: left;
-    cursor: pointer;
-    border: 1px solid lightgray;
-    border-radius: 4px;
-    width: 30px;
-    height: 30px;
+    margin-top: 3px;
 }
 
 #treeNode .content{
-    margin-left: 35px;
+    margin-left: 20px;
 }
 
 #treeNode .childrenList{
+    clear: both;
     margin-top: 4px;
-    margin-left: 35px;
+    margin-left: 20px;
+}
+
+
+#gangTemplate{
+
 }

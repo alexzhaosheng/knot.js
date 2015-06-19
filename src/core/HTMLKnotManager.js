@@ -60,8 +60,14 @@
                                         var text = removeComments(hr.responseText);
                                         that.normalizeCBS(text);
                                         scriptToLoad--;
-                                        if(scriptToLoad == 0)
-                                            deferred.resolve();
+                                        if(scriptToLoad == 0){
+                                            try{
+                                                deferred.resolve();
+                                            }
+                                            catch (err){
+                                                __private.Log.error( "Initialize failed.  message:" + err.message, err);
+                                            }
+                                        }
                                     }
                                     catch(err){
                                         __private.Log.error( "Load CBS script error. url:" + src + " message:" + err.message, err);

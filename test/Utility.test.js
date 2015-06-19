@@ -18,6 +18,8 @@
 
         assert.equal(typeof(scope.Utility.getValueOnPath(null, "nothing")), "undefined", "getValueOnPath works with null object");
 
+        assert.equal(scope.Utility.getValueOnPath(o, "assert.*"), o.assert, "getValueOnPath works with *");
+
         delete window.globalObject;
 
         window.globalObject = {name:"global"};

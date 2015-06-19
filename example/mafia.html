@@ -3,6 +3,7 @@
 <head>
     <title>Knot.js Example - Mafia</title>
     <link rel="stylesheet" href="styles/example.css">
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
@@ -47,34 +48,46 @@
 
     <li id="treeNode" knot-template>
         <div>
-            <div class="expander"></div>
+            <i class="expander iconButton fa fa-plus-circle"></i>
             <div class="content"></div>
         </div>
         <ul class="childrenList">
         </ul>
     </li>
 
-    <div id="gangTemplate" knot-template>
+    <div id="gangTemplate" knot-template class="contentPanel">
         <div class="title"></div>
-        <div class="leader"></div>
+        <div class="people">
+            <i class="fa fa-user-secret"></i>
+            <div></div>
+            <div class="clearFloat"></div>
+        </div>
     </div>
 
-    <div id="whiteBusinessTemplate" knot-template>
+    <div id="whiteBusinessTemplate" knot-template class="contentPanel">
         <div class="title"></div>
-        <div class="leader"></div>
+        <div class="people">
+            <i class="fa fa-user-secret"></i>
+            <div></div>
+            <div class="clearFloat"></div>
+        </div>
     </div>
 
-    <div id="blackBusinessTemplate" knot-template>
+    <div id="blackBusinessTemplate" knot-template class="contentPanel">
         <div class="title"></div>
-        <div class="leader"></div>
+        <div class="people">
+            <i class="fa fa-user-secret"></i>
+            <div></div>
+            <div class="clearFloat"></div>
+        </div>
     </div>
 
 
 
 
-    <div id="manTemplate" knot-template></div>
+    <div id="manTemplate" knot-template class="contentPanel"></div>
 
-    <div id="womanTemplate" knot-template></div>
+    <div id="womanTemplate" knot-template class="contentPanel"></div>
 </section>
 
 

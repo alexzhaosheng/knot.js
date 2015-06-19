@@ -398,10 +398,28 @@ Knot.js debugger
     }
 
 
+    function toggleFilter(enabled) {
+        _isFilterEnabled = enabled;
+        if (_isFilterEnabled) {
+            $("#enableFilterButton").addClass("iconButtonChecked");
+        }
+        else {
+            $("#enableFilterButton").removeClass("iconButtonChecked");
+        }
+
+        if(_isFilterEnabled){
+            collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+        }
+        else{
+            $("#searchText").val("");
+            expandAll(window.debuggerModel.domTreeNodes[0]);
+        }
+    }
 
     /////////////////////////////////////////////////////
     //initialize
     ////////////////////////////////////////////////////
+
     window.Knot.ready(function(succ, err){
         if(!succ){
             alert(err.message);
@@ -428,8 +446,7 @@ Knot.js debugger
                 $("#fullWindowMessage").hide();
                 _mouseTip.remove();
 
-                if(_isFilterEnabled)
-                    collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+
             };
             window.opener.addEventListener("mousedown",downHandler , true);
 
@@ -446,14 +463,12 @@ Knot.js debugger
 
         $("#searchButton").click(function(){
             searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
-            if(_isFilterEnabled)
-                collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+            toggleFilter(true);
         });
         $("#searchText").keyup(function(e){
             if(e.which == 13){
                 searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
-                if(_isFilterEnabled)
-                    collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+                toggleFilter(true);
             }
         });
 
@@ -462,18 +477,7 @@ Knot.js debugger
         });
 
         $("#enableFilterButton").click(function(){
-            _isFilterEnabled = !_isFilterEnabled;
-            if(_isFilterEnabled){
-                $("#enableFilterButton").addClass("iconButtonChecked");
-            }
-            else{
-                $("#enableFilterButton").removeClass("iconButtonChecked");
-            }
-
-            if(_isFilterEnabled)
-                collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
-            else
-                expandAll(window.debuggerModel.domTreeNodes[0]);
+            toggleFilter(!_isFilterEnabled);
         });
 
         window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];

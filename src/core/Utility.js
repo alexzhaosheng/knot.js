@@ -50,11 +50,21 @@
                     path = path.substr(1);
                 }
                 while (path.indexOf(".") >= 0 && data) {
-                    data = data[path.substr(0, path.indexOf("."))];
-                    path = path.substr(path.indexOf(".") + 1);
+                    var p = __private.Utility.trim(path.substr(0, path.indexOf(".")));
+                    if(p != "*"){
+                        data = data[p];
+                    }
+                    else{
+                        data = undefined;
+                    }
+                    path = __private.Utility.trim(path.substr(path.indexOf(".") + 1));
                 }
-                if (data)
+                if(path == "*"){
+                    res = data;
+                }
+                else if (data){
                     res= data[path];
+                }
             }
             if(isFunction && typeof(res) != "function"){
                     __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
@@ -64,6 +74,9 @@
         },
 
         setValueOnPath: function(data, path, value){
+            //never set value for *
+            if(path[path.length-1] == "*")
+                return;
             if(this.startsWith(path,"__knot_global")){
                 throw new Error("Can't set global symbol!");
             }

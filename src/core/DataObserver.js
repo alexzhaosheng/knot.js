@@ -113,6 +113,8 @@
         },
 
         hookProperty:function(object, property){
+            if(property == "*")
+                return;
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo){
                 attached.dataHookInfo = {hookedProperties:[], data:{}, hookRefCount:{}};
@@ -151,6 +153,8 @@
         },
 
         unhookProperty: function(object, property){
+            if(property == "*")
+                return;
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo){
                 return;

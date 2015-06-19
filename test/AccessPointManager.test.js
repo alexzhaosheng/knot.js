@@ -249,10 +249,22 @@
         scope.AccessPointManager.tieKnot(target1, target2, knot);
         assert.equal(target1.display, "block", "Directly tie to function");
 
-        //todo: is binding to * really worthy to do?
-        //target2.isVisible = false;
-        //assert.equal(target1.display, "none", "Directly tie to function");
 
+        var knot = scope.OptionParser.parse('content:organization.leader.*')[0];
+        target1={content:null};
+        target2={organization:{leader:{name:"satoshi"}}};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.content, target2.organization.leader, "Tie to *");
+        assert.equal(target1.content["*"], undefined, "Tie to *");
+        target2.organization.leader = {name:"laozi"};
+        assert.equal(target1.content, target2.organization.leader, "Tie to *");
+        assert.equal(target1.content["*"], undefined, "Tie to *");
+
+        var knot = scope.OptionParser.parse('content:*')[0];
+        target1={content:null};
+        target2={name:"satoshi"};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.content, target2, "Tie to *");
     });
 
     QUnit.test( "private.AccessPointerManager.knotEvent", function( assert ) {

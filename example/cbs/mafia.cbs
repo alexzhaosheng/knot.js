@@ -7,13 +7,15 @@ body{
 }
 
 #treeNode .expander{
-    innerText: collapsed>{return value?"+":"-"};
+    class: collapsed>{return value?"+fa-plus-circle -fa-minus-circle":"-fa-plus-circle +fa-minus-circle"};
     @click: @{this.collapsed = !this.collapsed;}
 }
+
 
 #treeNode .content{
     content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
 }
+
 
 #treeNode .childrenList{
     foreach[template:#treeNode]: children;
@@ -22,10 +24,17 @@ body{
 #gangTemplate .title,  #whiteBusinessTemplate .title,  #blackBusinessTemplate .title{
     innerText: title;
 }
-#gangTemplate .leader, #whiteBusinessTemplate .leader,  #blackBusinessTemplate .leader{
-    content[template: @/mafiaSystem.nodeContentTemplateSelector]: leader;
+
+
+.people>div:first-of-type{
+    content[template: @/mafiaSystem.nodeContentTemplateSelector]: *;
 }
 
 #manTemplate, #womanTemplate{
-    innerText: title
+    innerText: name
+}
+
+
+#treeNode .childrenList, #gangTemplate .leader, #whiteBusinessTemplate .leader,  #blackBusinessTemplate .leader{
+    style.display:collapsed>{return value?"none":"block";}
 }

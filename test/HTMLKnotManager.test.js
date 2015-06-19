@@ -19,7 +19,7 @@
 
         var resetTest = function(){
             headNode.removeChild(scriptBlock);
-            scope.HTMLKnotManager.normalizedCBS = [];
+            scope.HTMLKnotManager.normalizedCBS = {};
         };
 
 
@@ -84,7 +84,7 @@
 
                 headNode.removeChild(cbsFileScriptBlock);
                 headNode.removeChild(cbsScriptBlock);
-                scope.HTMLKnotManager.normalizedCBS = [];
+                scope.HTMLKnotManager.normalizedCBS = {};
                 QUnit.start();
             },
             function(err){
@@ -227,7 +227,7 @@
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = [];
+        scope.HTMLKnotManager.normalizedCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -266,7 +266,7 @@
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = [];
+        scope.HTMLKnotManager.normalizedCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -380,7 +380,7 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = [];
+        scope.HTMLKnotManager.normalizedCBS = {};
 
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
@@ -460,7 +460,7 @@
             scope.HTMLKnotManager.clear();
             headNode.removeChild(scriptBlock);
             bodyNode.removeChild(testDiv);
-            scope.HTMLKnotManager.normalizedCBS = [];
+            scope.HTMLKnotManager.normalizedCBS = {};
 
             KnotTestUtility.clearAllKnotInfo(document.body);
         }
@@ -508,7 +508,7 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = [];
+        scope.HTMLKnotManager.normalizedCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -564,7 +564,7 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = [];
+        scope.HTMLKnotManager.normalizedCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 })((function() {
