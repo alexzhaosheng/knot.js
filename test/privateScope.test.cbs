@@ -1,0 +1,11 @@
+$private
+
+.nameInput{
+    value:name
+}
+
+<<{{
+<div knot-template-id="nameInputTemplate">
+    <input type="text" class="nameInput">
+</div>
+}}>>

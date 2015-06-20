@@ -1,0 +1,32 @@
+.knot-example-tagEditor>div{
+    margin: 2px;
+    padding: 2px;
+    border: 1px solid lightgrey;
+    border-radius: 5px;
+    overflow: auto;
+
+    min-height: 100px;
+}
+.knot-example-tagEditor .knot-example-tagEditor-tags{
+    display: inline-block;
+    padding: 4px 2px;
+    background-color: #0381ff;
+    color:white;
+    margin: 2px 3px;
+}
+.knot-example-tagEditor .knot-example-tagEditor-tags i{
+    margin-right: 5px;
+    cursor: pointer;
+}
+.knot-example-tagEditor .knot-example-tagEditor-tags i:hover{
+    text-shadow: 0px 0px 3px white;
+}
+
+.knot-example-tagEditor-add{
+    color: #0381ff;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.knot-example-tagEditor-add:hover{
+    text-shadow: 0px 0px 3px lightblue;
+}

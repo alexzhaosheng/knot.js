@@ -20,36 +20,36 @@ $(document).ready(function(){
     }
 
     function loadScript(tagSelector, typeName){
-        if($(tagSelector).length > 0){
-            var data  ={name:typeName, content: $(tagSelector)[0].innerText};
-            window.sourceInformation.push(data);
-            if($(tagSelector)[0].src){
-                var hr = getXHRS();
-                hr.onreadystatechange = function(){
-                    if(hr.readyState == 4){
-                        if(hr.status == 200){
-                            data.content  = hr.responseText;
+        for(var i=0; i<$(tagSelector).length; i++){
+            (function(){
+                var script = $(tagSelector).eq(i)[0];
+                var data  ={name:typeName, content: script.innerText};
+                if(script.getAttribute("title"))
+                    data.name = script.getAttribute("title");
+                window.sourceInformation.push(data);
+                if(script.src || script.href){
+                    var hr = getXHRS();
+                    hr.onreadystatechange = function(){
+                        if(hr.readyState == 4){
+                            if(hr.status == 200){
+                                data.content  = hr.responseText;
+                            }
                         }
                     }
+                    hr.open("GET", script.src || script.href, true);
+                    hr.send();
                 }
-                hr.open("GET", $(tagSelector)[0].src, true);
-                hr.send();
-            }
+            })();
         }
     }
 
-    if( $("#exampleJS").length > 0)
-        loadScript("#exampleJS", "Javascript");
-
-    if( $("#exampleCBS").length > 0)
-        loadScript("#exampleCBS", "CBS");
-
-    if( $("#exampleCSS").length > 0)
-        loadScript("#exampleCSS", "CSS");
+    loadScript(".exampleJS", "Javascript");
+    loadScript(".exampleCBS", "CBS");
+    loadScript(".exampleCSS", "CSS");
 });
 
 document.writeln('<div id="sourceTab">'+
-    '<div id="codePageTemplate" knot-template>'+
+    '<div id="codePageTemplate" knot-template-id="codePageTemplate">'+
     '<pre><code></code></pre>'+
 '</div>'+
 '</div>');

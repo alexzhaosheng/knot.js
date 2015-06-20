@@ -12,7 +12,7 @@ body{
 }
 
 
-#treeNode .content{
+#treeNode>div>.content{
     content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
 }
 
@@ -26,9 +26,11 @@ body{
 }
 
 
+/*
 .people>div:first-of-type{
     content[template: @/mafiaSystem.nodeContentTemplateSelector]: *;
 }
+*/
 
 #manTemplate, #womanTemplate{
     innerText: name

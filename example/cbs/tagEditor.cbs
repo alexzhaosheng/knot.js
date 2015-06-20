@@ -1,0 +1,24 @@
+$private
+<<{{
+    <div class="knot-example-tagEditor" knot-template-id="knot-example-tagEditor">
+        <div>
+            <div class="knot-example-tagEditor-tags" knot-template>
+                <span></span>
+                <i class="fa fa-times"></i>
+            </div>
+        </div>
+        <i class="knot-example-tagEditor-add fa fa-plus-circle"></i>
+        <input class="newTags" type="text">
+    </div>
+}}>>
+
+.knot-example-tagEditor>div{
+    foreach:tags
+}
+
+.knot-example-tagEditor-tags>span{
+    textContent:*
+}
+.knot-example-tagEditor-tags>i{
+    @click:@{alert(this);}
+}

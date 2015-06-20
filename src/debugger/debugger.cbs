@@ -50,7 +50,7 @@ body{
 }
 
 #domTree>li .nodeChildren{
-    foreach[template: #(#domTree>li)]: childrenInfo;
+    foreach[template:domTreeItem]: childrenInfo;
     style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
 }
 
@@ -129,10 +129,10 @@ body{
  /* Log */
 
 #logContainer{
-    foreach[template:#logTemplate]: logs
+    foreach[template:logTemplate]: logs
 }
 
-#logTemplate{
+.logTemplate{
     style.backgroundColor: level>{
         switch(value){
             case "Info":
@@ -144,19 +144,19 @@ body{
         }
     };
 }
-#logTemplate .level{
+.logTemplate .level{
     textContent:level
 }
-#logTemplate .time{
+.logTemplate .time{
     textContent:time>{
         return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
                 " " + value.getMilliseconds();
     }
 }
-#logTemplate .message{
+.logTemplate .message{
     textContent: message
 }
-#logTemplate .exception{
+.logTemplate .exception{
     textContent: exception>{return value.toString();}
 }
 

@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles/example.css">
+
+    <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <link rel="stylesheet" href="./styles/github.css">
+    <script src="js/highlight.pack.js"></script>
+    <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
+
+    <script src="../src/core/PrivateScope.js"></script>
+    <script src="../src/core/Utility.js"></script>
+    <script src="../src/core/Deferred.js"></script>
+    <script src="../src/core/AttachedData.js"></script>
+    <script src="../src/core/DataObserver.js"></script>
+    <script src="../src/core/ArrayMonitor.js"></script>
+    <script src="../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../src/core/OptionParser.js"></script>
+    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/HTMLAPProvider.js"></script>
+    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/addon/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/KnotInterface.js"></script>
+
+    <script src="../src/debugger/knot.debug.js"></script>
+
+    <style type="text/css">
+    #editor{
+        width: 300px;
+        height: 200px;
+    }
+    </style>
+
+    <link rel="stylesheet" href="styles/tagEditor.css" class="exampleCSS" title="Editor CSS">
+    <script type="text/cbs" src="cbs/tagEditor.cbs" class="exampleCBS" title="Editor CBS"></script>
+    <script type="text/javascript" src="js/tagEditor.js" class="exampleJS" title="Editor Javascript"></script>
+
+    <script type="text/cbs"  class="exampleCBS" title="In-page CBS">
+    #editor{
+        knot-example-tagEditor:/tags;
+    }
+    #latestTags{
+        textContent:/tags
+    }
+    </script>
+    <script class="exampleJS" title="In-page Javascript">
+        window.tags = "knot.js,javascript,something cool";
+    </script>
+</head>
+<body>
+<div class="knot_example">
+
+    <h2>Knot.js example - Tag editor</h2>
+    <div id="editor"></div>
+
+    <p>
+        Current tags:<b id="latestTags"></b>
+    </p>
+</div>
+
+<script src="js/tabpage.js"></script>
+<script type="text/javascript" src="js/sourceTab.js"></script>
+
+</body>
+</html>

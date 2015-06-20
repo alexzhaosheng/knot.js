@@ -321,10 +321,10 @@ li{
     overflow:auto;
     background-color: #222222;
 }
-#knotChangeLogItemTemplate >div{
+.knotChangeLogItemTemplate >div{
     display: inline-block;
 }
-#knotChangeLogItemTemplate .id{
+.knotChangeLogItemTemplate .id{
     width: 50px;
     text-align: center;
 }
@@ -374,18 +374,18 @@ li{
     top:5px;left:5px;right:5px;bottom: 5px;
     overflow-y:auto;
 }
-#logTemplate{
+.logTemplate{
     font-size: 13px;
     margin: 3px 0px;
     padding: 3px;
     line-height: 20px;
 }
-#logTemplate .level, #logTemplate .time, #logTemplate .at{
+.logTemplate .level, #logTemplate .time, #logTemplate .at{
     font-size: 0.9em;
     color:lightgreen;
 }
 
-#logTemplate .exception{
+.logTemplate .exception{
     font-size: 0.9em;
     color:#ffaaaa;
 }

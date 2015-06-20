@@ -39,7 +39,8 @@
     }
 
     __private.HTMLKnotManager = {
-        normalizedCBS:{},
+        publicCBS:{},
+        privateCBSScope:[],
         templates:{},
         parseCBS:function(){
             var deferred = new __private.Deferred();
@@ -58,7 +59,7 @@
                                 if(hr.status == 200){
                                     try{
                                         var text = removeComments(hr.responseText);
-                                        that.normalizeCBS(text);
+                                        that.normalize(text);
                                         scriptToLoad--;
                                         if(scriptToLoad == 0){
                                             try{
@@ -87,7 +88,7 @@
                 else{
                     try{
                         var text = removeComments(blocks[i].textContent);
-                        this.normalizeCBS(text);
+                        this.normalize(text);
                     }
                     catch (error){
                         deferred.reject(error);
@@ -99,14 +100,46 @@
             return deferred;
         },
 
-        normalizeCBS: function(text){
+        normalize: function(text){
+            text = __private.Utility.trim(text);
+            if(__private.Utility.startsWith(text, "$private")){
+                var result = {CBS:{}};
+                text = text.substr(8);
+                text = this.extractEmbeddedHTML(result, text);
+                this.normalizeCBS(result.CBS, text);
+                this.privateCBSScope.push(result);
+            }
+            else{
+                this.normalizeCBS(this.publicCBS, text);
+            }
+        },
+
+        extractEmbeddedHTML: function(res, text){
+            if(!res.HTML)
+                res.HTML = "";
+            var pos = 0;
+            var textRemains = "";
+            var blockInfo = __private.Utility.getBlockInfo(text, pos, "<<{{", "}}>>");
+            while(blockInfo != null){
+                textRemains += text.substr(pos, blockInfo.start-pos);
+                res.HTML += text.substr(blockInfo.start+4, blockInfo.end - blockInfo.start-4);
+                pos = blockInfo.end + 4;
+                blockInfo = __private.Utility.getBlockInfo(text, pos, "<<{{", "}}>>");
+            }
+            if(pos < text.length){
+                textRemains += text.substr(pos);
+            }
+            return textRemains;
+        },
+
+        normalizeCBS: function(res, text){
             var pos = 0;
             var blockInfo = __private.Utility.getBlockInfo(text, pos, "{", "}");
             while(blockInfo != null){
                 var selector = text.substr(pos, blockInfo.start-pos);
                 selector = __private.Utility.trim(selector);
-                if(!this.normalizedCBS[selector])
-                    this.normalizedCBS[selector] = [];
+                if(!res[selector])
+                    res[selector] = [];
 
                 var options = text.substr(blockInfo.start+1,  blockInfo.end - blockInfo.start - 1);
                 options = __private.OptionParser.processEmbeddedFunctions(options);
@@ -114,8 +147,8 @@
 
                 for(var i=0; i< opArray.length; i++){
                     var option = __private.Utility.trim(opArray[i]);
-                    if(this.normalizedCBS[selector].indexOf(option) < 0)
-                        this.normalizedCBS[selector].push(option);
+                    if(res[selector].indexOf(option) < 0)
+                        res[selector].push(option);
                 }
 
                 pos = blockInfo.end + 1;
@@ -165,13 +198,31 @@
         },
 
         applyCBS: function(){
-            for(var selector in this.normalizedCBS){
-                var elements = document.querySelectorAll(selector);
+            if(this.privateCBSScope.length > 0){
+                var privateScopeHTML = "";
+                for(var i=0; i<this.privateCBSScope.length;i++){
+                    privateScopeHTML += this.privateCBSScope[i].HTML;
+                }
+                this.privateScope = document.createElement("DIV");
+                this.privateScope.innerHTML = privateScopeHTML;
+                for(var i=0; i<this.privateCBSScope.length;i++){
+                    this.attachCBS(this.privateScope, this.privateCBSScope[i].CBS);
+                    this.applyCBSForNode(this.privateScope);
+                }
+            }
+
+            this.attachCBS(document, this.publicCBS);
+            this.applyCBSForNode(document.body);
+        },
+
+        attachCBS:function(scope, cbs){
+            for(var selector in cbs){
+                var elements = scope.querySelectorAll(selector);
                 if(elements.length == 0){
                     __private.Log.warning("There is no element selected with selector:" + selector);
                 }
                 for(var i=0; i<elements.length; i++){
-                    var cbsOptions = this.normalizedCBS[selector].slice(0);
+                    var cbsOptions = cbs[selector].slice(0);
                     if(!elements[i].__knot){
                         elements[i].__knot = {options: []};
                     }
@@ -181,17 +232,24 @@
                     elements[i].__knot.cbsOptions = cbsOptions;
                 }
             }
-
-            this.applyCBSForNode(document.body);
         },
 
         _templateNameCount:0,
-        processTemplateNodes: function(){
-            var templateNodes = document.querySelectorAll("*[knot-template]");
+        processTemplateNodes:function(){
+            if(this.privateScope){
+                this.processTemplateNodesForScope(this.privateScope);
+                if(this.privateScope.children.length>0){
+                    __private.Log.warning("Useless HTML is detected in private scope." + this.privateScope.innerHTML);
+                }
+            }
+            this.processTemplateNodesForScope(document);
+        },
+        processTemplateNodesForScope: function(scope){
+            var templateNodes = scope.querySelectorAll("*[knot-template], *[knot-template-id]");
             for(var i=0; i<templateNodes.length; i++){
                 var name;
-                if(templateNodes[i].id){
-                    name = templateNodes[i].id;
+                if(templateNodes[i].getAttribute("knot-template-id")){
+                    name = templateNodes[i].getAttribute("knot-template-id");
                 }
                 else{
                     name = "knot_template_" + this._templateNameCount++;
@@ -213,6 +271,7 @@
             for(var i=0; i<templateNodes.length; i++){
                 delete templateNodes[i].__knot_template_id;
                 templateNodes[i].removeAttribute("knot-template");
+                templateNodes[i].removeAttribute("knot-template-id");
                 templateNodes[i].parentNode.removeChild(templateNodes[i]);
             }
         },
@@ -234,7 +293,7 @@
                 if(template[0] == "@"){
                     return;
                 }
-                templateNode = __private.HTMLAPHelper.queryElement(template);
+                templateNode = this.templates[template];
                 if(!templateNode){
                     __private.Log.error("Can't find template with selector'" + template + "'");
                     return;

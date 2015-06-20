@@ -2,7 +2,7 @@
     var scope = window.Knot.getPrivateScope();
 
     var findCBS = function(selector){
-        return scope.HTMLKnotManager.normalizedCBS[selector];
+        return scope.HTMLKnotManager.publicCBS[selector];
     }
 
     var bodyNode = document.getElementsByTagName("body")[0];
@@ -19,7 +19,7 @@
 
         var resetTest = function(){
             headNode.removeChild(scriptBlock);
-            scope.HTMLKnotManager.normalizedCBS = {};
+            scope.HTMLKnotManager.publicCBS = {};
         };
 
 
@@ -84,11 +84,11 @@
 
                 headNode.removeChild(cbsFileScriptBlock);
                 headNode.removeChild(cbsScriptBlock);
-                scope.HTMLKnotManager.normalizedCBS = {};
+                scope.HTMLKnotManager.publicCBS = {};
                 QUnit.start();
             },
             function(err){
-                Console.writeln(err);
+                console.log(err);
                 QUnit.start();
             });;
     });
@@ -227,7 +227,7 @@
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = {};
+        scope.HTMLKnotManager.publicCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -266,7 +266,7 @@
 
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = {};
+        scope.HTMLKnotManager.publicCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -275,7 +275,7 @@
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
-        var templateDiv = KnotTestUtility.parseHTML('<div id="userTemplate" knot-template ><span></span>.<span></span></div>');
+        var templateDiv = KnotTestUtility.parseHTML('<div id="userTemplate" knot-template-id="userTemplateId"><span></span>.<span></span></div>');
         testDiv.appendChild(templateDiv);
 
         var template2 = KnotTestUtility.parseHTML('<selec id="templateTest2"><option knot-template/></div>');
@@ -287,8 +287,8 @@
             'body {dataContext:/templateTestData;}'+
             '#userTemplate>span:first-child{innerText:firstName}'+
             '#userTemplate>span:last-child{innerText:lastName}'+
-            '#selectedUser{content[template:#userTemplate]:selectedUser}'+
-            '#userList{foreach[template:#userTemplate]:userList}'+
+            '#selectedUser{content[template:userTemplateId]:selectedUser}'+
+            '#userList{foreach[template:userTemplateId]:userList}'+
             '#templateTest2{foreach:optionsList}'+
             '#templateTest2 option{value:name;text:name}'+
             '</script>');
@@ -380,7 +380,7 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = {};
+        scope.HTMLKnotManager.publicCBS = {};
 
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
@@ -390,8 +390,8 @@
         bodyNode.appendChild(testDiv);
 
         var templateDiv = KnotTestUtility.parseHTML('<div>' +
-            '<div id="westernUserTemplate" knot-template ><span></span> <span></span><p>west</p></div>' +
-            '<div id="easternUserTemplate" knot-template ><span></span> <span></span><p>east asia</p></div>' +
+            '<div id="westernUserTemplate" knot-template-id="westernUserTemplate" ><span></span> <span></span><p>west</p></div>' +
+            '<div id="easternUserTemplate" knot-template-id="easternUserTemplate" ><span></span> <span></span><p>east asia</p></div>' +
             '</div>');
         testDiv.appendChild(templateDiv);
 
@@ -460,7 +460,7 @@
             scope.HTMLKnotManager.clear();
             headNode.removeChild(scriptBlock);
             bodyNode.removeChild(testDiv);
-            scope.HTMLKnotManager.normalizedCBS = {};
+            scope.HTMLKnotManager.publicCBS = {};
 
             KnotTestUtility.clearAllKnotInfo(document.body);
         }
@@ -508,7 +508,7 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = {};
+        scope.HTMLKnotManager.publicCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
@@ -564,8 +564,43 @@
         scope.HTMLKnotManager.clear();
         headNode.removeChild(scriptBlock);
         bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.normalizedCBS = {};
+        scope.HTMLKnotManager.publicCBS = {};
         KnotTestUtility.clearAllKnotInfo(document.body);
+    });
+
+
+    QUnit.asyncTest("private.HTMLKnotManager.Apply Private CBS From File", function(assert){
+        expect(4);
+
+        var cbsFileScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="privateScope.test.cbs">');
+        headNode.appendChild(cbsFileScriptBlock);
+        var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"><input class="nameInput"></div>');
+        bodyNode.appendChild(testDiv);
+
+
+        scope.HTMLKnotManager.parseCBS().done(function(){
+                scope.HTMLKnotManager.applyCBS();
+                scope.HTMLKnotManager.processTemplateNodes();
+
+                var template = scope.HTMLKnotManager.templates["nameInputTemplate"];
+                assert.equal(template != null, true, "Apply private CBS");
+                assert.equal(template.children[0].__knot.options.length, 1, "Apply private CBS");
+                assert.equal(template.children[0].__knot.options[0].leftAP.description, "value", "Apply private CBS");
+                var i = testDiv.querySelector(".nameInput");
+                assert.equal(i.__knot == null, true, "Apply private CBS. The selector in private scope should not effect anything outside.");
+
+                bodyNode.removeChild(testDiv);
+                headNode.removeChild(cbsFileScriptBlock);
+                scope.HTMLKnotManager.publicCBS = {};
+                scope.HTMLKnotManager.template = {};
+                scope.HTMLKnotManager.privateCBSScope = [];
+                scope.HTMLKnotManager.privateScope = null;
+                QUnit.start();
+            },
+            function(err){
+                console.log(err);
+                QUnit.start();
+            });;
     });
 })((function() {
         return this;

@@ -44,15 +44,15 @@
     function updateDebugButtonStyle(){
         if(_currentMaxLevel <= 0){
             _debugButton.className = "";
-            _debugButton.src = getBaseDir()+"debugger.png";
+            _debugButton.src = getBaseDir()+"img/debugger.png";
         }
         else{
             _debugButton.className = "knotjs-debugger-flash";
             if(_currentMaxLevel == 1){
-                _debugButton.src = getBaseDir()+"debugger_warning.png";
+                _debugButton.src = getBaseDir()+"img/debugger_warning.png";
             }
             else{
-                _debugButton.src = getBaseDir()+"debugger_error.png";
+                _debugButton.src = getBaseDir()+"img/debugger_error.png";
             }
         }
     }

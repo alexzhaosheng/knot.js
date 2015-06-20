@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <link rel="shortcut icon" href="./debugger.png">
+    <link rel="shortcut icon" href="img/debugger.png">
     <title>Knot debugger</title>
     <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
@@ -67,7 +67,7 @@
             </div>
             <div class="treeContainer expander-top-collapsed">
                 <ul id="domTree">
-                    <li knot-template>
+                    <li knot-template-id="domTreeItem">
                         <div>
                             <div class="nonCollapsibleContent">
                                 <div class="expander">
@@ -110,7 +110,7 @@
                     <i class="iconButton fa fa-life-ring" title="Clear logs"></i>
                 </div>
                 <div class="knotChangeLog">
-                    <div id="knotChangeLogItemTemplate" knot-template>
+                    <div class="knotChangeLogItemTemplate" knot-template-id="knotChangeLogItemTemplate">
                         <div class="id"></div>
                         <i class="type-indicator fa fa-share-alt"></i>
                         <span class="nodeTitle selectable"></span>
@@ -128,7 +128,7 @@
 
         <div id="logViewer" class="pageContent">
             <div id="logContainer">
-                <div id="logTemplate" class="section" knot-template>
+                <div class="logTemplate section" knot-template-id="logTemplate">
                     <div>[<span class="level"></span><span class="at">@</span><span class="time"></span>] <span class="message"></span></div>
                     <div class="exception"></div>
                 </div>

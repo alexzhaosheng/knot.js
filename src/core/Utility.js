@@ -80,6 +80,11 @@
             if(this.startsWith(path,"__knot_global")){
                 throw new Error("Can't set global symbol!");
             }
+            if(path && path[0] == "/"){
+                data = window;
+                path = path.substr(1);
+            }
+
             var vp = path;
             var p = path.lastIndexOf(".");
             if(p > 0){
