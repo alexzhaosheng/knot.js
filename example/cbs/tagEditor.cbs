@@ -13,12 +13,16 @@ $private
 }}>>
 
 .knot-example-tagEditor>div{
-    foreach:tags
+    foreach[@added: @onTagEditorItemAdded]:tags
 }
 
 .knot-example-tagEditor-tags>span{
-    textContent:*
+    textContent:name
 }
 .knot-example-tagEditor-tags>i{
-    @click:@{alert(this);}
+    @click:@onDelete;
+}
+
+.knot-example-tagEditor-add{
+    @click:@onAdd;
 }

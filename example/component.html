@@ -28,9 +28,14 @@
     <script src="../src/debugger/knot.debug.js"></script>
 
     <style type="text/css">
-    #editor{
+    #editor1, #editor2{
         width: 300px;
         height: 200px;
+        display:  inline-block;
+    }
+
+    .curValue{
+        max-width: 600px;
     }
     </style>
 
@@ -39,8 +44,11 @@
     <script type="text/javascript" src="js/tagEditor.js" class="exampleJS" title="Editor Javascript"></script>
 
     <script type="text/cbs"  class="exampleCBS" title="In-page CBS">
-    #editor{
+    #editor1{
         knot-example-tagEditor:/tags;
+    }
+    #editor2{
+        knot-example-tagEditor[color:#228822]:/tags;
     }
     #latestTags{
         textContent:/tags
@@ -54,11 +62,18 @@
 <div class="knot_example">
 
     <h2>Knot.js example - Tag editor</h2>
-    <div id="editor"></div>
 
-    <p>
+    <div class="curValue">
+        <p>
         Current tags:<b id="latestTags"></b>
-    </p>
+        </p>
+    </div>
+
+
+    <div id="editor1"></div>
+
+    <div id="editor2"></div>
+
 </div>
 
 <script src="js/tabpage.js"></script>

@@ -66,7 +66,7 @@
                     res= data[path];
                 }
             }
-            if(isFunction && typeof(res) != "function"){
+            if(isFunction && res && typeof(res) != "function"){
                     __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
                     return undefined;
             }

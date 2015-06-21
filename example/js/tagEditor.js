@@ -17,7 +17,11 @@
                 target.tagEditorData = new TagEditorData();
                 var ele = window.Knot.Advanced.createFromTemplate("knot-example-tagEditor", target.tagEditorData);
                 $(target).append(ele);
-                target.tagEditorData.setEditor(ele);
+                ele.children[0].onTagEditorItemAdded = function(n){
+                    if(options && options["color"]){
+                        $(n).css("backgroundColor", options["color"]);
+                    }
+                };
             }
             target.tagEditorData.setValue(value);
         },
@@ -39,6 +43,16 @@
 
     window.Knot.Advanced.registerAPProvider(APProvider);
 
+    function onDeleteTag(eventArg, node){
+        var editor = $(node).closest(".knot-example-tagEditor");
+        if(editor.length>0){
+            window.Knot.getDataContext(editor[0]).deleteTag(this);
+        }
+    }
+    function createTag(name){
+        return {name:name, onDelete:onDeleteTag};
+    }
+
     var TagEditorData = function(){
         this.tags = [];
         this._editor = null;
@@ -47,25 +61,12 @@
     TagEditorData.prototype.setValue = function(value){
         if(!value)
             this.tags = [];
-        this.tags = value.split(",");
+        this.tags = value.split(",").map(function(t){return createTag(t);});
     }
     TagEditorData.prototype.getValue = function(){
-        return this.tags.join(",");
+        return this.tags.map(function(t){return t.name;}).join(",");
     }
-    TagEditorData.prototype.setEditor = function(editor){
-        this._eidtor = editor;
-        var that =this;
-        $(this._eidtor).find(".knot-example-tagEditor-add").click(function(){
-            that.tags = that.tags.concat($(editor).find("input").val().split(","));
-            $(editor).find("input").val("");
-            that.raiseChangedEvent();
-        });
-        $(this._eidtor).find(".knot-example-tagEditor-add").click(function(){
-            that.tags = that.tags.concat($(editor).find("input").val().split(","));
-            $(editor).find("input").val("");
-            that.raiseChangedEvent();
-        });
-    }
+
     TagEditorData.prototype.raiseChangedEvent = function(){
         for(var i=0; i< this._changedCallbacks.length; i++)
             this._changedCallbacks[i]();
@@ -77,6 +78,21 @@
     TagEditorData.prototype.stopMonitoring = function(value){
         this._changedCallbacks.splice(this._changedCallbacks.indexOf(value), 1);
     }
+
+    TagEditorData.prototype.deleteTag = function(tag){
+        if(this.tags.indexOf(tag) >= 0){
+            this.tags.splice(this.tags.indexOf(tag), 1);
+            this.raiseChangedEvent();
+        }
+    }
+    TagEditorData.prototype.onAdd = function(arg, node){
+        var input  = $(node).closest(".knot-example-tagEditor").find("input");
+        this.tags = this.tags.concat(input.val().split(",").map(function(t){return createTag(t);}));
+        input.val("");
+        this.raiseChangedEvent();
+    }
+
+
 })((function() {
         return this;
     })());

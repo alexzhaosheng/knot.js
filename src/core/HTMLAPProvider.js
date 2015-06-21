@@ -181,7 +181,7 @@
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
             return;
         }
-        syncItems(node, values, options["template"], __private.Utility.getValueOnPath(window, options["added"]), __private.Utility.getValueOnPath(window, options["added"]));
+        syncItems(node, values, options["template"], __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
     }
 
     __private.HTMLAPProvider={

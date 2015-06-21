@@ -6,6 +6,7 @@
     overflow: auto;
 
     min-height: 100px;
+    max-height: 300px;
 }
 .knot-example-tagEditor .knot-example-tagEditor-tags{
     display: inline-block;
