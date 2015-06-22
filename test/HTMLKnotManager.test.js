@@ -408,11 +408,13 @@
             '</script>');
         headNode.appendChild(scriptBlock);
 
+        var latestThisPointer;
         window.testTemplateSelector = function(value){
+            latestThisPointer = this;
             if(value.isEastAsianName)
-                return scope.HTMLKnotManager.createFromTemplate("easternUserTemplate");
+                return scope.HTMLKnotManager.createFromTemplateAndUpdateData("easternUserTemplate", value);
             else
-                return scope.HTMLKnotManager.createFromTemplate("westernUserTemplate");
+                return scope.HTMLKnotManager.createFromTemplateAndUpdateData("westernUserTemplate", value);
         }
 
         scope.HTMLKnotManager.parseCBS();
@@ -453,6 +455,9 @@
             assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.firstName, "check the node created by template selector with content binding. should be created from easternUserTemplate");
             assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.lastName, "check the node created by template selector with content binding.should be created from easternUserTemplate");
             assert.equal(selected.childNodes[0].childNodes[3].innerText, "east asia", "check the node created by template selector with content binding.should be created from easternUserTemplate");
+
+
+            assert.equal(latestThisPointer, selected, "check this pointer in template selector");
         }
         finally{
             delete window.templateTestData;
@@ -530,42 +535,46 @@
         scope.HTMLKnotManager.processTemplateNodes();
         scope.HTMLKnotManager.bind();
 
-        window.exceptionTestData = {name:"test"};
+        try{
+            window.exceptionTestData = {name:"test"};
 
-        var testInput = document.querySelector("#testInput");
-        var msg = document.querySelector("#validateMsg");
+            var testInput = document.querySelector("#testInput");
+            var msg = document.querySelector("#validateMsg");
 
-        testInput.value = "bi";
-        KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "short", "binding to exception works");
-        assert.equal(msg.style.color, "red", "binding to exception works");
+            testInput.value = "bi";
+            KnotTestUtility.raiseDOMEvent(testInput, "change");
+            assert.equal(msg.innerText, "short", "binding to exception works");
+            assert.equal(msg.style.color, "red", "binding to exception works");
 
-        testInput.value = "bingoando";
-        KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "long", "binding to exception works");
-        assert.equal(msg.style.color, "red", "binding to exception works");
+            testInput.value = "bingoando";
+            KnotTestUtility.raiseDOMEvent(testInput, "change");
+            assert.equal(msg.innerText, "long", "binding to exception works");
+            assert.equal(msg.style.color, "red", "binding to exception works");
 
-        var status = [];
-        scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
-        assert.equal(status.length, 1, "getErrorStatusInformation works");
-        assert.equal(status[0].node, testInput, "getErrorStatusInformation works");
-        assert.equal(status[0].accessPointName, "value", "getErrorStatusInformation works");
-        assert.equal(status[0].error.message, "long", "getErrorStatusInformation works");
+            var status = [];
+            scope.HTMLErrorAPProvider.getErrorStatusInformation(bodyNode, status);
+            assert.equal(status.length, 1, "getErrorStatusInformation works");
+            assert.equal(status[0].node, testInput, "getErrorStatusInformation works");
+            assert.equal(status[0].accessPointName, "value", "getErrorStatusInformation works");
+            assert.equal(status[0].error.message, "long", "getErrorStatusInformation works");
 
-        testInput.value = "bingo";
-        KnotTestUtility.raiseDOMEvent(testInput, "change");
-        assert.equal(msg.innerText, "", "error status is cleared");
-        assert.equal(msg.style.color, "black", "error status is cleared");
+            testInput.value = "bingo";
+            KnotTestUtility.raiseDOMEvent(testInput, "change");
+            assert.equal(msg.innerText, "", "error status is cleared");
+            assert.equal(msg.style.color, "black", "error status is cleared");
 
-        status = [];
-        scope.HTMLAPProvider.getErrorStatusInformation(bodyNode, status);
-        assert.equal(status.length, 0, "error status is cleared");
+            status = [];
+            scope.HTMLErrorAPProvider.getErrorStatusInformation(bodyNode, status);
+            assert.equal(status.length, 0, "error status is cleared");
+        }
+        finally{
 
-        scope.HTMLKnotManager.clear();
-        headNode.removeChild(scriptBlock);
-        bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.publicCBS = {};
-        KnotTestUtility.clearAllKnotInfo(document.body);
+            scope.HTMLKnotManager.clear();
+            headNode.removeChild(scriptBlock);
+            bodyNode.removeChild(testDiv);
+            scope.HTMLKnotManager.publicCBS = {};
+            KnotTestUtility.clearAllKnotInfo(document.body);
+        }
     });
 
 

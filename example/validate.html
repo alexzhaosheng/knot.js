@@ -5,9 +5,11 @@
 
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
-    <link rel="stylesheet" href="styles/tabpage.css">
     <link rel="stylesheet" href="./styles/github.css">
     <script src="js/highlight.pack.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <script type="text/cbs" src="cbs/tabpage.cbs"></script>
     <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
 
     <script src="../src/core/PrivateScope.js"></script>
@@ -38,7 +40,7 @@
     }
     </style>
 
-    <script type="text/cbs"  id="exampleCBS">
+    <script type="text/cbs"  class="exampleCBS">
     form input[type=text]{
         class: !*LEFT.value>@{return value?"+errorInput":"-errorInput";}
     }
@@ -76,7 +78,7 @@
         textContent:!#(#emailSection input).value>{return value?value.message:"";}
     }
     </script>
-    <script id="exampleJS">
+    <script class="exampleJS">
         window.validator ={
             notEmpty:function(v){
                 if(v.trim() == "")

@@ -15,7 +15,7 @@
         setValue: function(target, apName, value, options){
             if(!target.tagEditorData){
                 target.tagEditorData = new TagEditorData();
-                var ele = window.Knot.Advanced.createFromTemplate("knot-example-tagEditor", target.tagEditorData);
+                var ele = window.Knot.Advanced.createFromTemplate("knot-example-tagEditor", target.tagEditorData, target);
                 $(target).append(ele);
                 ele.children[0].onTagEditorItemAdded = function(n){
                     if(options && options["color"]){

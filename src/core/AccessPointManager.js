@@ -19,6 +19,7 @@
     var __private = window.Knot.getPrivateScope();
 
     var _APProviders = [];
+    var _errorAPProvider = [];
 
     function raiseAPEvent(target, options, eventName, params){
         if(!options || !options[eventName])
@@ -87,10 +88,7 @@
                 target = window;
                 apName = apName.substr(1);
             }
-            if(target && options && options.options.__knotAPEventCallbacks["@change"]){
-                __private.DataObserver.stopMonitoring(target, apName, options.__knotAPEventCallbacks["@change"]);
-            }
-            else if(target){
+            if(target){
                 __private.DataObserver.stopMonitoring(target, apName, callback);
             }
         }
@@ -104,6 +102,9 @@
         //search the provider in reversed sequence, so that the later registered providers can
         //overwrite the default ones
         getProvider:function(target, apName){
+            if(isErrorStatusApName(apName)){
+                return this.getErrorAPProvider(target, apName) || __private.DefaultProvider;
+            }
             for(var i=_APProviders.length-1; i >= 0; i--){
                 if(_APProviders[i].doesSupport(target, apName))
                     return _APProviders[i];
@@ -111,13 +112,33 @@
 
             return __private.DefaultProvider;
         },
-        registerAPProvider: function(apProvider){
-            if(_APProviders.indexOf(apProvider) < 0)
-                _APProviders.push(apProvider);
+        getErrorAPProvider:function(target, apName){
+            for(var i=_errorAPProvider.length-1; i >= 0; i--){
+                if(_errorAPProvider[i].doesSupport(target, apName))
+                    return _errorAPProvider[i];
+            }
+
+            return null;
         },
-        unregisterAPProvider:function(apProvider){
-            if(_APProviders.indexOf(apProvider) >=0)
-                _APProviders.splice(_APProviders.indexOf(apProvider), 1);
+        registerAPProvider: function(apProvider, isErrorAP){
+            if(isErrorAP){
+                if(_errorAPProvider.indexOf(apProvider) < 0)
+                    _errorAPProvider.push(apProvider);
+            }
+            else{
+                if(_APProviders.indexOf(apProvider) < 0)
+                    _APProviders.push(apProvider);
+            }
+        },
+        unregisterAPProvider:function(apProvider, isErrorAP){
+            if(isErrorAP){
+                if(_errorAPProvider.indexOf(apProvider) >=0)
+                    _errorAPProvider.splice(_APProviders.indexOf(apProvider), 1);
+            }
+            else{
+                if(_APProviders.indexOf(apProvider) >=0)
+                    _APProviders.splice(_APProviders.indexOf(apProvider), 1);
+            }
         },
 
         containsTargetModifier:function(ap){
@@ -191,13 +212,13 @@
                         }
                         value = p.apply(target, [value]);
                     }
-                    if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.description))
-                         ap.provider.setValue(target, "!"+ap.description, undefined);
+                    if(ap.errorAPProvider)
+                         ap.errorAPProvider.setValue(target, "!" + ap.description, undefined);
                 }
             }
             catch (exception){
-                if(ap.provider.doesSupportErrorStatus && !isErrorStatusApName(ap.description))
-                    ap.provider.setValue(target, "!"+ap.description, exception);
+                if(ap.errorAPProvider)
+                    ap.errorAPProvider.setValue(target, "!"+ap.description, exception);
                 return this.objectToIndicateError;
             }
             return value;
@@ -236,8 +257,10 @@
         },
 
         checkProvider:function(target, ap){
-            if(!ap.provider)
+            if(!ap.provider){
                 ap.provider = this.getProvider(target, ap.description);
+                ap.errorAPProvider = this.getErrorAPProvider(target, ap.description);
+            }
         },
         monitor:function(src, srcAP, target, targetAP, knotInfo){
             this.checkProvider(src, srcAP);

@@ -1,0 +1,28 @@
+$private
+
+<<{{
+<div class="knot-example-tabPage" knot-template-id="knot-example-tabPage">
+    <div class="page-headerArea">
+        <div class="pageHeader" knot-template></div>
+    </div>
+    <div class="page-contentArea">
+        <div knot-template-id=""></div>
+    </div>
+</div>
+}}>>
+
+.knot-example-tabPage .page-headerArea{
+    foreach: pages
+}
+.knot-example-tabPage .page-headerArea .pageHeader{
+    innerText: title;
+    class: isSelected>{return value?"+selected":"-selected"};
+    @click: @__knot_global.onPageHeaderClicked
+}
+.knot-example-tabPage .page-contentArea{
+    foreach[@added:@onKnotExampleTabPageAdded]: pages
+}
+.knot-example-tabPage .page-contentArea>div{
+    style.display: isSelected>{return value?"block":"none"};
+    content[template:@__knot_global.createKnotExampleTabPageContent]: *;
+}

@@ -5,9 +5,11 @@
 
     <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
 
-    <link rel="stylesheet" href="styles/tabpage.css">
     <link rel="stylesheet" href="./styles/github.css">
     <script src="js/highlight.pack.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <script type="text/cbs" src="cbs/tabpage.cbs"></script>
     <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
 
     <script src="../src/core/PrivateScope.js"></script>
@@ -26,7 +28,7 @@
 
     <script src="../src/debugger/knot.debug.js"></script>
 
-    <script type="text/cbs" id="exampleCBS">
+    <script type="text/cbs" class="exampleCBS">
         #hello1Msg{
             innerText:#nameInput.value[immediately:1]>{return value?"Hello " + value:"";}
         }

@@ -6,11 +6,17 @@
 
     var _symbolCount = 0;
     var _knotSymbols = {};
-    __private.GlobalSymbolHelper =
-    {
-        registerSymbol: function(symbol){
+    __private.GlobalSymbolHelper ={
+        registerNamedSymbol: function(name, value){
+            if(_knotSymbols[name]){
+                __private.Log.error("The global symbol'" + name + "' has been registered.");
+                return
+            }
+            _knotSymbols[name] = value;
+        },
+        registerSymbol: function(value){
             var name = "s"+_symbolCount++;
-            _knotSymbols[name] = symbol;
+            _knotSymbols[name] = value;
             return "__knot_global." + name;
         },
         getSymbol:function(name){

@@ -18,11 +18,15 @@
         synchronizeItems: function(parentNode, valueArray, template, onCreated, onRemoved){
             __private.HTMLAPProvider.syncItems(parentNode, valueArray, template, onCreated, onRemoved);
         },
-        createFromTemplate:function(template, data){
-            return __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, data);
+        createFromTemplate:function(template, data, owner){
+            return __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, data, owner);
         },
         getValueOnPath: function(data, path){
             return __private.Utility.getValueOnPath(data, path);
+        },
+
+        registerNamedGlobalSymbol:function(name, value){
+            return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
         }
     }
 
@@ -37,7 +41,7 @@
         __private.HTMLKnotManager.forceUpdateValues(rootNode);
 
         var result = [];
-        __private.HTMLAPProvider.getErrorStatusInformation(rootNode, result);
+        __private.HTMLErrorAPProvider.getErrorStatusInformation(rootNode, result);
         return result;
     };
 

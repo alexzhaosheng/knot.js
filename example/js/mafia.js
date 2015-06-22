@@ -19,7 +19,7 @@
             else if(data.type == "gang"){
                 template = "gangTemplate";
             }
-            return window.Knot.Advanced.createFromTemplate(template, data);
+            return window.Knot.Advanced.createFromTemplate(template, data, this);
         }
     }
 

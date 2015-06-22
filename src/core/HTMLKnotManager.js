@@ -236,27 +236,11 @@
 
         _templateNameCount:0,
         processTemplateNodes:function(){
+            var templateNodes = [];
             if(this.privateScope){
-                this.processTemplateNodesForScope(this.privateScope);
-                if(this.privateScope.children.length>0){
-                    __private.Log.warning("Useless HTML is detected in private scope." + this.privateScope.innerHTML);
-                }
+                templateNodes = templateNodes.concat(this.processTemplateNodesForScope(this.privateScope));
             }
-            this.processTemplateNodesForScope(document);
-        },
-        processTemplateNodesForScope: function(scope){
-            var templateNodes = scope.querySelectorAll("*[knot-template], *[knot-template-id]");
-            for(var i=0; i<templateNodes.length; i++){
-                var name;
-                if(templateNodes[i].getAttribute("knot-template-id")){
-                    name = templateNodes[i].getAttribute("knot-template-id");
-                }
-                else{
-                    name = "knot_template_" + this._templateNameCount++;
-                }
-                this.templates[name] = templateNodes[i];
-                templateNodes[i].__knot_template_id = name;
-            }
+            templateNodes = templateNodes.concat(this.processTemplateNodesForScope(document));
 
             for(var i=0; i<this._nodesWithTemplate.length; i++){
                 for(var j=0; j<this._nodesWithTemplate[i].__knot.options.length; j++){
@@ -274,6 +258,29 @@
                 templateNodes[i].removeAttribute("knot-template-id");
                 templateNodes[i].parentNode.removeChild(templateNodes[i]);
             }
+
+            if(this.privateScope){
+                if(this.privateScope.children.length>0){
+                    __private.Log.warning("Useless HTML is detected in private scope." + this.privateScope.innerHTML);
+                }
+                this.privateScope = null;
+            }
+        },
+        processTemplateNodesForScope: function(scope){
+            var templateNodes = scope.querySelectorAll("*[knot-template], *[knot-template-id]");
+            for(var i=0; i<templateNodes.length; i++){
+                var name;
+                if(templateNodes[i].getAttribute("knot-template-id")){
+                    name = templateNodes[i].getAttribute("knot-template-id");
+                }
+                else{
+                    name = "knot_template_" + this._templateNameCount++;
+                }
+                this.templates[name] = templateNodes[i];
+                templateNodes[i].__knot_template_id = name;
+            }
+            //turn it into a standard array
+            return Array.prototype.slice.apply(templateNodes, [0]);
         },
         processTemplateOption: function(node, ap){
             var templateNode
@@ -334,7 +341,7 @@
             }
             return this.cloneTemplateNode(this.templates[templateId]);
         },
-        createFromTemplateAndUpdateData:function(template, data){
+        createFromTemplateAndUpdateData:function(template, data, owner){
             var newNode;
             if((typeof(template) == "function") || !this.templates[template]){
                 var templateFunction;
@@ -345,7 +352,11 @@
                     templateFunction = __private.Utility.getValueOnPath(data, template);
                 }
                 if(typeof (templateFunction) == "function"){
-                    newNode = templateFunction.apply(data, [data]);
+                    newNode = templateFunction.apply(owner, [data]);
+                    if(!newNode){
+                        __private.Log.error( "Template function must return a HTML element. template:"+template);
+                        return;
+                    }
                 }
                 else{
                     __private.Log.error( "Unknown template:"+template);
@@ -354,14 +365,12 @@
             }
             else{
                 newNode = this.createFromTemplate(template);
+                if(!newNode)
+                    return;
+                this.updateDataContext(newNode, data);
             }
-            if(!newNode)
-                return;
 
-            //keep id of the cloned node so that css specified by id still works for it
-            //newNode.removeAttribute("id");
 
-            this.updateDataContext(newNode, data);
             if(!newNode.__knot)
                 newNode.__knot = {dataContext:data};
             else

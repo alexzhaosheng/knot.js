@@ -98,7 +98,7 @@
         if(!currentContent){
             if(value === null || typeof(value) === "undefined")
                 return;
-            var n  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(options["template"], value);
+            var n  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(options["template"], value, target);
             if(n){
                 target.appendChild(n, value);
                 __private.Debugger.nodeAdded(n);
@@ -113,7 +113,7 @@
             else{
                 if( __private.HTMLKnotManager.isDynamicTemplate(options["template"])){
                     removeNodeCreatedFromTemplate(currentContent);
-                    currentContent  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(options["template"], value);
+                    currentContent  = __private.HTMLKnotManager.createFromTemplateAndUpdateData(options["template"], value, target);
                     if(currentContent){
                         target.appendChild(currentContent, value);
                         __private.Debugger.nodeAdded(n);
@@ -159,7 +159,7 @@
                 }
             }
             else {
-                var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, values[i]);
+                var n = __private.HTMLKnotManager.createFromTemplateAndUpdateData(template, values[i], node);
                 if (n) {
                     addChildTo(node, n, i);
                     __private.Debugger.nodeAdded(n);
@@ -185,17 +185,14 @@
     }
 
     __private.HTMLAPProvider={
-        //this provider support error status handling.
-        doesSupportErrorStatus:true,
         doesSupport:function(target, apName){
             //if start from "#", then it's an id selector, we only support id selector
             if(apName[0] == "#"){
                 return true;
             }
 
-            //!is error status binding with must comes with an id selector
             if(apName[0] == "!"){
-                return true;
+                return false;
             }
 
             //check whether target is html element
@@ -207,22 +204,6 @@
         getValue: function(target, apName, options){
             if(apName[0] == "@"){
                 return;
-            }
-
-            if(apName[0] == "!"){
-                apName = apName.substr(1);
-                if(apName[0] == "#"){
-                    target = __private.HTMLAPHelper.queryElement((__private.HTMLAPHelper.getSelectorFromAPName(apName)));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
-                }
-                if(!target)
-                    return undefined;
-                else{
-                    if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName])
-                        return null;
-
-                    return target.__knot_errorStatusInfo[apName].currentStatus;
-                }
             }
 
             if(apName[0] == "#"){
@@ -249,35 +230,6 @@
                 return;
             }
 
-            if(apName[0] == "!"){
-                apName = apName.substr(1);
-                if(apName[0] == "#"){
-                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
-                }
-                if(target){
-                    if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks))
-                        return;
-                    if(!target.__knot_errorStatusInfo)
-                        target.__knot_errorStatusInfo = {};
-                    if(!target.__knot_errorStatusInfo[apName])
-                        target.__knot_errorStatusInfo[apName] = {};
-                    target.__knot_errorStatusInfo[apName].currentStatus = value;
-                    if(target.__knot_errorStatusInfo[apName].changedCallbacks){
-                        var callbacks = target.__knot_errorStatusInfo[apName].changedCallbacks;
-                        for(var i=0; i<callbacks.length; i++){
-                            try{
-                                callbacks[i].apply(target, [apName, value]);
-                            }
-                            catch (error){
-                                __private.Log.warning( "Call error status changed callback failed.", error);
-                            }
-                        }
-                    }
-                }
-                return;
-            }
-
             if(apName[0] == "#"){
                 target  = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -296,9 +248,6 @@
             }
         },
         doesSupportMonitoring: function(target, apName){
-            if(apName[0] == "!"){
-                return true;
-            }
             if(apName[0] == "#"){
                 target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -310,6 +259,111 @@
                 return true;
             else
                 return false;
+        },
+        monitor: function(target, apName, callback, options){
+            if(apName[0] == "#"){
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+            }
+
+            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var events = htmlEventInfo[eventKey].split(",");
+            for(var i=0; i<events.length; i++)
+                target.addEventListener(events[i], callback);
+
+            if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
+                (options &&
+                    (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
+                target.addEventListener("keyup", callback);
+            }
+        },
+        stopMonitoring: function(target, apName, callback, options){
+            if(apName[0] == "#"){
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+            }
+            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var events = htmlEventInfo[eventKey].split(",");
+            for(var i=0; i<events.length; i++)
+                target.removeEventListener(events[i], callback);
+
+            if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
+                (options &&
+                    (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
+                target.removeEventListener("keyup", callback);
+            }
+        },
+
+        //expose to interface
+        syncItems:syncItems
+    };
+    __private.AccessPointManager.registerAPProvider(__private.HTMLAPProvider);
+
+    __private.HTMLErrorAPProvider = {
+        doesSupport:function(target, apName){
+            if(apName){
+                if(apName[0] == "!")
+                    apName = apName.substr(1);
+                if(apName[0] == "#")
+                    target = __private.HTMLAPHelper.queryElement((__private.HTMLAPHelper.getSelectorFromAPName(apName)));
+            }
+            return (target instanceof HTMLElement);
+        },
+        getValue: function(target, apName, options){
+            //only support getting error status
+            if(apName[0] != "!")
+                return undefined;
+            apName = apName.substr(1);
+            if(apName[0] == "#"){
+                target = __private.HTMLAPHelper.queryElement((__private.HTMLAPHelper.getSelectorFromAPName(apName)));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+            }
+            if(!target)
+                return undefined;
+            else{
+                if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName])
+                    return null;
+
+                return target.__knot_errorStatusInfo[apName].currentStatus;
+            }
+        },
+        setValue: function(target, apName, value, options){
+            //only support setting error status
+            if(apName[0] != "!")
+                return;
+            apName = apName.substr(1);
+            if(apName[0] == "#"){
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+            }
+            if(target){
+                if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks))
+                    return;
+                if(!target.__knot_errorStatusInfo)
+                    target.__knot_errorStatusInfo = {};
+                if(!target.__knot_errorStatusInfo[apName])
+                    target.__knot_errorStatusInfo[apName] = {};
+                target.__knot_errorStatusInfo[apName].currentStatus = value;
+                if(target.__knot_errorStatusInfo[apName].changedCallbacks){
+                    var callbacks = target.__knot_errorStatusInfo[apName].changedCallbacks;
+                    for(var i=0; i<callbacks.length; i++){
+                        try{
+                            callbacks[i].apply(target, [apName, value]);
+                        }
+                        catch (error){
+                            __private.Log.warning( "Call error status changed callback failed.", error);
+                        }
+                    }
+                }
+            }
+        },
+        doesSupportMonitoring: function(target, apName){
+            if(apName[0] == "!"){
+                return true;
+            }
+            else{
+                return false;
+            }
         },
         monitor: function(target, apName, callback, options){
             if(apName[0] == "!"){
@@ -326,52 +380,17 @@
                     target.__knot_errorStatusInfo[apName].changedCallbacks=[];
                 target.__knot_errorStatusInfo[apName].changedCallbacks.push(callback);
             }
-            else{
-                if(apName[0] == "#"){
-                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
-                }
-
-                var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-                var events = htmlEventInfo[eventKey].split(",");
-                for(var i=0; i<events.length; i++)
-                    target.addEventListener(events[i], callback);
-
-                if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
-                    (options &&
-                        (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
-                    target.addEventListener("keyup", callback);
-                }
-            }
         },
         stopMonitoring: function(target, apName, callback, options){
-            if(apName[0] == "!"){
-                if(apName[1] == "#"){
-                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
-                }
-                if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)
-                    return;
-                var index = target.__knot_errorStatusInfo[apName].changedCallbacks.indexOf(callback);
-                if(index >= 0)
-                    target.__knot_errorStatusInfo[apName].changedCallbacks.splice(index, 1);
+            if(apName[1] == "#"){
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
             }
-            else{
-                if(apName[0] == "#"){
-                    target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
-                }
-                var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-                var events = htmlEventInfo[eventKey].split(",");
-                for(var i=0; i<events.length; i++)
-                    target.removeEventListener(events[i], callback);
-
-                if((target.tagName.toLowerCase() == "input" || target.tagName.toLowerCase() == "textarea") &&
-                    (options &&
-                        (options["immediately"]==1 || options["immediately"].toLowerCase()=="true"))){
-                    target.removeEventListener("keyup", callback);
-                }
-            }
+            if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)
+                return;
+            var index = target.__knot_errorStatusInfo[apName].changedCallbacks.indexOf(callback);
+            if(index >= 0)
+                target.__knot_errorStatusInfo[apName].changedCallbacks.splice(index, 1);
         },
 
         getErrorStatusInformation: function(node, result){
@@ -383,13 +402,10 @@
             for(var i=0; i<node.children.length; i++){
                 this.getErrorStatusInformation(node.children[i], result)
             }
-        },
+        }
+    }
 
-        //expose to interface
-        syncItems:syncItems
-    };
-
-    __private.AccessPointManager.registerAPProvider(__private.HTMLAPProvider);
+    __private.AccessPointManager.registerAPProvider(__private.HTMLErrorAPProvider, true);
 })((function() {
         return this;
     })());

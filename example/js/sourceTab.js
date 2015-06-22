@@ -1,4 +1,10 @@
-window.sourceInformation= [];
+window.sourceTab = {
+    sourceInformation: [],
+
+    onPageAdded: function(node){
+        hljs.highlightBlock($(node).find("code")[0]);
+    }
+};
 $(document).ready(function(){
     if($(".knot_example").length > 0){
         var text = "";
@@ -7,7 +13,7 @@ $(document).ready(function(){
                 text += "\r\n\r\n\r\n\r\n";
             text += $(".knot_example").eq(i)[0].outerHTML;
         }
-        window.sourceInformation.push({name:"HTML", content: text});
+        window.sourceTab.sourceInformation.push({name:"HTML", content: text, title:"HTML"});
     }
 
     function getXHRS(){
@@ -23,10 +29,10 @@ $(document).ready(function(){
         for(var i=0; i<$(tagSelector).length; i++){
             (function(){
                 var script = $(tagSelector).eq(i)[0];
-                var data  ={name:typeName, content: script.innerText};
+                var data  ={name:typeName, content: script.innerText, title:typeName};
                 if(script.getAttribute("title"))
-                    data.name = script.getAttribute("title");
-                window.sourceInformation.push(data);
+                    data.title = script.getAttribute("title");
+                window.sourceTab.sourceInformation.push(data);
                 if(script.src || script.href){
                     var hr = getXHRS();
                     hr.onreadystatechange = function(){
@@ -50,6 +56,6 @@ $(document).ready(function(){
 
 document.writeln('<div id="sourceTab">'+
     '<div id="codePageTemplate" knot-template-id="codePageTemplate">'+
-    '<pre><code></code></pre>'+
-'</div>'+
-'</div>');
+        '<pre><code></code></pre>'+
+    '</div>'+
+    '</div>');

@@ -1,8 +1,8 @@
-.knotdbg-tab{
+.knot-example-tabPage{
 
 }
 
-.knotdbg-tab .page-headerArea .header{
+.knot-example-tabPage .page-headerArea .pageHeader{
     border: 1px solid lightgrey;
     border-top-right-radius : 4px;
     border-top-left-radius : 4px;
@@ -19,16 +19,16 @@
     cursor: pointer;
 }
 
-.knotdbg-tab .page-headerArea{
+.knot-example-tabPage .page-headerArea{
     padding-left: 2px;
 }
-.knotdbg-tab .page-headerArea .selected{
+.knot-example-tabPage .page-headerArea .selected{
     /*color:white;*/
     /*background-color: #0381ff;*/
     border-bottom:1px solid whitesmoke;
 }
 
-.knotdbg-tab .page-contentArea{
+.knot-example-tabPage .page-contentArea{
     border-radius: 2px;
     border:1px solid lightgray;
     margin-top: -1px;
@@ -36,9 +36,9 @@
     padding: 3px;
 }
 
-.knotdbg-tab .page-contentArea>*{
+.knot-example-tabPage .page-contentArea>.pageContent{
     display:none
 }
-.knotdbg-tab .page-contentArea .selected{
+.knot-example-tabPage .page-contentArea .selected{
     display:block
 }
