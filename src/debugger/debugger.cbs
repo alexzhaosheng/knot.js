@@ -119,7 +119,7 @@ body{
 #knotChangeLogExpander .expanderButton{
     @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
 }
-#knotChangeLogExpander .iconButton{
+#knotChangeLogExpander .clearLogButton{
     @click: @/debuggerModel.onClearLogs;
 }
 

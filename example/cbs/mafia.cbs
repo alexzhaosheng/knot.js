@@ -6,22 +6,22 @@ body{
     foreach[template:treeNode]: gangs
 }
 
-#treeNode .expander{
+.treeNode .expander{
     class: collapsed>{return value?"+fa-plus-circle -fa-minus-circle":"-fa-plus-circle +fa-minus-circle"};
     @click: @{this.collapsed = !this.collapsed;}
 }
 
 
-#treeNode>div>.content{
+.treeNode>div>.content{
     content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
 }
 
 
-#treeNode .childrenList{
+.treeNode .childrenList{
     foreach[template:treeNode]: children;
 }
 
-#gangTemplate .title,  #whiteBusinessTemplate .title,  #blackBusinessTemplate .title{
+.gangTemplate .title,  .whiteBusinessTemplate .title,  .blackBusinessTemplate .title{
     innerText: title;
 }
 
@@ -32,11 +32,11 @@ body{
 }
 
 
-#manTemplate, #womanTemplate{
+.manTemplate, .womanTemplate{
     innerText: name
 }
 
 
-#treeNode .childrenList, #gangTemplate .leader, #whiteBusinessTemplate .leader,  #blackBusinessTemplate .leader{
+.treeNode .childrenList, .gangTemplate .leader, .whiteBusinessTemplate .leader,  .blackBusinessTemplate .leader{
     style.display:collapsed>{return value?"none":"block";}
 }

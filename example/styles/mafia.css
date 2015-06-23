@@ -70,22 +70,22 @@ li{
 
 }
 
-#treeNode .expander{
+.treeNode .expander{
     float: left;
     margin-top: 3px;
 }
 
-#treeNode .content{
+.treeNode .content{
     margin-left: 20px;
 }
 
-#treeNode .childrenList{
+.treeNode .childrenList{
     clear: both;
     margin-top: 4px;
     margin-left: 20px;
 }
 
 
-#gangTemplate{
+.gangTemplate{
 
 }

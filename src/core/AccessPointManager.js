@@ -38,64 +38,53 @@
         }
     };
 
-    __private.DefaultProvider = {
-        doesSupport:function(target, apName){
-            return true;
-        },
-        getValue: function(target, apName, options){
-            var returnFunc = false;
-            if(apName[0] == "@"){
-                returnFunc = true;
-                apName = apName.substr(1);
-            }
-            var value =  __private.Utility.getValueOnPath(target, apName);
-            if(typeof(value) == "function" && !returnFunc){
-                try{
-                    return value.apply(target);
-                }
-                catch(err){
-                    __private.Log.error("Call get value function failed.", err);
-                    return undefined;
-                }
-            }
-            else{
-                return value;
-            }
-        },
-
-
-
-        setValue: function(target, apName, value, options){
-            __private.Utility.setValueOnPath(target, apName, value);
-        },
-        doesSupportMonitoring: function(target, apName){
-            if(typeof(target) != "object" && typeof(target) != "array"){
-                return false;
-            }
-            return true;
-        },
-        monitor: function(target, apName, callback, options){
-            if(apName && apName[0] == "/"){
-                target = window;
-                apName = apName.substr(1);
-            }
-            if(target){
-                __private.DataObserver.monitor(target, apName, callback);
-            }
-        },
-        stopMonitoring: function(target, apName, callback, options){
-            if(apName && apName[0] == "/"){
-                target = window;
-                apName = apName.substr(1);
-            }
-            if(target){
-                __private.DataObserver.stopMonitoring(target, apName, callback);
-            }
-        }
-    };
 
     function isErrorStatusApName(name){
         return (name && name[0] == "!");
+    }
+
+    function correctAP(leftTarget, rightTarget, ap, isLeft){
+        if(ap.description && (ap.description[0] == "*" || ap.description[0] == "!") ){
+            var desToTest = ap.description;
+            var isBindingToError = false;
+            if(desToTest[0] == "!"){
+                desToTest = __private.Utility.trim(desToTest.substr(1));
+                isBindingToError = true;
+                if(desToTest[0] != "*")
+                    return  {target:isLeft?leftTarget:rightTarget, ap:ap};
+            }
+            var newDescription;
+            if(__private.Utility.startsWith(desToTest, "*LEFT")){
+                newDescription = desToTest.substr(5);
+                isLeft = true;
+            }
+            if(__private.Utility.startsWith(desToTest, "*RIGHT")){
+                newDescription =  desToTest.substr(6);
+                isLeft = false;
+            }
+            if(newDescription === "")
+                newDescription = "*";
+            //when there's path follows modifier
+            if(newDescription && newDescription[0] == ".")
+                newDescription = newDescription.substr(1);
+
+            if(newDescription){
+                if(isBindingToError)
+                    newDescription="!"+newDescription;
+                var newAP = {};
+                for(var p in ap) newAP[p] = ap[p];
+                newAP.description = newDescription;
+                ap = newAP;
+            }
+        }
+        return  {target:isLeft?leftTarget:rightTarget, ap:ap};
+    }
+
+    function correctTarget(leftTarget, rightTarget, knotOption){
+        return {
+            left:correctAP(leftTarget, rightTarget, knotOption.leftAP, true),
+            right:correctAP(leftTarget, rightTarget, knotOption.rightAP, false)
+        };
     }
 
     __private.AccessPointManager = {
@@ -141,63 +130,8 @@
             }
         },
 
-        containsTargetModifier:function(ap){
-            var end;
-            if(!__private.Utility.startsWith(ap.description, "*LEFT")){
-                end = 5;
-                return false;
-            }
-            if(!__private.Utility.startsWith(ap.description, "*RIGHT")){
-                end = 6;
-                return false;
-            }
 
-            if(ap.description.length == end || [".", "[", "("].indexOf(ap.description[end])>=0)
-                return true;
-        },
 
-        correctAP:function(leftTarget, rightTarget, ap, isLeft){
-            if(ap.description && (ap.description[0] == "*" || ap.description[0] == "!") ){
-                var desToTest = ap.description;
-                var isBindingToError = false;
-                if(desToTest[0] == "!"){
-                    desToTest = __private.Utility.trim(desToTest.substr(1));
-                    isBindingToError = true;
-                    if(desToTest[0] != "*")
-                        return  {target:isLeft?leftTarget:rightTarget, ap:ap};
-                }
-                var newDescription;
-                if(__private.Utility.startsWith(desToTest, "*LEFT")){
-                    newDescription = desToTest.substr(5);
-                    isLeft = true;
-                }
-                if(__private.Utility.startsWith(desToTest, "*RIGHT")){
-                    newDescription =  desToTest.substr(6);
-                    isLeft = false;
-                }
-                if(newDescription === "")
-                    newDescription = "*";
-                //when there's path follows modifier
-                if(newDescription && newDescription[0] == ".")
-                    newDescription = newDescription.substr(1);
-
-                if(newDescription){
-                    if(isBindingToError)
-                        newDescription="!"+newDescription;
-                    var newAP = {};
-                    for(var p in ap) newAP[p] = ap[p];
-                    newAP.description = newDescription;
-                    ap = newAP;
-                }
-            }
-            return  {target:isLeft?leftTarget:rightTarget, ap:ap};
-        },
-        correctTarget:function(leftTarget, rightTarget, knotOption){
-            return {
-                left:this.correctAP(leftTarget, rightTarget, knotOption.leftAP, true),
-                right:this.correctAP(leftTarget, rightTarget, knotOption.rightAP, false)
-            };
-        },
 
         objectToIndicateError:{},
         getValueThroughPipe: function(target, ap){
@@ -352,7 +286,7 @@
         },
 
         tieKnot:function(leftTarget, rightTarget, knotInfo){
-            var r = this.correctTarget(leftTarget, rightTarget, knotInfo);
+            var r = correctTarget(leftTarget, rightTarget, knotInfo);
             leftTarget = r.left.target; rightTarget = r.right.target;
             var leftAP = r.left.ap, rightAP = r.right.ap;
 
@@ -377,7 +311,7 @@
         },
 
         untieKnot: function(leftTarget, rightTarget, knotInfo){
-            var r = this.correctTarget(leftTarget, rightTarget, knotInfo);
+            var r = correctTarget(leftTarget, rightTarget, knotInfo);
             leftTarget = r.left.target; rightTarget = r.right.target;
             var leftAP = r.left.ap, rightAP = r.right.ap;
 
@@ -411,6 +345,64 @@
         forceUpdateValue: function(ap){
             if(ap.changedCallback)
                 ap.changedCallback();
+        }
+    };
+
+
+
+    __private.DefaultProvider = {
+        doesSupport:function(target, apName){
+            return true;
+        },
+        getValue: function(target, apName, options){
+            var returnFunc = false;
+            if(apName[0] == "@"){
+                returnFunc = true;
+                apName = apName.substr(1);
+            }
+            var value =  __private.Utility.getValueOnPath(target, apName);
+            if(typeof(value) == "function" && !returnFunc){
+                try{
+                    return value.apply(target);
+                }
+                catch(err){
+                    __private.Log.error("Call get value function failed.", err);
+                    return undefined;
+                }
+            }
+            else{
+                return value;
+            }
+        },
+
+
+
+        setValue: function(target, apName, value, options){
+            __private.Utility.setValueOnPath(target, apName, value);
+        },
+        doesSupportMonitoring: function(target, apName){
+            if(typeof(target) != "object" && typeof(target) != "array"){
+                return false;
+            }
+            return true;
+        },
+        monitor: function(target, apName, callback, options){
+            if(apName && apName[0] == "/"){
+                target = window;
+                apName = apName.substr(1);
+            }
+            if(target){
+                __private.DataObserver.monitor(target, apName, callback);
+            }
+        },
+        stopMonitoring: function(target, apName, callback, options){
+            if(apName && apName[0] == "/"){
+                target = window;
+                apName = apName.substr(1);
+            }
+            if(target){
+                __private.DataObserver.stopMonitoring(target, apName, callback);
+            }
         }
     };
 })((function() {

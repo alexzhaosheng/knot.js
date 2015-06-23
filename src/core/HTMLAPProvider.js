@@ -23,7 +23,7 @@
             return description;
         },
 
-    getSelectorFromAPName:function(apName){
+        getSelectorFromAPName:function(apName){
             var arr = __private.Utility.splitWithBlockCheck(apName, ".");
             return __private.Utility.trim(arr[0]);
         },
