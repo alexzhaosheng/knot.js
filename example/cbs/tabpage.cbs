@@ -15,7 +15,7 @@ $private
     foreach: pages
 }
 .knot-example-tabPage .page-headerArea .pageHeader{
-    innerText: title;
+    text: title;
     class: isSelected>{return value?"+selected":"-selected"};
     @click: @__knot_global.onPageHeaderClicked
 }

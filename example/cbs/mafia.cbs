@@ -22,7 +22,7 @@ body{
 }
 
 .gangTemplate .title,  .whiteBusinessTemplate .title,  .blackBusinessTemplate .title{
-    innerText: title;
+    text: title;
 }
 
 
@@ -33,7 +33,7 @@ body{
 
 
 .manTemplate, .womanTemplate{
-    innerText: name
+    text: name
 }
 
 

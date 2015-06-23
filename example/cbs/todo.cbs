@@ -11,10 +11,10 @@ body{
 }
 #todoList>li span{
     className:isDone>{return value?"done-true":"";};
-    innerText:title
+    text:title
 }
 #listBriefMsg{
-    innerText:
+    text:
         (remaining & todoList.length)>{
             return value[0] +" of " + value[1] + " remaining";
         }

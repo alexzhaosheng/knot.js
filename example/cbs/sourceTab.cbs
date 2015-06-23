@@ -8,7 +8,7 @@
 }
 
 #sourceTab code{
-    innerText:content;
-    className:name>{if(value=="CBS") return "css";  return value.toLowerCase();}
+    text:content;
+    class:name>{if(value=="CBS") return "css";  return value.toLowerCase();}
 }
 
