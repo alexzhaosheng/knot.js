@@ -6,18 +6,19 @@
                     apName === "knot-example-tagEditor";
         },
         getValue: function (target, apName, options) {
-            if(!target.tagEditorData) {
+            if(!target.tagEditorModel) {
                 return null;
             }
             else {
-                return target.tagEditorData.getValue();
+                return target.tagEditorModel.getValue();
             }
         },
 
         setValue: function (target, apName, value, options) {
-            if(!target.tagEditorData) {
-                target.tagEditorData = new TagEditorData();
-                var ele = global.Knot.Advanced.createFromTemplate("knot-example-tagEditor", target.tagEditorData, target);
+            if(!target.tagEditorModel) {
+                target.tagEditorModel = new TagEditorModel();
+                var ele = global.Knot.Advanced.createFromTemplate("knot-example-tagEditor", target.tagEditorModel, target);
+                global.Knot.Advanced.setDataContext(ele, target.tagEditorModel);
                 $(target).append(ele);
                 ele.children[0].onTagEditorItemAdded = function (n) {
                     if(options && options.color) {
@@ -25,22 +26,22 @@
                     }
                 };
             }
-            target.tagEditorData.setValue(value);
+            target.tagEditorModel.setValue(value);
         },
         doesSupportMonitoring: function (target, apName) {
             return true;
         },
         monitor: function (target, apName, callback, options) {
-            if(!target.tagEditorData) {
-                target.tagEditorData = new TagEditorData();
+            if(!target.tagEditorModel) {
+                target.tagEditorModel = new TagEditorModel();
             }
-            target.tagEditorData.monitor(callback);
+            target.tagEditorModel.monitor(callback);
         },
         stopMonitoring: function (target, apName, callback, options) {
-            if(!target.tagEditorData) {
+            if(!target.tagEditorModel) {
                 return;
             }
-            target.tagEditorData.stopMonitoring(callback);
+            target.tagEditorModel.stopMonitoring(callback);
         }
     };
 
@@ -56,41 +57,41 @@
         return {name:name, onDelete:onDeleteTag};
     }
 
-    var TagEditorData = function () {
+    var TagEditorModel = function () {
         this.tags = [];
         this._editor = null;
         this._changedCallbacks = [];
     };
-    TagEditorData.prototype.setValue = function (value) {
+    TagEditorModel.prototype.setValue = function (value) {
         if(!value) {
             this.tags = [];
         }
         this.tags = value.split(",").map(function (t) {return createTag(t);});
     };
-    TagEditorData.prototype.getValue = function () {
+    TagEditorModel.prototype.getValue = function () {
         return this.tags.map(function (t) {return t.name;}).join(",");
     };
 
-    TagEditorData.prototype.raiseChangedEvent = function () {
+    TagEditorModel.prototype.raiseChangedEvent = function () {
         for(var i=0; i< this._changedCallbacks.length; i++) {
             this._changedCallbacks[i]();
         }
     };
 
-    TagEditorData.prototype.monitor = function (callback) {
+    TagEditorModel.prototype.monitor = function (callback) {
         this._changedCallbacks.push(callback);
     };
-    TagEditorData.prototype.stopMonitoring = function (value) {
+    TagEditorModel.prototype.stopMonitoring = function (value) {
         this._changedCallbacks.splice(this._changedCallbacks.indexOf(value), 1);
     };
 
-    TagEditorData.prototype.deleteTag = function (tag) {
+    TagEditorModel.prototype.deleteTag = function (tag) {
         if(this.tags.indexOf(tag) >= 0) {
             this.tags.splice(this.tags.indexOf(tag), 1);
             this.raiseChangedEvent();
         }
     };
-    TagEditorData.prototype.onAdd = function (arg, node) {
+    TagEditorModel.prototype.onAdd = function (arg, node) {
         var input  = $(node).closest(".knot-example-tagEditor").find("input");
         this.tags = this.tags.concat(input.val().split(",").map(function (t) {return createTag(t);}));
         input.val("");

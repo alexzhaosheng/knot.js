@@ -6,7 +6,7 @@ $private
         <div class="pageHeader" knot-template></div>
     </div>
     <div class="page-contentArea">
-        <div knot-template-id=""></div>
+        <div knot-template></div>
     </div>
 </div>
 }}>>
@@ -24,5 +24,5 @@ $private
 }
 .knot-example-tabPage .page-contentArea>div{
     style.display: isSelected>{return value?"block":"none"};
-    content[template:@__knot_global.createKnotExampleTabPageContent]: *;
+    content[template:@__knot_global.createKnotExampleTabPageContent]: data;
 }

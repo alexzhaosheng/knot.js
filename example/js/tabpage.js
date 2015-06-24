@@ -36,9 +36,10 @@
         }
     };
 
-    global.Knot.Advanced.registerNamedGlobalSymbol("createKnotExampleTabPageContent", function (page) {
-        var node =  global.Knot.Advanced.createFromTemplate(page.template, page.data, this);
-        global.Knot.Advanced.setDataContext(node, page.data);
+    global.Knot.Advanced.registerNamedGlobalSymbol("createKnotExampleTabPageContent", function (data) {
+        var model = global.Knot.getDataContext(this);
+        var node =  global.Knot.Advanced.createFromTemplate(model.template, data, this);
+        global.Knot.Advanced.setDataContext(node, data);
         return node;
     });
     global.Knot.Advanced.registerNamedGlobalSymbol("onPageHeaderClicked", function (evt, node) {

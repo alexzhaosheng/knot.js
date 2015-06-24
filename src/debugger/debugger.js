@@ -1,7 +1,8 @@
 /*
 Knot.js debugger
  */
-(function (window) {
+(function (global) {
+    "use strict";
     var _isFilterEnabled = false;
 
     //this is the red rectangle to indicate the element in opener window
@@ -17,14 +18,14 @@ Knot.js debugger
     //parse html by using the document object from opener, otherwise when the parsed element is added to
     //the opener window, exception may happen.
     function parseHTMLInOpener (html) {
-        var div = window.opener.document.createElement('div');
+        var div = global.opener.document.createElement('div');
         div.innerHTML = html;
         return div.childNodes[0];
-    };
+    }
 
     function getClosestVisibleElement(element) {
-        if(element.offset().left == 0 && element.offset().top == 0) {
-            if(element[0].tagName.toLocaleLowerCase() == "body") {
+        if(element.offset().left === 0 && element.offset().top === 0) {
+            if(element[0].tagName.toLocaleLowerCase() === "body") {
                 return element;
             }
             else{
@@ -46,7 +47,7 @@ Knot.js debugger
     }
 
     //binding target. this will be the data context of "BODY"
-    window.debuggerModel ={
+    global.debuggerModel ={
         highestLogLevel:"Info",
 
         //runtime log
@@ -68,10 +69,10 @@ Knot.js debugger
                     .height(Math.max(20, closestVisibleEle.outerHeight()))
                     .find("div:nth-child(2)").css("top",_elementPositionMask.height()+3).text(this.description);
 
-                $(window.opener.document.body).append(_elementPositionMask);
+                $(global.opener.document.body).append(_elementPositionMask);
             }
             catch (err) {
-                alert(err.message);
+                global.alert(err.message);
             }
 
             clearTimeout(_currentMaskTimeoutHandler);
@@ -120,17 +121,17 @@ Knot.js debugger
         },
 
         onClearLogs: function () {
-            window.debuggerModel.knotChangeLog.length = 0;
-            window.debuggerModel.knotChangeLog.notifyChanged();
+            global.debuggerModel.knotChangeLog.length = 0;
+            global.debuggerModel.knotChangeLog.notifyChanged();
         }
     };
 
 
     // save/restore the status of the expander
-    window.Knot.monitorObject(window.debuggerModel, "isKnotLogExpanded", function (p, oldValue, newValue) {
+    global.Knot.monitorObject(global.debuggerModel, "isKnotLogExpanded", function (p, oldValue, newValue) {
         $.cookie('knot-debugger-knot-log-expanded', newValue?"1":"0", { expires: 365 });
     });
-    window.debuggerModel.isKnotLogExpanded = $.cookie("knot-debugger-knot-log-expanded") == "1";
+    global.debuggerModel.isKnotLogExpanded = $.cookie("knot-debugger-knot-log-expanded") === "1";
 
 
 
@@ -140,13 +141,14 @@ Knot.js debugger
 
     //use keyword to search DOM, then highlight the result
     function searchInNode(node, keyword) {
+        var i;
         node.isHighlighted = keyword? (node.description.toLowerCase().indexOf(keyword)>=0):false;
         if(node.options) {
-            for(var i=0; i< node.options.length; i++) {
+            for(i=0; i< node.options.length; i++) {
                 node.options[i].isHighlighted = (node.options[i].description.toLowerCase().indexOf(keyword) >=0);
             }
         }
-        for(var i=0;i<node.childrenInfo.length; i++) {
+        for(i=0;i<node.childrenInfo.length; i++) {
             searchInNode(node.childrenInfo[i], keyword);
         }
     }
@@ -154,17 +156,18 @@ Knot.js debugger
     function searchByNode(node, targetNode) {
         var found = false;
         for(var i=0;i<node.childrenInfo.length; i++) {
-            if(searchByNode(node.childrenInfo[i], targetNode))
+            if(searchByNode(node.childrenInfo[i], targetNode)) {
                 found = true;
+            }
         }
 
         if(node.options) {
-            for(var i=0; i< node.options.length; i++) {
+            for(i=0; i< node.options.length; i++) {
                 node.options[i].isHighlighted = false;
             }
         }
         if(!found)
-            node.isHighlighted = (node.node == targetNode);
+            node.isHighlighted = (node.node === targetNode);
         return found || node.isHighlighted;
     }
 
@@ -172,8 +175,9 @@ Knot.js debugger
     function collapseIrrelevantNodes(node) {
         var collapse = true;
         for(var i=0;i<node.childrenInfo.length; i++) {
-            if(collapseIrrelevantNodes(node.childrenInfo[i]))
+            if(collapseIrrelevantNodes(node.childrenInfo[i])) {
                 collapse = false;
+            }
         }
 
         var highlighted = node.isHighlighted;
@@ -202,20 +206,23 @@ Knot.js debugger
     //////////////////////////////////////////////////////////
 
     function findNodeInTree(nodeInfo, node) {
-        if(nodeInfo.node == node)
+        if(nodeInfo.node === node) {
             return nodeInfo;
+        }
         for(var i=0; i<nodeInfo.childrenInfo.length; i++) {
             var info = findNodeInTree(nodeInfo.childrenInfo[i], node)
-            if(info)
+            if(info) {
                 return  info;
+            }
         }
         return null;
     }
     function getNodeInfo(node) {
-        for(var i=0; i<window.debuggerModel.domTreeNodes.length; i++) {
-            var info = findNodeInTree(window.debuggerModel.domTreeNodes[i], node);
-            if(info)
+        for(var i=0; i<global.debuggerModel.domTreeNodes.length; i++) {
+            var info = findNodeInTree(global.debuggerModel.domTreeNodes[i], node);
+            if(info) {
                 return info;
+            }
         }
         return null;
     }
@@ -228,19 +235,21 @@ Knot.js debugger
     function getAPDescription(ap) {
         if(ap.isComposite) {
             return  "(" +
-                ap.childrenAPs.map(function (t) {return getAPDescription(t);}).join(" & ")
+                ap.childrenAPs.map(function (t) {return getAPDescription(t);}).join(" & ") +
             ")>" + ap.nToOnePipe;
         }
         else{
             var pipes = ap.pipes?ap.pipes.join(" > "):"";
-            if(pipes)
-                pipes =" > " + pipes;
+            if(pipes) {
+                pipes = " > " + pipes;
+            }
 
             var options = "";
             if(ap.options) {
                 for(var p in ap.options) {
-                    if(options)
+                    if(options) {
                         options += "; ";
+                    }
                     options += p+": "+ap.options[p];
                 }
                 if(options) {
@@ -257,12 +266,13 @@ Knot.js debugger
 
     //get description tree for the DOM tree start from node
     function generateDOMTree(node) {
-        if(node.hasAttribute("knot-debugger-ignore"))
+        if(node.hasAttribute("knot-debugger-ignore")) {
             return;
+        }
         var nodeInfo = {
             isExpanded:true,
             childrenInfo: []
-        }
+        };
 
         for(var i=0; i<node.children.length; i++) {
             var info =generateDOMTree(node.children[i]);
@@ -272,14 +282,15 @@ Knot.js debugger
             }
         }
 
-        if(!node.__knot && nodeInfo.childrenInfo.length == 0)
+        if(!node.__knot && nodeInfo.childrenInfo.length == 0) {
             return null;
+        }
 
         if(node.__knot) {
             nodeInfo.dataContext = node.__knot.dataContext;
             if(node.__knot.options) {
                 nodeInfo.options = [];
-                for(var i=0; i< node.__knot.options.length; i++) {
+                for(i=0; i< node.__knot.options.length; i++) {
                     nodeInfo.options.push({
                         description:getKnotOptionsStr(node.__knot.options[i]),
                         knotOption:node.__knot.options[i],
@@ -318,20 +329,21 @@ Knot.js debugger
     // log and debugger that called by the opener
     //////////////////////////////////////////////////////
     var _debugLogCount = 0;
-    var _logLevels =  ["Info", "Warning", "Error"]
-    window.calledByOpener = {
+    var _logLevels =  ["Info", "Warning", "Error"];
+    global.calledByOpener = {
         log: function (log) {
-            if(_logLevels.indexOf(log.level) > _logLevels.indexOf(window.debuggerModel.highestLogLevel)) {
-                window.debuggerModel.highestLogLevel = log.level;
+            if(_logLevels.indexOf(log.level) > _logLevels.indexOf(global.debuggerModel.highestLogLevel)) {
+                global.debuggerModel.highestLogLevel = log.level;
             }
-            window.debuggerModel.logs.unshift(log);
+            global.debuggerModel.logs.unshift(log);
         },
         debugger:{
             helper:{
                 setIsTiedUp: function (leftTarget,  knotOption, isTiedUp) {
                     var info = getNodeInfo(leftTarget);
-                    if(!info)
+                    if(!info) {
                         return;
+                    }
 
                     for(var i=0; i<info.options.length; i++) {
                         if(info.options[i].knotOption == knotOption) {
@@ -344,14 +356,16 @@ Knot.js debugger
 
             knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
                 var info = getNodeInfo(leftTarget);
-                if(!info)
+                if(!info) {
                     return;
+                }
                 for(var i=0; i<info.options.length; i++) {
-                    if(info.options[i].knotOption == knotOption) {
-                        if(info.options[i].latestValueInfo)
+                    if(info.options[i].knotOption === knotOption) {
+                        if(info.options[i].latestValueInfo) {
                             info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
+                        }
                         info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
-                        window.debuggerModel.knotChangeLog.unshift({
+                        global.debuggerModel.knotChangeLog.unshift({
                             id:info.options[i].latestValueInfo.id,
                             nodeDescription: info.description,
                             knotOption: info.options[i],
@@ -374,15 +388,17 @@ Knot.js debugger
 
             nodeAdded: function (node) {
                 var n = node;
-                if(getNodeInfo(n))
+                if(getNodeInfo(n)) {
                     return;
+                }
                 while(n && !getNodeInfo(n.parentNode)) {
                     n = n.parentNode;
                 }
                 if(n) {
                     var info = generateDOMTree(n);
-                    if(!info)
+                    if(!info) {
                         return;
+                    }
                     var parentInfo = getNodeInfo(n.parentNode);
                     var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
                     parentInfo.childrenInfo.splice(index, 0, info);
@@ -391,15 +407,16 @@ Knot.js debugger
             },
             nodeRemoved: function (node) {
                 var info = getNodeInfo(node);
-                if(!info)
+                if(!info) {
                     return;
+                }
                 if(info.parent) {
                     info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
                     info.parent = null;
                 }
             }
         }
-    }
+    };
 
 
     function toggleFilter(enabled) {
@@ -412,11 +429,11 @@ Knot.js debugger
         }
 
         if(_isFilterEnabled) {
-            collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
+            collapseIrrelevantNodes(global.debuggerModel.domTreeNodes[0]);
         }
         else{
             $("#searchText").val("");
-            expandAll(window.debuggerModel.domTreeNodes[0]);
+            expandAll(global.debuggerModel.domTreeNodes[0]);
         }
     }
 
@@ -424,56 +441,56 @@ Knot.js debugger
     //initialize
     ////////////////////////////////////////////////////
 
-    window.Knot.ready(function (succ, err) {
+    global.Knot.ready(function (succ, err) {
         if(!succ) {
-            alert(err.message);
+            global.alert(err.message);
             return;
         }
 
-        if(!window.opener) {
-            alert("This page should only be opened by Knot debugger.")
+        if(!global.opener) {
+            global.alert("This page should only be opened by Knot debugger.");
             return;
         }
 
-        var targetWindowTitle =window.opener.document.title?window.opener.document.title:"untitled";
-        $("#ownerWindowInfo").text(targetWindowTitle + " ["+ window.opener.location+"]");
+        var targetWindowTitle =global.opener.document.title?global.opener.document.title:"untitled";
+        $("#ownerWindowInfo").text(targetWindowTitle + " ["+ global.opener.location+"]");
         document.title = "Knot.js Debugger - " + targetWindowTitle;
 
         $("#locateElementButton").click(function () {
             $("#fullWindowMessage").show().find("div").text("Use mouse left button to pick an element from the original page.");
             var downHandler = function (arg) {
-                var e = window.opener.document.elementFromPoint(arg.clientX, arg.clientY);
+                var e = global.opener.document.elementFromPoint(arg.clientX, arg.clientY);
                 toggleFilter(false);
-                searchByNode(window.debuggerModel.domTreeNodes[0], e);
+                searchByNode(global.debuggerModel.domTreeNodes[0], e);
                 toggleFilter(true);
-                window.opener.removeEventListener("mousedown", downHandler, true);
-                window.opener.removeEventListener("mousemove", mouseMoveHandler);
+                global.opener.removeEventListener("mousedown", downHandler, true);
+                global.opener.removeEventListener("mousemove", mouseMoveHandler);
                 arg.preventDefault();
                 $("#fullWindowMessage").hide();
                 _mouseTip.remove();
 
 
             };
-            window.opener.addEventListener("mousedown",downHandler , true);
+            global.opener.addEventListener("mousedown",downHandler , true);
 
-            $(window.opener.document.body).append(_mouseTip);
+            $(global.opener.document.body).append(_mouseTip);
             var mouseMoveHandler = function (arg) {
-                var e = window.opener.document.elementFromPoint(arg.clientX, arg.clientY);
+                var e = global.opener.document.elementFromPoint(arg.clientX, arg.clientY);
                 if(e) {
                     _mouseTip.text(getHTMLElementDescription(e));
                 }
-                _mouseTip.css("top",window.opener.document.body.scrollTop +  arg.clientY+25).css("left", window.opener.document.body.scrollLeft +arg.clientX);
+                _mouseTip.css("top",global.opener.document.body.scrollTop +  arg.clientY+25).css("left", global.opener.document.body.scrollLeft +arg.clientX);
             };
-            window.opener.addEventListener("mousemove",mouseMoveHandler);
+            global.opener.addEventListener("mousemove",mouseMoveHandler);
         });
 
         $("#searchButton").click(function () {
-            searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
+            searchInNode(global.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
             toggleFilter(true);
         });
         $("#searchText").keyup(function (e) {
-            if(e.which == 13) {
-                searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
+            if(e.which === 13) {
+                searchInNode(global.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
                 toggleFilter(true);
             }
         });
@@ -486,12 +503,10 @@ Knot.js debugger
             toggleFilter(!_isFilterEnabled);
         });
 
-        window.debuggerModel.domTreeNodes = [generateDOMTree(window.opener.document.body)];
+        global.debuggerModel.domTreeNodes = [generateDOMTree(global.opener.document.body)];
 
         //ask opener sending the cached logs
-        window.opener.knotjsDebugger.pushCached();
+        global.opener.knotjsDebugger.pushCached();
     });
 
-})((function () {
-        return this;
-    })());
+})(window);
