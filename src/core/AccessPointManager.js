@@ -376,24 +376,11 @@
             return true;
         },
         getValue: function (target, apName, options) {
-            var returnFunc = false;
+
             if(apName[0] === "@") {
-                returnFunc = true;
                 apName = apName.substr(1);
             }
-            var value =  __private.Utility.getValueOnPath(target, apName);
-            if(typeof(value) === "function" && !returnFunc) {
-                try{
-                    return value.apply(target);
-                }
-                catch(err) {
-                    __private.Log.error("Call get value function failed.", err);
-                    return undefined;
-                }
-            }
-            else{
-                return value;
-            }
+            return __private.Utility.getValueOnPath(target, apName);
         },
 
 

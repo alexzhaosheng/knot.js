@@ -505,8 +505,17 @@ Knot.js debugger
 
         global.debuggerModel.domTreeNodes = [generateDOMTree(global.opener.document.body)];
 
-        //ask opener sending the cached logs
-        global.opener.knotjsDebugger.pushCached();
+        //get cached logs
+        var logs = global.opener.knotjsDebugger.getCachedLog();
+        for(var i=0; i< logs.length; i++){
+            global.calledByOpener.log(logs[i]);
+        }
+        var debugLog = global.opener.knotjsDebugger.getCachedDebugLog();
+        for(i=0; i< debugLog.length; i++){
+            global.calledByOpener.debugger[debugLog[i].func].apply(global.calledByOpener.debugger, debugLog[i].args);
+        }
+
+        $("#loadingMessage").remove();
     });
 
 })(window);

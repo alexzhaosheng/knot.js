@@ -401,3 +401,20 @@ li{
     text-align: left;
     display: inline-block;
 }
+
+
+#loadingMessage{
+    position: absolute;
+    top: 0px; left:0px;right:0px;bottom: 0px;
+    background-color: #222235;
+    color:whitesmoke;
+
+    z-index: 100;
+}
+#loadingMessage>div{
+    position: absolute;
+    top:30%;
+    left: 0px;
+    right: 0px;
+    text-align: center;
+}
