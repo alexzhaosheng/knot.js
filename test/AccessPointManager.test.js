@@ -1,35 +1,37 @@
-(function (window){
-    var scope = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
 
-    var TestAccessPointerProvider = function (supportTarget, apName){
+    var scope = global.Knot.getPrivateScope();
+
+    var TestAccessPointerProvider = function (supportTarget, apName) {
         this.supportTarget = supportTarget;
         this.apName = apName;
     };
-    TestAccessPointerProvider.prototype.doesSupport = function (target, apName){
-        if(this.supportTarget){
-            return target == this.supportTarget && this.apName == apName;
+    TestAccessPointerProvider.prototype.doesSupport = function (target, apName) {
+        if(this.supportTarget) {
+            return target === this.supportTarget && this.apName === apName;
         }
         return true;
     };
-    TestAccessPointerProvider.prototype.getValue = function (target, apName){
+    TestAccessPointerProvider.prototype.getValue = function (target, apName) {
         return scope.Utility.getValueOnPath(target, apName);
     };
-    TestAccessPointerProvider.prototype.setValue = function (target, apName, value){
+    TestAccessPointerProvider.prototype.setValue = function (target, apName, value) {
         return scope.Utility.setValueOnPath(target, apName, value);
     };
-    TestAccessPointerProvider.prototype.doesSupportMonitoring = function (target, apName){
+    TestAccessPointerProvider.prototype.doesSupportMonitoring = function (target, apName) {
         return true;
     };
-    TestAccessPointerProvider.prototype.monitor = function (target, apName, callback){
+    TestAccessPointerProvider.prototype.monitor = function (target, apName, callback) {
         scope.DataObserver.monitor(target, apName, callback);
-    }
-    TestAccessPointerProvider.prototype.stopMonitoring = function (target, apName, callback){
+    };
+    TestAccessPointerProvider.prototype.stopMonitoring = function (target, apName, callback) {
         scope.DataObserver.stopMonitoring(target, apName, callback);
-    }
+    };
 
 
 
-    QUnit.test( "private.AccessPointerManager", function ( assert ) {
+    global.QUnit.test( "private.AccessPointerManager", function ( assert ) {
         var target1={}, target2={}, target3={};
 
         var apProvider = new TestAccessPointerProvider();
@@ -101,10 +103,10 @@
 
         //test pipes in global scope
         var latestThisPointer = null;
-        window.converter = {
-            intToString: function (value){
+        global.converter = {
+            intToString: function (value) {
                 latestThisPointer = this;
-                switch (value){
+                switch (value) {
                     case 1:
                         return "one";
                     case 2:
@@ -113,8 +115,8 @@
                         throw new Error("Unknow number:"+value);
                 }
              },
-            strToInt: function (value){
-                switch (value){
+            strToInt: function (value) {
+                switch (value) {
                     case "one":
                         return 1;
                     case "two":
@@ -123,13 +125,14 @@
                         throw new Error("Unknow number:"+value);
                 }
             },
-            dotsToInt: function (value){
+            dotsToInt: function (value) {
                 return value.length;
             },
-            intToDots: function (value){
+            intToDots: function (value) {
                 var f = "";
-                for(var i=0;i<value;i++)
-                    f+=".";
+                for(var i=0;i<value;i++) {
+                    f += ".";
+                }
                 return f;
             }
         };
@@ -192,13 +195,14 @@
         assert.equal(target2.intValue, 2, "untie the whole chain");
 
 
-        window.areTheySame = function (values){
-            for(var i=1; i< values.length; i++){
-                if(values[i-1] != values[i])
+        global.areTheySame = function (values) {
+            for(var i=1; i< values.length; i++) {
+                if(values[i-1] !== values[i]) {
                     return false;
+                }
             }
             return true;
-        }
+        };
 
         //test composite AP
         var knot = scope.OptionParser.parse("boolValue:(strValue>converter.strToInt & dotValue>converter.dotsToInt)> areTheySame")[0];
@@ -233,7 +237,7 @@
         assert.equal(target2.boolValue, true, "untie knot with n to 1 pipe");
 
 
-        var knot = scope.OptionParser.parse("count:list.length")[0];
+        knot = scope.OptionParser.parse("count:list.length")[0];
         target1 = {count:0};
         target2 = {list:[1,2]};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
@@ -243,14 +247,14 @@
         assert.equal(target1.count, 3, "tie to array length");
 
 
-        var knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
+        knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
         target1={display:""};
         target2={isVisible:true};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
         assert.equal(target1.display, "block", "Directly tie to function");
 
 
-        var knot = scope.OptionParser.parse('content:organization.leader.*')[0];
+        knot = scope.OptionParser.parse('content:organization.leader.*')[0];
         target1={content:null};
         target2={organization:{leader:{name:"satoshi"}}};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
@@ -260,34 +264,34 @@
         assert.equal(target1.content, target2.organization.leader, "Tie to *");
         assert.equal(target1.content["*"], undefined, "Tie to *");
 
-        var knot = scope.OptionParser.parse('content:*')[0];
+        knot = scope.OptionParser.parse('content:*')[0];
         target1={content:null};
         target2={name:"satoshi"};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
         assert.equal(target1.content, target2, "Tie to *");
     });
 
-    QUnit.test( "private.AccessPointerManager.knotEvent", function ( assert ) {
+    global.QUnit.test( "private.AccessPointerManager.knotEvent", function ( assert ) {
         var target1, target2;
         var latestLeft, latestRight, latestChangedKnot, latestValue, latestIsFromLeftToRight, latestTarget,fireCount=0;
 
-        window.accessPointerEventTest = {
-            nameChanged: function (left, right, knot, value, isFromleftToRight){
+        global.accessPointerEventTest = {
+            nameChanged: function (left, right, knot, value, isFromleftToRight) {
                 latestLeft = left;
                 latestRight = right;
                 latestChangedKnot = knot;
                 latestValue= value;
                 fireCount++;
             },
-            valueSetForAP: function (apDescription, value){
+            valueSetForAP: function (apDescription, value) {
                 latestTarget = this; latestChangedKnot = apDescription; latestValue=value;
             },
-            valueChangeForAP: function (ap, oldValue, newValue){
+            valueChangeForAP: function (ap, oldValue, newValue) {
                 latestTarget = this; latestChangedKnot = ap; latestValue = newValue;
             }
-        }
+        };
 
-        knot = scope.OptionParser.parse("value:name|@change:@/accessPointerEventTest.nameChanged")[0];
+        var knot = scope.OptionParser.parse("value:name|@change:@/accessPointerEventTest.nameChanged")[0];
         target1 = {value: ""};
         target2 = {name: "satoshi"};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
@@ -351,10 +355,10 @@
         assert.equal(latestValue, "laozi", "ap event @change works");
     });
 
-    QUnit.test( "private.AccessPointerManager.target modifier", function ( assert ) {
+    global.QUnit.test( "private.AccessPointerManager.target modifier", function ( assert ) {
         var target1, target2;
 
-        knot = scope.OptionParser.parse("valueCopy:*LEFT.value>{return value+', copy';}")[0];
+        var knot = scope.OptionParser.parse("valueCopy:*LEFT.value>{return value+', copy';}")[0];
         target1 = {value: "knot.js", valueCopy:""};
         scope.AccessPointManager.tieKnot(target1, null,  knot);
         assert.equal(target1.value,"knot.js", "target modifier works");
@@ -381,10 +385,8 @@
 
         knot = scope.OptionParser.parse("value:*LEFT.value>{return value+', copy';}")[0];
         target1 = {value: "knot.js", valueCopy:""};
-        scope.AccessPointManager.tieKnot(target1.value, null,  knot);
-        assert.equal(target1.value,"knot.js", "use target modifier to bind to itself won't cause any problem");
+        scope.AccessPointManager.tieKnot(target1, null,  knot);
+        assert.equal(target1.value,"knot.js, copy", "use target modifier to bind to itself won't cause any problem");
     });
 
-    })((function () {
-        return this;
-    })());
+    })(window);

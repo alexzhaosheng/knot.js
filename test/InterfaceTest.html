@@ -47,7 +47,7 @@
         };
 
 
-        Knot.ready(function (succ, err){
+        Knot.ready(function (succ, err) {
             if(!succ)
                 alert(err.message);
             else
@@ -55,8 +55,8 @@
         })
 
 
-        function doTest(){
-            QUnit.test( "Integration test", function ( assert ) {
+        function doTest() {
+            global.QUnit.test( "Integration test", function ( assert ) {
                 assert.equal($("#testInput").val(), "yoda", "initial value is set");
                 assert.equal($("#testMessage").text(), "Hello yoda", "initial value is set");
 

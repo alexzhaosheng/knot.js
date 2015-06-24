@@ -1,9 +1,10 @@
-(function (window){
-    var scope = window.Knot.getPrivateScope();
-    QUnit.test( "private.ArrayMonitor", function ( assert ) {
+(function (global) {
+    "use strict";
+    var scope = global.Knot.getPrivateScope();
+    global.QUnit.test( "private.ArrayMonitor", function ( assert ) {
         var testArray = [];
         var changed = false;
-        scope.DataObserver.monitor(testArray, null, function (){
+        scope.DataObserver.monitor(testArray, null, function () {
             changed = true;
         });
         testArray.push("test");
@@ -18,7 +19,7 @@
 
 
         changed =false;
-        testArray.unshift("test")
+        testArray.unshift("test");
         assert.equal(testArray[0], "test", "array.unshift works");
         assert.equal(changed, true, "array.unshift works");
         assert.equal(testArray.length, 1, "array.unshift works");
@@ -50,6 +51,4 @@
         assert.equal(testArray[2], "test1", "array.reverse works");
         assert.equal(testArray[0], "test3", "array.reverse works");
     });
-})((function () {
-        return this;
-    })());
+})(window);

@@ -1,7 +1,7 @@
 /*
 Knot.js debugger
  */
-(function (window){
+(function (window) {
     var _isFilterEnabled = false;
 
     //this is the red rectangle to indicate the element in opener window
@@ -16,15 +16,15 @@ Knot.js debugger
 
     //parse html by using the document object from opener, otherwise when the parsed element is added to
     //the opener window, exception may happen.
-    function parseHTMLInOpener (html){
+    function parseHTMLInOpener (html) {
         var div = window.opener.document.createElement('div');
         div.innerHTML = html;
         return div.childNodes[0];
     };
 
-    function getClosestVisibleElement(element){
-        if(element.offset().left == 0 && element.offset().top == 0){
-            if(element[0].tagName.toLocaleLowerCase() == "body"){
+    function getClosestVisibleElement(element) {
+        if(element.offset().left == 0 && element.offset().top == 0) {
+            if(element[0].tagName.toLocaleLowerCase() == "body") {
                 return element;
             }
             else{
@@ -37,7 +37,7 @@ Knot.js debugger
     }
 
     //show JSON with syntax highlight
-    function showJson(message, json){
+    function showJson(message, json) {
         $("#jsonViewer").show()
             .find("code").html(json);
         $("#jsonViewer").find(".jsonViewerMessage").text(message);
@@ -59,7 +59,7 @@ Knot.js debugger
         isKnotLogExpanded:false,
 
         //locate element on opener window by mouse clicking
-        onLocateElement: function (){
+        onLocateElement: function () {
             try{
                 var closestVisibleEle = getClosestVisibleElement($(this.node));
                 var pos = closestVisibleEle.offset();
@@ -70,31 +70,31 @@ Knot.js debugger
 
                 $(window.opener.document.body).append(_elementPositionMask);
             }
-            catch (err){
+            catch (err) {
                 alert(err.message);
             }
 
             clearTimeout(_currentMaskTimeoutHandler);
-            _currentMaskTimeoutHandler = setTimeout(function (){
+            _currentMaskTimeoutHandler = setTimeout(function () {
                 _elementPositionMask.remove();
                 _currentMaskTimeoutHandler = 0;
             }, 3*1000);
             _elementPositionMask[0].scrollIntoView();
         },
 
-        onShowDataContext: function (){
+        onShowDataContext: function () {
             var content = JSON.stringify(this.dataContext, null, 4);
             showJson("Current data context for \""+ this.description + "\"", content);
         },
 
-        onShowKnotDetail: function (){
-            function getDes(info){
+        onShowKnotDetail: function () {
+            function getDes(info) {
                 var msg  = "id:" +  info.id + " " +  (info.isFromLeftToRight?"output":"input") +"\n";
                 msg += JSON.stringify(info.value);
                 return msg;
             }
             var content = getDes(this.latestValueInfo);
-            for(var i=this.historyValueInfo.length-1; i>=0 ; i--){
+            for(var i=this.historyValueInfo.length-1; i>=0 ; i--) {
                 content += "\n\n";
                 content += getDes(this.historyValueInfo[i]);
             }
@@ -102,14 +102,14 @@ Knot.js debugger
             showJson("Value changed history for knot \"" + this.description + "\"" , content);
         },
 
-        onShowKnotValueLogDetail: function (){
+        onShowKnotValueLogDetail: function () {
             var content = JSON.stringify(this.value, null, 4);
             showJson("Current data context for \""+ this.nodeDescription + " " + this.knotOption.description + "\"", content);
         },
 
         //play the color animation when value is changed
-        onKnotValueChanged: function (apDes, value){
-            if(!value){
+        onKnotValueChanged: function (apDes, value) {
+            if(!value) {
                 $(this).stop();
             }
             else{
@@ -119,7 +119,7 @@ Knot.js debugger
             }
         },
 
-        onClearLogs: function (){
+        onClearLogs: function () {
             window.debuggerModel.knotChangeLog.length = 0;
             window.debuggerModel.knotChangeLog.notifyChanged();
         }
@@ -127,7 +127,7 @@ Knot.js debugger
 
 
     // save/restore the status of the expander
-    window.Knot.monitorObject(window.debuggerModel, "isKnotLogExpanded", function (p, oldValue, newValue){
+    window.Knot.monitorObject(window.debuggerModel, "isKnotLogExpanded", function (p, oldValue, newValue) {
         $.cookie('knot-debugger-knot-log-expanded', newValue?"1":"0", { expires: 365 });
     });
     window.debuggerModel.isKnotLogExpanded = $.cookie("knot-debugger-knot-log-expanded") == "1";
@@ -139,27 +139,27 @@ Knot.js debugger
     //////////////////////////////////////////////////////////
 
     //use keyword to search DOM, then highlight the result
-    function searchInNode(node, keyword){
+    function searchInNode(node, keyword) {
         node.isHighlighted = keyword? (node.description.toLowerCase().indexOf(keyword)>=0):false;
-        if(node.options){
-            for(var i=0; i< node.options.length; i++){
+        if(node.options) {
+            for(var i=0; i< node.options.length; i++) {
                 node.options[i].isHighlighted = (node.options[i].description.toLowerCase().indexOf(keyword) >=0);
             }
         }
-        for(var i=0;i<node.childrenInfo.length; i++){
+        for(var i=0;i<node.childrenInfo.length; i++) {
             searchInNode(node.childrenInfo[i], keyword);
         }
     }
     //highlight the target node while remove highlight from the other nodes
-    function searchByNode(node, targetNode){
+    function searchByNode(node, targetNode) {
         var found = false;
-        for(var i=0;i<node.childrenInfo.length; i++){
+        for(var i=0;i<node.childrenInfo.length; i++) {
             if(searchByNode(node.childrenInfo[i], targetNode))
                 found = true;
         }
 
-        if(node.options){
-            for(var i=0; i< node.options.length; i++){
+        if(node.options) {
+            for(var i=0; i< node.options.length; i++) {
                 node.options[i].isHighlighted = false;
             }
         }
@@ -169,16 +169,16 @@ Knot.js debugger
     }
 
     //collapse node as many as possible to emphasis the highlighted ones
-    function collapseIrrelevantNodes(node){
+    function collapseIrrelevantNodes(node) {
         var collapse = true;
-        for(var i=0;i<node.childrenInfo.length; i++){
+        for(var i=0;i<node.childrenInfo.length; i++) {
             if(collapseIrrelevantNodes(node.childrenInfo[i]))
                 collapse = false;
         }
 
         var highlighted = node.isHighlighted;
-        if(!highlighted && node.options){
-            for(var i=0; i<node.options.length;i++){
+        if(!highlighted && node.options) {
+            for(var i=0; i<node.options.length;i++) {
                 if(node.options[i].isHighlighted)
                 {
                     highlighted = true;
@@ -189,8 +189,8 @@ Knot.js debugger
         node.isExpanded = highlighted || !collapse;
         return node.isExpanded;
     }
-    function expandAll(node){
-        for(var i=0;i<node.childrenInfo.length; i++){
+    function expandAll(node) {
+        for(var i=0;i<node.childrenInfo.length; i++) {
             expandAll(node.childrenInfo[i]);
         }
         node.isExpanded = true;
@@ -201,18 +201,18 @@ Knot.js debugger
     //find node in tree
     //////////////////////////////////////////////////////////
 
-    function findNodeInTree(nodeInfo, node){
+    function findNodeInTree(nodeInfo, node) {
         if(nodeInfo.node == node)
             return nodeInfo;
-        for(var i=0; i<nodeInfo.childrenInfo.length; i++){
+        for(var i=0; i<nodeInfo.childrenInfo.length; i++) {
             var info = findNodeInTree(nodeInfo.childrenInfo[i], node)
             if(info)
                 return  info;
         }
         return null;
     }
-    function getNodeInfo(node){
-        for(var i=0; i<window.debuggerModel.domTreeNodes.length; i++){
+    function getNodeInfo(node) {
+        for(var i=0; i<window.debuggerModel.domTreeNodes.length; i++) {
             var info = findNodeInTree(window.debuggerModel.domTreeNodes[i], node);
             if(info)
                 return info;
@@ -225,10 +225,10 @@ Knot.js debugger
     // generate the information tree of the DOM
     //////////////////////////////////////////////////////////
 
-    function getAPDescription(ap){
-        if(ap.isComposite){
+    function getAPDescription(ap) {
+        if(ap.isComposite) {
             return  "(" +
-                ap.childrenAPs.map(function (t){return getAPDescription(t);}).join(" & ")
+                ap.childrenAPs.map(function (t) {return getAPDescription(t);}).join(" & ")
             ")>" + ap.nToOnePipe;
         }
         else{
@@ -237,13 +237,13 @@ Knot.js debugger
                 pipes =" > " + pipes;
 
             var options = "";
-            if(ap.options){
-                for(var p in ap.options){
+            if(ap.options) {
+                for(var p in ap.options) {
                     if(options)
                         options += "; ";
                     options += p+": "+ap.options[p];
                 }
-                if(options){
+                if(options) {
                     options = "[" + options + "]";
                 }
             }
@@ -251,12 +251,12 @@ Knot.js debugger
             return ap.description+options + pipes;
         }
     }
-    function getKnotOptionsStr(options){
+    function getKnotOptionsStr(options) {
         return getAPDescription(options.leftAP) + " : " + getAPDescription(options.rightAP);
     }
 
     //get description tree for the DOM tree start from node
-    function generateDOMTree(node){
+    function generateDOMTree(node) {
         if(node.hasAttribute("knot-debugger-ignore"))
             return;
         var nodeInfo = {
@@ -264,9 +264,9 @@ Knot.js debugger
             childrenInfo: []
         }
 
-        for(var i=0; i<node.children.length; i++){
+        for(var i=0; i<node.children.length; i++) {
             var info =generateDOMTree(node.children[i]);
-            if(info){
+            if(info) {
                 nodeInfo.childrenInfo.push(info);
                 info.parent = nodeInfo;
             }
@@ -275,11 +275,11 @@ Knot.js debugger
         if(!node.__knot && nodeInfo.childrenInfo.length == 0)
             return null;
 
-        if(node.__knot){
+        if(node.__knot) {
             nodeInfo.dataContext = node.__knot.dataContext;
-            if(node.__knot.options){
+            if(node.__knot.options) {
                 nodeInfo.options = [];
-                for(var i=0; i< node.__knot.options.length; i++){
+                for(var i=0; i< node.__knot.options.length; i++) {
                     nodeInfo.options.push({
                         description:getKnotOptionsStr(node.__knot.options[i]),
                         knotOption:node.__knot.options[i],
@@ -298,15 +298,15 @@ Knot.js debugger
         return nodeInfo;
     }
 
-    function getHTMLElementDescription(element){
+    function getHTMLElementDescription(element) {
         var description = element.tagName;
-        if(element.id){
+        if(element.id) {
             description += "[#" + element.id+"]";
         }
-        else if(element.className){
+        else if(element.className) {
             description += "[" + element.className.split(" ")
-                .filter(function (t){return t.trim()!="";})
-                .map(function (t){return "."+t;})
+                .filter(function (t) {return t.trim()!="";})
+                .map(function (t) {return "."+t;})
                 .join(" ")+ "]";
         }
         return description;
@@ -320,21 +320,21 @@ Knot.js debugger
     var _debugLogCount = 0;
     var _logLevels =  ["Info", "Warning", "Error"]
     window.calledByOpener = {
-        log: function (log){
-            if(_logLevels.indexOf(log.level) > _logLevels.indexOf(window.debuggerModel.highestLogLevel)){
+        log: function (log) {
+            if(_logLevels.indexOf(log.level) > _logLevels.indexOf(window.debuggerModel.highestLogLevel)) {
                 window.debuggerModel.highestLogLevel = log.level;
             }
             window.debuggerModel.logs.unshift(log);
         },
         debugger:{
             helper:{
-                setIsTiedUp: function (leftTarget,  knotOption, isTiedUp){
+                setIsTiedUp: function (leftTarget,  knotOption, isTiedUp) {
                     var info = getNodeInfo(leftTarget);
                     if(!info)
                         return;
 
-                    for(var i=0; i<info.options.length; i++){
-                        if(info.options[i].knotOption == knotOption){
+                    for(var i=0; i<info.options.length; i++) {
+                        if(info.options[i].knotOption == knotOption) {
                             this.options[i].isTiedUp = isTiedUp;
                             return;
                         }
@@ -342,12 +342,12 @@ Knot.js debugger
                 }
             },
 
-            knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+            knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
                 var info = getNodeInfo(leftTarget);
                 if(!info)
                     return;
-                for(var i=0; i<info.options.length; i++){
-                    if(info.options[i].knotOption == knotOption){
+                for(var i=0; i<info.options.length; i++) {
+                    if(info.options[i].knotOption == knotOption) {
                         if(info.options[i].latestValueInfo)
                             info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
                         info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
@@ -363,23 +363,23 @@ Knot.js debugger
                 }
             },
 
-            knotTied: function (leftTarget, rightTarget, knotOption){
+            knotTied: function (leftTarget, rightTarget, knotOption) {
                 //not used now
                 //this.helper.setIsTiedUp(leftTarget, knotOption, true);
             },
-            knotUntied: function (leftTarget, rightTarget, knotOption){
+            knotUntied: function (leftTarget, rightTarget, knotOption) {
                 //not used now
                 //this.helper.setIsTiedUp(leftTarget, knotOption, false);
             },
 
-            nodeAdded: function (node){
+            nodeAdded: function (node) {
                 var n = node;
                 if(getNodeInfo(n))
                     return;
-                while(n && !getNodeInfo(n.parentNode)){
+                while(n && !getNodeInfo(n.parentNode)) {
                     n = n.parentNode;
                 }
-                if(n){
+                if(n) {
                     var info = generateDOMTree(n);
                     if(!info)
                         return;
@@ -389,11 +389,11 @@ Knot.js debugger
                     info.parent = parentInfo;
                 }
             },
-            nodeRemoved: function (node){
+            nodeRemoved: function (node) {
                 var info = getNodeInfo(node);
                 if(!info)
                     return;
-                if(info.parent){
+                if(info.parent) {
                     info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
                     info.parent = null;
                 }
@@ -411,7 +411,7 @@ Knot.js debugger
             $("#enableFilterButton").removeClass("iconButtonChecked");
         }
 
-        if(_isFilterEnabled){
+        if(_isFilterEnabled) {
             collapseIrrelevantNodes(window.debuggerModel.domTreeNodes[0]);
         }
         else{
@@ -424,13 +424,13 @@ Knot.js debugger
     //initialize
     ////////////////////////////////////////////////////
 
-    window.Knot.ready(function (succ, err){
-        if(!succ){
+    window.Knot.ready(function (succ, err) {
+        if(!succ) {
             alert(err.message);
             return;
         }
 
-        if(!window.opener){
+        if(!window.opener) {
             alert("This page should only be opened by Knot debugger.")
             return;
         }
@@ -439,9 +439,9 @@ Knot.js debugger
         $("#ownerWindowInfo").text(targetWindowTitle + " ["+ window.opener.location+"]");
         document.title = "Knot.js Debugger - " + targetWindowTitle;
 
-        $("#locateElementButton").click(function (){
+        $("#locateElementButton").click(function () {
             $("#fullWindowMessage").show().find("div").text("Use mouse left button to pick an element from the original page.");
-            var downHandler = function (arg){
+            var downHandler = function (arg) {
                 var e = window.opener.document.elementFromPoint(arg.clientX, arg.clientY);
                 toggleFilter(false);
                 searchByNode(window.debuggerModel.domTreeNodes[0], e);
@@ -457,9 +457,9 @@ Knot.js debugger
             window.opener.addEventListener("mousedown",downHandler , true);
 
             $(window.opener.document.body).append(_mouseTip);
-            var mouseMoveHandler = function (arg){
+            var mouseMoveHandler = function (arg) {
                 var e = window.opener.document.elementFromPoint(arg.clientX, arg.clientY);
-                if(e){
+                if(e) {
                     _mouseTip.text(getHTMLElementDescription(e));
                 }
                 _mouseTip.css("top",window.opener.document.body.scrollTop +  arg.clientY+25).css("left", window.opener.document.body.scrollLeft +arg.clientX);
@@ -467,22 +467,22 @@ Knot.js debugger
             window.opener.addEventListener("mousemove",mouseMoveHandler);
         });
 
-        $("#searchButton").click(function (){
+        $("#searchButton").click(function () {
             searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
             toggleFilter(true);
         });
-        $("#searchText").keyup(function (e){
-            if(e.which == 13){
+        $("#searchText").keyup(function (e) {
+            if(e.which == 13) {
                 searchInNode(window.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
                 toggleFilter(true);
             }
         });
 
-        $("#closeJsonViewer").click(function (){
+        $("#closeJsonViewer").click(function () {
             $("#jsonViewer").hide();
         });
 
-        $("#enableFilterButton").click(function (){
+        $("#enableFilterButton").click(function () {
             toggleFilter(!_isFilterEnabled);
         });
 

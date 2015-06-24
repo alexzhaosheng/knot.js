@@ -1,13 +1,13 @@
-(function (window){
-
-    window.KnotTestUtility = {
-        parseHTML: function (html){
+(function (global) {
+    "use strict";
+    global.KnotTestUtility = {
+        parseHTML: function (html) {
             var div = document.createElement('div');
             div.innerHTML = html;
             return div.childNodes[0];
         },
 
-        raiseDOMEvent: function (element, eventType){
+        raiseDOMEvent: function (element, eventType) {
             var event;
             if (document.createEvent) {
                 event = document.createEvent("HTMLEvents");
@@ -25,19 +25,21 @@
             }
         },
 
-        clearAllKnotInfo: function (element){
-            if(element.__knot)
+        clearAllKnotInfo: function (element) {
+            if(element.__knot) {
                 delete element.__knot;
-            if(element.__knot_errorStatusInfo)
+            }
+            if(element.__knot_errorStatusInfo) {
                 delete  element.__knot_errorStatusInfo;
+            }
 
-            if(element.__knot_attachedData)
+            if(element.__knot_attachedData) {
                 delete  element.__knot_attachedData;
+            }
 
-            for(var i=0; i<element.childNodes.length; i++)
+            for(var i=0; i<element.childNodes.length; i++) {
                 this.clearAllKnotInfo(element.childNodes[i]);
+            }
         }
     };
-})((function () {
-        return this;
-    })());
+})(window);

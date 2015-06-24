@@ -82,30 +82,30 @@
     </script>
     <script class="exampleJS">
         window.validator ={
-            notEmpty: function (v){
+            notEmpty: function (v) {
                 if(v.trim() == "")
                     throw new Error("Can't be null.")
                 return v;
             },
-            checkAndConvertToNumber: function (v){
+            checkAndConvertToNumber: function (v) {
                 v = parseInt(v);
                 if(isNaN(v))
                     throw new Error("Age must be a number!");
                 return v;
             },
-            checkAgeRange: function (v){
-                if(v<0 || v>150){
+            checkAgeRange: function (v) {
+                if(v<0 || v>150) {
                     throw new Error("Age must be in the range of 0~150")
                 }
                 return v;
             }
         };
 
-        function validate(){
+        function validate() {
             var err = Knot.getErrorStatusInformation();
-            if(err.length > 0){
+            if(err.length > 0) {
                 var msg = "Error detected:";
-                for(var i=0; i< err.length; i++){
+                for(var i=0; i< err.length; i++) {
                     msg += "\n - " + err[i].node.placeholder  + ": " + err[i].error.message;
                 }
                 alert(msg);

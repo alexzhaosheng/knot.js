@@ -1,5 +1,5 @@
-
-(function (window) {
+(function (global) {
+    "use strict";
     var __private = {};
 
     __private.Setting = {
@@ -7,9 +7,9 @@
     };
 
     function defaultLogger(level, msg, exception) {
-        window.console.log("[" +  level + "]" + msg);
+        global.console.log("[" +  level + "]" + msg);
         if (exception) {
-            window.console.log(exception);
+            global.console.log(exception);
         }
     }
 
@@ -47,11 +47,9 @@
 
     //window.Knot will be overwritted in Knot.js so that "getPrivateScope" would not be exposed
     //to outside once Knot.js is loaded.
-    window.Knot = {
-        getPrivateScope: function (){
+    global.Knot = {
+        getPrivateScope: function () {
             return __private;
         }
-    }
-})((function () {
-        return this;
-    })());
+    };
+})(window);

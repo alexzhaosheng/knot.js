@@ -1,8 +1,9 @@
-(function (window){
-    var scope = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
+    var scope = global.Knot.getPrivateScope();
 
 
-    QUnit.test( "private.OptionParser", function ( assert ) {
+    global.QUnit.test( "private.OptionParser", function ( assert ) {
         var knots = scope.OptionParser.parse("text:name;"+"isEnabled:nameInputRequired;");
 
         assert.equal(knots.length, 2, "parse works with simple option string");
@@ -17,12 +18,12 @@
         assert.equal(knots[0].leftAP.pipes.length, 1, "parse works with option string with pipes");
         assert.equal(knots[0].leftAP.pipes[0], "validateName", "parse works with option string with pipes");
         assert.equal(knots[0].rightAP.description, "name", "parse works with option string with pipes");
-        assert.equal(knots[0].rightAP.pipes.length, 0, "parse works with option string with pipes")
+        assert.equal(knots[0].rightAP.pipes.length, 0, "parse works with option string with pipes");
 
         assert.equal(knots[1].leftAP.description, "isEnabled", "parse works with option string with pipes");
         assert.equal(knots[1].leftAP.pipes.length, 0, "parse works with option string with pipes");
         assert.equal(knots[1].rightAP.description, "name", "parse works with option string with pipes");
-        assert.equal(knots[1].rightAP.pipes.length, 1, "parse works with option string with pipes")
+        assert.equal(knots[1].rightAP.pipes.length, 1, "parse works with option string with pipes");
         assert.equal(knots[1].rightAP.pipes[0], "nullToBool", "parse works with option string with pipes");
 
         knots = scope.OptionParser.parse("text>trim>validateLength>validateName:name;");
@@ -70,7 +71,7 @@
         assert.equal(knot.rightAP.description[0], "@", "Use a single function as access point");
         assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.description.substr(1)), true, "Use a single function as access point");
 
-        var knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
+        knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
         assert.equal(knot.rightAP.description, "*", "Use a single function as access point");
         assert.equal(knot.rightAP.pipes.length, 1, "Use a single function as access point");
         assert.equal(scope.GlobalSymbolHelper.isGlobalSymbol(knot.rightAP.pipes[0]), true, "Use a single function as access point");
@@ -79,7 +80,7 @@
         //knot event
         knot = scope.OptionParser.parse("text:name | @change: @nameChanged, @error: @nameError")[0];
         assert.equal(knot.rightAP.description, "name", "parse options with event");
-        assert.equal(knot.knotEvent != null, true, "parse options with event");
+        assert.equal(typeof(knot.knotEvent), "object", "parse options with event");
         assert.equal(knot.knotEvent["@change"][0], "@nameChanged", "parse options with event");
         assert.equal(knot.knotEvent["@error"][0], "@nameError", "parse options with event");
 
@@ -89,14 +90,14 @@
 
         knot = scope.OptionParser.parse("text:name | @change: @nameChanged & @valueChanged")[0];
         assert.equal(knot.rightAP.description, "name", "parse options with event");
-        assert.equal(knot.knotEvent != null, true, "parse options with event");
+        assert.equal(typeof(knot.knotEvent), "object", "parse options with event");
         assert.equal(knot.knotEvent["@change"][0], "@nameChanged", "parse options with event");
         assert.equal(knot.knotEvent["@change"][1], "@valueChanged", "parse options with event");
 
         //parse ap with options
         knot = scope.OptionParser.parse('value[@set:@global.onSet; @change: @global.onChange]:name')[0];
         assert.equal(knot.leftAP.description, "value", "parse ap with options");
-        assert.equal(knot.leftAP.options != null, true, "parse ap with options");
+        assert.equal(typeof(knot.leftAP.options), "object", "parse ap with options");
         assert.equal(knot.leftAP.options["@set"], "@global.onSet", "parse ap with options");
         assert.equal(knot.leftAP.options["@change"], "@global.onChange", "parse ap with options");
 
@@ -106,6 +107,4 @@
         assert.equal(knot.leftAP.description, "value", "parse ap with css selector");
         assert.equal(knot.rightAP.description, "#(.nameInputSection> input).value", "parse ap with css selector");
     });
-})((function () {
-        return this;
-    })());
+})(window);

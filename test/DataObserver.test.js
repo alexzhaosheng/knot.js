@@ -1,21 +1,22 @@
-(function (window){
-    var scope = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
+    var scope = global.Knot.getPrivateScope();
 
-    QUnit.test( "private.DataObserver: Event Manager", function ( assert ) {
+    global.QUnit.test( "private.DataObserver: Event Manager", function ( assert ) {
         var data1 = {}, data2 = {};
 
         var propertyName = null;
         var changedData = null;
-        var oldData=null, newData = null
-        var onSexChanged = function (p, o, n){
+        var oldData=null, newData = null;
+        var onSexChanged = function (p, o, n) {
             propertyName = p;
             oldData = o; newData = n;
             changedData = this;
-        }
-        var onNameChanged = function (n){
+        };
+        var onNameChanged = function (n) {
             propertyName = n;
             changedData = this;
-        }
+        };
         var testAttachedData= {};
         scope.DataObserver.on(data1, "sex", onSexChanged, testAttachedData);
         scope.DataObserver.notifyDataChanged(data1, "sex", "m", "f");
@@ -52,7 +53,7 @@
 
 
 
-        var onAnyPropertiesChanged = function (n){
+        var onAnyPropertiesChanged = function (n) {
             propertyName = n;
             changedData = this;
         };
@@ -64,14 +65,14 @@
         assert.equal(propertyName, "name", "registering to * works");
     });
 
-    QUnit.test( "private.DataObserver: Property Hook", function ( assert ) {
+    global.QUnit.test( "private.DataObserver: Property Hook", function ( assert ) {
         var testObject= {name:"Satoshi"};
 
 
         scope.DataObserver.hookProperty(testObject, "name");
 
         var propertyName, changedData, oldData, newData;
-        scope.DataObserver.on(testObject, "*", function (p, o, n){
+        scope.DataObserver.on(testObject, "*", function (p, o, n) {
             propertyName = p;
             changedData = this;
             oldData = o;
@@ -121,7 +122,7 @@
     });
 
 
-    QUnit.test( "private.DataObserver: Object Monitor", function ( assert ) {
+    global.QUnit.test( "private.DataObserver: Object Monitor", function ( assert ) {
         var testObject= {name:"Satoshi"};
 
         var propertyName = null;
@@ -129,16 +130,16 @@
         var oldData=null, newData = null;
         var dataChangedRaised = false;
         var dataChangedRaisedCount = 0;
-        var resetTest = function (){
+        var resetTest = function () {
             testObject= {name:"Satoshi"};
             dataChangedRaised=  false;
             dataChangedRaisedCount = 0;
             propertyName = changedData = oldData = newData = undefined;
         };
-        var onDataChanged = function (p, o, n){
-            if(propertyName){
-                if(propertyName instanceof  Array){
-                    propertyName.push(p)
+        var onDataChanged = function (p, o, n) {
+            if(propertyName) {
+                if(propertyName instanceof  Array) {
+                    propertyName.push(p);
                     oldData.push(o);
                     newData.push(n);
                     changedData.push(this);
@@ -158,7 +159,7 @@
             }
             dataChangedRaised = true;
             dataChangedRaisedCount ++;
-        }
+        };
         scope.DataObserver.monitor(testObject, "name", onDataChanged);
 
         testObject.name = "alex";
@@ -204,7 +205,7 @@
 
         var oldAddressObj = testObject.address;
         var knotAttached = scope.AttachedData.getAttachedInfo(oldAddressObj);
-        assert.equal(knotAttached.changedCallbacks["postCode"].length, 1, "test automatically object monitoring setup. make sure current object is correctly monitored");
+        assert.equal(knotAttached.changedCallbacks.postCode.length, 1, "test automatically object monitoring setup. make sure current object is correctly monitored");
         assert.equal(scope.DataObserver.hasHookedProperty(oldAddressObj, "postCode"), true, "test automatically object monitoring setup. make sure current object is correctly monitored");
 
         testObject.address = {postCode:9999};
@@ -217,8 +218,8 @@
         assert.equal(dataChangedRaisedCount, 4,"test automatically object monitoring setup. check whether the event is raised for the new object");
         assert.equal(newData[3], 4321, "test automatically object monitoring setup. check whether the event is raised for the new object");
 
-        var knotAttached = scope.AttachedData.getAttachedInfo(oldAddressObj);
-        assert.equal(typeof(knotAttached.changedCallbacks["postCode"]), "undefined", "test automatically object monitoring setup. check whether old object is correctly cleared");
+        knotAttached = scope.AttachedData.getAttachedInfo(oldAddressObj);
+        assert.equal(typeof(knotAttached.changedCallbacks.postCode), "undefined", "test automatically object monitoring setup. check whether old object is correctly cleared");
         assert.equal(scope.DataObserver.hasHookedProperty(oldAddressObj, "postCode"), false, "test automatically object monitoring setup. check whether old object is correctly cleared");
         assert.equal(dataChangedRaisedCount, 4, "test automatically object monitoring setup. check whether old object is correctly cleared");
         oldAddressObj.postCode = 9000;
@@ -253,27 +254,27 @@
         scope.DataObserver.monitor(testObject, "test", onDataChanged);
         var objectChangedCount = 0;
         var propertyNameGetWhenMonitoringAnyChanges;
-        scope.DataObserver.monitor(testObject, "*", function (p){objectChangedCount++;propertyNameGetWhenMonitoringAnyChanges=p;});
+        scope.DataObserver.monitor(testObject, "*", function (p) {objectChangedCount++;propertyNameGetWhenMonitoringAnyChanges=p;});
         testObject.test = "ttt";
         assert.equal(propertyName, "test","monitor * (any change of the object)");
         assert.equal(propertyNameGetWhenMonitoringAnyChanges, "test","monitor * (any change of the object)");
         assert.equal(objectChangedCount, 1,"monitor * (any change of the object)");
 
         resetTest();
-        window.testData = {name:"test"};;
+        global.testData = {name:"test"};
         scope.DataObserver.monitor(null, "/testData.name", onDataChanged);
 
-        window.testData.name = "alex";
+        global.testData.name = "alex";
         assert.equal(propertyName, "testData.name", "monitor absolute path");
-        assert.equal(changedData, window, "monitor absolute path");
+        assert.equal(changedData, global, "monitor absolute path");
         assert.equal(oldData, "test", "monitor absolute path");
         assert.equal(newData, "alex", "monitor absolute path");
 
         resetTest();
         scope.DataObserver.monitor(null, "/anotherTestObject.name", onDataChanged);
-        window.anotherTestObject = {name:"alex"};
+        global.anotherTestObject = {name:"alex"};
         assert.equal(dataChangedRaised, true, "monitor absolute path");
-        assert.equal(changedData, window, "monitor absolute path");
+        assert.equal(changedData, global, "monitor absolute path");
         assert.equal(propertyName, "anotherTestObject.name", "monitor absolute path");
         assert.equal(typeof(oldData), "undefined", "monitor absolute path");
         assert.equal(newData, "alex", "monitor absolute path");
@@ -282,7 +283,7 @@
 
         resetTest();
         scope.DataObserver.stopMonitoring(null,"/anotherTestObject.name", onDataChanged);
-        window.anotherTestObject.name = "tom";
+        global.anotherTestObject.name = "tom";
         assert.equal(dataChangedRaised, false, "stop monitoring absolute path");
 
 
@@ -299,24 +300,22 @@
         //array change
         resetTest();
         scope.DataObserver.monitor(null, "/anotherTestObject.arrayObj", onDataChanged);
-        window.anotherTestObject = {arrayObj:[]};
+        global.anotherTestObject = {arrayObj:[]};
         assert.equal(dataChangedRaised, true, "monitoring array object, raise the change event when only array it-self is changed");
         resetTest();
-        window.anotherTestObject.arrayObj.push("test");
+        global.anotherTestObject.arrayObj.push("test");
         assert.equal(dataChangedRaised, true, "monitoring array object, raise the change event when only array it-self is changed");
 
         resetTest();
         scope.DataObserver.stopMonitoring(null, "/anotherTestObject.arrayObj", onDataChanged);
-        window.anotherTestObject.arrayObj.push("test2");
+        global.anotherTestObject.arrayObj.push("test2");
         assert.equal(dataChangedRaised, false, "stop monitoring array object");
 
         resetTest();
-        scope.DataObserver.monitor(window.anotherTestObject.arrayObj, "length", onDataChanged);
-        window.anotherTestObject.arrayObj.push("test3");
+        scope.DataObserver.monitor(global.anotherTestObject.arrayObj, "length", onDataChanged);
+        global.anotherTestObject.arrayObj.push("test3");
         assert.equal(dataChangedRaised, true, "monitoring array length");
         assert.equal(propertyName, "length", "monitoring array length");
 
     });
-})((function () {
-        return this;
-    })());
+})(window);

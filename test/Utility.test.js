@@ -1,11 +1,12 @@
-(function (window){
-    var scope = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
+    var scope = global.Knot.getPrivateScope();
 
-    QUnit.test("private.Utility", function ( assert ) {
+    global.QUnit.test("private.Utility", function ( assert ) {
         assert.equal(true, scope.Utility.isEmptyObj({}), "isEmptyObj works with the empty objects");
         assert.equal(false,scope.Utility.isEmptyObj({name:"alex"}, "isEmptyObj works with the objects has something"));
 
-        window.globalObject = {name:"global"};
+        global.globalObject = {name:"global"};
 
         var o = {name:"alex", assert:{money:100}};
 
@@ -14,15 +15,15 @@
         assert.equal(scope.Utility.getValueOnPath(o, "assert.money"),100,  "getValueOnPath works with composite path");
         assert.equal(typeof(scope.Utility.getValueOnPath(o, "assert.nothing")), "undefined","getValueOnPath works with the empty result");
 
-        assert.equal(scope.Utility.getValueOnPath(o, "/globalObject.name"), globalObject.name, "getValueOnPath works with the absolute path");
+        assert.equal(scope.Utility.getValueOnPath(o, "/globalObject.name"), global.globalObject.name, "getValueOnPath works with the absolute path");
 
         assert.equal(typeof(scope.Utility.getValueOnPath(null, "nothing")), "undefined", "getValueOnPath works with null object");
 
         assert.equal(scope.Utility.getValueOnPath(o, "assert.*"), o.assert, "getValueOnPath works with *");
 
-        delete window.globalObject;
+        delete global.globalObject;
 
-        window.globalObject = {name:"global"};
+        global.globalObject = {name:"global"};
 
         o = {name:"alex", assert:{money:100}};
 
@@ -38,10 +39,10 @@
         //should not throw exception
         scope.Utility.setValueOnPath(o, "nothing.nothing", "nothing");
 
-        delete window.globalObject;
+        delete global.globalObject;
 
         var info = scope.Utility.getBlockInfo("xx{abc}xx", 0, "{", "}");
-        assert.equal(info!=null, true, "getBlockInfo works");
+        assert.equal(info!==null, true, "getBlockInfo works");
         assert.equal(info.start, 2, "getBlockInfo has correct start");
         assert.equal(info.end, 6, "getBlockInfo has correct end");
 
@@ -75,6 +76,4 @@
         assert.equal(arr[0], "abc(sdf:[123:456])", "split with block check");
     });
 
-})((function () {
-        return this;
-    })());
+})(window);

@@ -5,16 +5,17 @@
     property named "__knot_attachedData", other with it's stored in an dictionary structure which takes the object as the
     key
  */
-(function (window){
-    var __private = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
+    var __private = global.Knot.getPrivateScope();
     __private.AttachedData = {
         _dataInMonitoring: [],
         _attachedInfoOfData: [],
 
         getAttachedInfo: function (data) {
-            if(__private.Setting.enablePropertyHook){
-                if(!data.__knot_attachedData){
-                    if(typeof(data) != "object" && typeof(data) != "array"){
+            if(__private.Setting.enablePropertyHook) {
+                if(!data.__knot_attachedData) {
+                    if(typeof(data) !== "object") {
                         throw new Error("Can only monitor object or array!");
                     }
                     Object.defineProperty(data, "__knot_attachedData", {value:{}, configurable:true, writable:false, enumerable:false});
@@ -30,7 +31,7 @@
             }
         },
         releaseAttachedInfo: function (data) {
-            if(__private.Setting.enablePropertyHook){
+            if(__private.Setting.enablePropertyHook) {
                 delete data.__knot_attachedData;
             }
             else{
@@ -42,6 +43,4 @@
             }
         }
     };
-})((function () {
-        return this;
-    })());
+})(window);

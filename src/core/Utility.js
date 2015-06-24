@@ -1,57 +1,61 @@
-(function (window){
-    var __private = window.Knot.getPrivateScope();
+(function (global) {
+    "use strict";
+    var __private = global.Knot.getPrivateScope();
 
     /////////////////////////////////////
     // Utility functions
     /////////////////////////////////////
-    __private.Utility ={
+    __private.Utility = {
         //test whether the object is an empty object (no any properties)
         isEmptyObj: function (obj) {
-            for (var p in obj) {
+            var p;
+            for (p in obj) {
                 return false;
             }
             return true;
         },
 
         trim: function (s) {
-            if(s.trim)
+            if (s.trim) {
                 return s.trim();
+            }
             return s.replace(/^\s+|\s+$/g, "");
         },
 
-        startsWith: function (s, startStr){
-            if(!s)
+        startsWith: function (s, startStr) {
+            if(!s){
                 return false;
-            return s.substr(0, startStr.length) == startStr;
+            }
+            return s.substr(0, startStr.length) === startStr;
         },
 
         getValueOnPath: function (rootData, path) {
-            if(!path && path !== "")
-                return;
-            if(path == "*NULL")
+            if((!path && path !== "") || (path === "*NULL")) {
                 return null;
-            if(path == "*" || path =="")
+            }
+            if(path === "*" || path === "") {
                 return rootData;
+            }
 
             var isFunction = false;
-            if(path[0] == "@"){
+            if(path[0] === "@") {
                 isFunction = true;
                 path = path.substr(1);
             }
 
             var res;
-            if(this.startsWith(path,"__knot_global")){
+            if (this.startsWith(path, "__knot_global")) {
                 res =  __private.GlobalSymbolHelper.getSymbol(path);
             }
-            else{
+            else {
                 var data = rootData;
-                if(path[0] == "/"){
-                    data= window;
+                if(path[0] === "/") {
+                    data= global;
                     path = path.substr(1);
                 }
                 while (path.indexOf(".") >= 0 && data) {
                     var p = __private.Utility.trim(path.substr(0, path.indexOf(".")));
-                    if(p != "*"){
+                    if(p !== "*") {
                         data = data[p];
                     }
                     else{
@@ -59,45 +63,47 @@
                     }
                     path = __private.Utility.trim(path.substr(path.indexOf(".") + 1));
                 }
-                if(path == "*"){
+                if(path === "*") {
                     res = data;
                 }
-                else if (data){
+                else if (data) {
                     res= data[path];
                 }
             }
-            if(isFunction && res && typeof(res) != "function"){
+            if(isFunction && res && typeof(res) !== "function") {
                     __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
                     return undefined;
             }
             return res;
         },
 
-        setValueOnPath: function (data, path, value){
+        setValueOnPath: function (data, path, value) {
             //never set value for *
-            if(path[path.length-1] == "*")
+            if(path[path.length-1] === "*"){
                 return;
-            if(this.startsWith(path,"__knot_global")){
+            }
+            if(this.startsWith(path,"__knot_global")) {
                 throw new Error("Can't set global symbol!");
             }
-            if(path && path[0] == "/"){
-                data = window;
+            if(path && path[0] === "/") {
+                data = global;
                 path = path.substr(1);
             }
 
             var vp = path;
             var p = path.lastIndexOf(".");
-            if(p > 0){
+            if(p > 0) {
                 vp = path.substr(p+1);
                 data = this.getValueOnPath(data, path.substr(0, p));
             }
-            if(data)
+            if(data){
                 data[vp] = value;
+            }
         },
 
 
-        getXHRS: function (){
-            if (window.XMLHttpRequest){
+        getXHRS: function () {
+            if (global.XMLHttpRequest) {
                 return new XMLHttpRequest();
             }
             else{
@@ -106,21 +112,23 @@
         },
 
 
-        getBlockInfo: function (str, startIndex, startMark, endMark){
+        getBlockInfo: function (str, startIndex, startMark, endMark) {
             var info = {start:-1, end:-1};
             info.start = str.indexOf(startMark, startIndex);
-            if(info.start<0)
+            if(info.start<0){
                 return null;
+            }
 
             var ct = 0;
             var pos = info.start+1;
-            while(true){
+            while(true) {
                 var ns = str.indexOf(startMark, pos);
                 var ne = str.indexOf(endMark, pos);
-                if(ne<0)
+                if(ne < 0){
                     break;
-                if(ns<0 || ne < ns){
-                    if(ct==0){
+                }
+                if(ns<0 || ne < ns) {
+                    if(ct === 0) {
                         info.end = ne;
                         break;
                     }
@@ -134,36 +142,21 @@
                     pos = ns+1;
                 }
             }
-            if(info.start >=0 && info.end>=0)
+            if(info.start >=0 && info.end>=0) {
                 return info;
+            }
             else{
                 return null;
             }
         },
 
-        //actual_apName[optionName:option,optionName2:option2...]
-        parseInAPNameDefinition: function (apName){
-            var res = {apName:null, options:[]}
-            var block = this.getBlockInfo(apName, 0, "[", "]");
-            if(block){
-                res.apName = apName;
-            }
-            else{
-                var options = apName.substr(block.start+1, block.end-block.start-1);
-                options = options.split(",")
-                for(var i=0;i<options.length;i++){
-                  //  var o = options[i].split(:)
-                }
-            }
-        },
-
-        splitWithBlockCheck: function (str, splitorChar){
-            var pos = 0; prev=0;
+        splitWithBlockCheck: function (str, splitorChar) {
+            var pos = 0, prev=0;
             var res = [];
             var bracketCount =0;
             var squreBracketCount =0;
-            while(pos < str.length){
-                switch (str[pos]){
+            while(pos < str.length) {
+                switch (str[pos]) {
                     case "(":
                         bracketCount++; break;
                     case ")":
@@ -171,9 +164,9 @@
                     case "[":
                         squreBracketCount++;break;
                     case "]":
-                        squreBracketCount=Math.max(0, squreBracketCount-1); break;
+                        squreBracketCount = Math.max(0, squreBracketCount-1); break;
                     case splitorChar:
-                        if(bracketCount ==0 && squreBracketCount==0){
+                        if(bracketCount === 0 && squreBracketCount === 0) {
                             res.push(str.substr(prev, pos-prev));
                             prev = pos+1;
                         }
@@ -184,11 +177,10 @@
                 pos++;
             }
 
-            if(pos >= prev)
+            if(pos >= prev){
                 res.push(str.substr(prev, pos-prev));
+            }
             return res;
         }
-    }
-})((function () {
-        return this;
-    })());
+    };
+})(window);

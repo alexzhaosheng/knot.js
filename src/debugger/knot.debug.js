@@ -1,4 +1,4 @@
-(function (window){
+(function (window) {
     var _debuggerIsRead = false;
     var _debugWindow;
     var _debugButton;
@@ -7,13 +7,13 @@
     var _cachedDebugLogs = [];
     window.knotjsDebugger ={
         //only clear the debug log cache, always keep the log cache
-        pushCached: function (){
+        pushCached: function () {
             _debuggerIsRead = true;
-            for(var i=0; i<_cachedLogs.length; i++){
+            for(var i=0; i<_cachedLogs.length; i++) {
                 logger(_cachedLogs[i].level, _cachedLogs[i].message, _cachedLogs[i].exception);
             }
 
-            for(var i=0; i< _cachedDebugLogs.length; i++){
+            for(var i=0; i< _cachedDebugLogs.length; i++) {
                 callDebugger(_cachedDebugLogs[i].func, _cachedDebugLogs[i].args);
             }
             _cachedDebugLogs.length = 0;
@@ -22,12 +22,12 @@
 
     var _levels=["Info", "Warning", "Error"];
     var _currentMaxLevel = 0;
-    var logger = function (level, msg, exception){
+    var logger = function (level, msg, exception) {
         var log = {level:level, message:msg, exception:exception, time:new Date()};
         _currentMaxLevel = Math.max(_currentMaxLevel, _levels.indexOf(level));
         updateDebugButtonStyle();
 
-        if(!_debuggerIsRead){
+        if(!_debuggerIsRead) {
             _cachedLogs.push(log);
         }
         else{
@@ -42,14 +42,14 @@
         }
     }
 
-    function updateDebugButtonStyle(){
-        if(_currentMaxLevel <= 0){
+    function updateDebugButtonStyle() {
+        if(_currentMaxLevel <= 0) {
             _debugButton.className = "";
             _debugButton.src = getBaseDir()+"img/debugger.png";
         }
         else{
             _debugButton.className = "knotjs-debugger-flash";
-            if(_currentMaxLevel == 1){
+            if(_currentMaxLevel == 1) {
                 _debugButton.src = getBaseDir()+"img/debugger_warning.png";
             }
             else{
@@ -58,12 +58,12 @@
         }
     }
 
-    function getBaseDir(){
+    function getBaseDir() {
         var blocks = window.document.querySelectorAll("script");
-        for(var i=0; i<blocks.length; i++){
-            if(blocks[i].src){
+        for(var i=0; i<blocks.length; i++) {
+            if(blocks[i].src) {
                 var src = blocks[i].src;
-                if(src.substr(src.length-"knot.debug.js".length) == "knot.debug.js"){
+                if(src.substr(src.length-"knot.debug.js".length) == "knot.debug.js") {
                     return src.substr(0,src.length-"knot.debug.js".length);
                 }
             }
@@ -71,18 +71,18 @@
         return "";
     }
 
-    function showDebugWindow(){
+    function showDebugWindow() {
         var url = getBaseDir() + "debugger.html";
         var name =  window.location.href + window.location.pathname;
         _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=600,resizable=yes,scrollbars=yes");
     }
-    function startDebugger(){
+    function startDebugger() {
         showDebugWindow();
         document.body.removeChild(_debugButton);
         setCookie(getCookieName(), "1");
 
-        _closingCheckIntervalHandler = setInterval(function (){
-            if(_debugWindow.closed){
+        _closingCheckIntervalHandler = setInterval(function () {
+            if(_debugWindow.closed) {
                 _debuggerIsRead = false;
                 _debugWindow=  null;
                 document.body.appendChild(_debugButton);
@@ -92,34 +92,34 @@
         }, 60);
     }
 
-    function callDebugger(funcName, args){
-        if(!_debuggerIsRead){
+    function callDebugger(funcName, args) {
+        if(!_debuggerIsRead) {
             _cachedDebugLogs.push({func:funcName, args:args});
         }
         else{
             try{
                 _debugWindow.calledByOpener.debugger[funcName].apply(_debugWindow.calledByOpener.debugger, args);
             }
-            catch (err){
+            catch (err) {
                 console.log("Call debugger failed. func:"+funcName);
                 console.log(err);
             }
         }
     }
     var debuggerProxy = {
-        knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+        knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
             callDebugger("knotChanged", arguments);
         },
-        knotTied: function (leftTarget, rightTarget, knotOption){
+        knotTied: function (leftTarget, rightTarget, knotOption) {
             callDebugger("knotTied", arguments);
         },
-        knotUntied: function (leftTarget, rightTarget, knotOption){
+        knotUntied: function (leftTarget, rightTarget, knotOption) {
             callDebugger("knotUntied", arguments);
         },
-        nodeAdded: function (node){
+        nodeAdded: function (node) {
             callDebugger("nodeAdded", arguments);
         },
-        nodeRemoved: function (node){
+        nodeRemoved: function (node) {
             callDebugger("nodeRemoved", arguments);
         }
     };
@@ -143,25 +143,25 @@
         }
         return "";
     }
-    function delCookie(cname){
+    function delCookie(cname) {
         document.cookie = cname+"=; expires=Thu, 01 Jan 1970 00:00:00 UTC";
     }
-    function parseHTML (html){
+    function parseHTML (html) {
         var div = document.createElement('div');
         div.innerHTML = html;
         return div.childNodes[0];
     }
-    function getCookieName(){
+    function getCookieName() {
         return "knot-debugger-show-debug-window";
     }
-    window.addEventListener("load", function (){
+    window.addEventListener("load", function () {
         _debugButton = parseHTML('<img id="knotjs-debugger-debuggerButton" title="Show knot.js debugger">');
         document.body.appendChild(_debugButton);
         updateDebugButtonStyle();
-        if(getCookie(getCookieName())){
+        if(getCookie(getCookieName())) {
             startDebugger();
         }
-        _debugButton.onclick = function (){
+        _debugButton.onclick = function () {
             startDebugger();
         };
     });
