@@ -5,13 +5,13 @@
     property named "__knot_attachedData", other with it's stored in an dictionary structure which takes the object as the
     key
  */
-(function(window){
+(function (window){
     var __private = window.Knot.getPrivateScope();
     __private.AttachedData = {
         _dataInMonitoring: [],
         _attachedInfoOfData: [],
 
-        getAttachedInfo: function(data) {
+        getAttachedInfo: function (data) {
             if(__private.Setting.enablePropertyHook){
                 if(!data.__knot_attachedData){
                     if(typeof(data) != "object" && typeof(data) != "array"){
@@ -29,7 +29,7 @@
                 return this._attachedInfoOfData[this._dataInMonitoring.indexOf(data)];
             }
         },
-        releaseAttachedInfo: function(data) {
+        releaseAttachedInfo: function (data) {
             if(__private.Setting.enablePropertyHook){
                 delete data.__knot_attachedData;
             }
@@ -42,6 +42,6 @@
             }
         }
     };
-})((function() {
+})((function () {
         return this;
     })());

@@ -1,35 +1,35 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    var TestAccessPointerProvider = function(supportTarget, apName){
+    var TestAccessPointerProvider = function (supportTarget, apName){
         this.supportTarget = supportTarget;
         this.apName = apName;
     };
-    TestAccessPointerProvider.prototype.doesSupport = function(target, apName){
+    TestAccessPointerProvider.prototype.doesSupport = function (target, apName){
         if(this.supportTarget){
             return target == this.supportTarget && this.apName == apName;
         }
         return true;
     };
-    TestAccessPointerProvider.prototype.getValue = function(target, apName){
+    TestAccessPointerProvider.prototype.getValue = function (target, apName){
         return scope.Utility.getValueOnPath(target, apName);
     };
-    TestAccessPointerProvider.prototype.setValue = function(target, apName, value){
+    TestAccessPointerProvider.prototype.setValue = function (target, apName, value){
         return scope.Utility.setValueOnPath(target, apName, value);
     };
-    TestAccessPointerProvider.prototype.doesSupportMonitoring = function(target, apName){
+    TestAccessPointerProvider.prototype.doesSupportMonitoring = function (target, apName){
         return true;
     };
-    TestAccessPointerProvider.prototype.monitor = function(target, apName, callback){
+    TestAccessPointerProvider.prototype.monitor = function (target, apName, callback){
         scope.DataObserver.monitor(target, apName, callback);
     }
-    TestAccessPointerProvider.prototype.stopMonitoring = function(target, apName, callback){
+    TestAccessPointerProvider.prototype.stopMonitoring = function (target, apName, callback){
         scope.DataObserver.stopMonitoring(target, apName, callback);
     }
 
 
 
-    QUnit.test( "private.AccessPointerManager", function( assert ) {
+    QUnit.test( "private.AccessPointerManager", function ( assert ) {
         var target1={}, target2={}, target3={};
 
         var apProvider = new TestAccessPointerProvider();
@@ -102,7 +102,7 @@
         //test pipes in global scope
         var latestThisPointer = null;
         window.converter = {
-            intToString:function(value){
+            intToString: function (value){
                 latestThisPointer = this;
                 switch (value){
                     case 1:
@@ -113,7 +113,7 @@
                         throw new Error("Unknow number:"+value);
                 }
              },
-            strToInt:function(value){
+            strToInt: function (value){
                 switch (value){
                     case "one":
                         return 1;
@@ -123,10 +123,10 @@
                         throw new Error("Unknow number:"+value);
                 }
             },
-            dotsToInt:function(value){
+            dotsToInt: function (value){
                 return value.length;
             },
-            intToDots:function(value){
+            intToDots: function (value){
                 var f = "";
                 for(var i=0;i<value;i++)
                     f+=".";
@@ -192,7 +192,7 @@
         assert.equal(target2.intValue, 2, "untie the whole chain");
 
 
-        window.areTheySame = function(values){
+        window.areTheySame = function (values){
             for(var i=1; i< values.length; i++){
                 if(values[i-1] != values[i])
                     return false;
@@ -267,22 +267,22 @@
         assert.equal(target1.content, target2, "Tie to *");
     });
 
-    QUnit.test( "private.AccessPointerManager.knotEvent", function( assert ) {
+    QUnit.test( "private.AccessPointerManager.knotEvent", function ( assert ) {
         var target1, target2;
         var latestLeft, latestRight, latestChangedKnot, latestValue, latestIsFromLeftToRight, latestTarget,fireCount=0;
 
         window.accessPointerEventTest = {
-            nameChanged: function(left, right, knot, value, isFromleftToRight){
+            nameChanged: function (left, right, knot, value, isFromleftToRight){
                 latestLeft = left;
                 latestRight = right;
                 latestChangedKnot = knot;
                 latestValue= value;
                 fireCount++;
             },
-            valueSetForAP:function(apDescription, value){
+            valueSetForAP: function (apDescription, value){
                 latestTarget = this; latestChangedKnot = apDescription; latestValue=value;
             },
-            valueChangeForAP:function(ap, oldValue, newValue){
+            valueChangeForAP: function (ap, oldValue, newValue){
                 latestTarget = this; latestChangedKnot = ap; latestValue = newValue;
             }
         }
@@ -351,7 +351,7 @@
         assert.equal(latestValue, "laozi", "ap event @change works");
     });
 
-    QUnit.test( "private.AccessPointerManager.target modifier", function( assert ) {
+    QUnit.test( "private.AccessPointerManager.target modifier", function ( assert ) {
         var target1, target2;
 
         knot = scope.OptionParser.parse("valueCopy:*LEFT.value>{return value+', copy';}")[0];
@@ -385,6 +385,6 @@
         assert.equal(target1.value,"knot.js", "use target modifier to bind to itself won't cause any problem");
     });
 
-    })((function() {
+    })((function () {
         return this;
     })());

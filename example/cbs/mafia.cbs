@@ -8,9 +8,8 @@ body{
 
 .treeNode .expander{
     class: collapsed>{return value?"+fa-plus-circle -fa-minus-circle":"-fa-plus-circle +fa-minus-circle"};
-    @click: @{this.collapsed = !this.collapsed;}
+     @click: @{this.collapsed = !this.collapsed;}
 }
-
 
 .treeNode>div>.content{
     content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
@@ -32,11 +31,48 @@ body{
 }
 
 
-.manTemplate, .womanTemplate{
+.manTemplate .title, .womanTemplate .title{
     text: name
 }
 
 
-.treeNode .childrenList, .gangTemplate .leader, .whiteBusinessTemplate .leader,  .blackBusinessTemplate .leader{
-    style.display:collapsed>{return value?"none":"block";}
+.treeNode .childrenList, .gangTemplate .people, .whiteBusinessTemplate .people,  .blackBusinessTemplate .people{
+    style.display: collapsed>{return value?"none":"block";}
+}
+
+.contentPanel .title{
+    @click: @/mafiaSystem.onSelectClicked;
+    class:isSelected >{return value?"+selected":"-selected"};
+}
+
+#editArea>div{
+    content[template:@/mafiaSystem.editorTemplateSelector] : selected
+}
+
+.gangEditor .title>input{
+    value>@mafiaSystem.pipes.checkTitle: title
+}
+.gangEditor .title .errorMessage{
+    text:!#(.gangEditor .title>input).value
+}
+
+.whiteBusinessEditor .title>input{
+    value>@mafiaSystem.pipes.checkTitle: title
+}
+.whiteBusinessEditor .title .errorMessage{
+    text:!#(.whiteBusinessEditor .title>input).value>{return value?value.message:"";}
+}
+
+.whiteBusinessEditor .income>input{
+    value>@mafiaSystem.pipes.checkMoney: income
+}
+.whiteBusinessEditor .income .errorMessage{
+    text:!#(.whiteBusinessEditor .income>input).value>{return value?value.message:"";}
+}
+
+.whiteBusinessEditor .landedMoney>input{
+    value>@mafiaSystem.pipes.checkMoney: landedMoney
+}
+.whiteBusinessEditor .landedMoney .errorMessage{
+    text:!#(.whiteBusinessEditor .landedMoney>input).value
 }

@@ -4,7 +4,7 @@ var dataModel = {
 }
 
 function updateRemaining(){
-    dataModel.remaining = dataModel.todoList.filter(function(t){return !t.isDone;}).length;
+    dataModel.remaining = dataModel.todoList.filter(function (t){return !t.isDone;}).length;
 }
 updateRemaining();
 

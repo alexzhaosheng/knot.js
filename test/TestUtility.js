@@ -1,13 +1,13 @@
-(function(window){
+(function (window){
 
     window.KnotTestUtility = {
-        parseHTML: function(html){
+        parseHTML: function (html){
             var div = document.createElement('div');
             div.innerHTML = html;
             return div.childNodes[0];
         },
 
-        raiseDOMEvent: function(element, eventType){
+        raiseDOMEvent: function (element, eventType){
             var event;
             if (document.createEvent) {
                 event = document.createEvent("HTMLEvents");
@@ -25,7 +25,7 @@
             }
         },
 
-        clearAllKnotInfo: function(element){
+        clearAllKnotInfo: function (element){
             if(element.__knot)
                 delete element.__knot;
             if(element.__knot_errorStatusInfo)
@@ -38,6 +38,6 @@
                 this.clearAllKnotInfo(element.childNodes[i]);
         }
     };
-})((function() {
+})((function () {
         return this;
     })());

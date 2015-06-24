@@ -1,4 +1,4 @@
-(function(window){
+(function (window){
     var __private = window.Knot.getPrivateScope();
 
     /////////////////////////////////////
@@ -6,7 +6,7 @@
     /////////////////////////////////////
     __private.Utility ={
         //test whether the object is an empty object (no any properties)
-        isEmptyObj: function(obj) {
+        isEmptyObj: function (obj) {
             for (var p in obj) {
                 return false;
             }
@@ -19,13 +19,13 @@
             return s.replace(/^\s+|\s+$/g, "");
         },
 
-        startsWith:function(s, startStr){
+        startsWith: function (s, startStr){
             if(!s)
                 return false;
             return s.substr(0, startStr.length) == startStr;
         },
 
-        getValueOnPath: function(rootData, path) {
+        getValueOnPath: function (rootData, path) {
             if(!path && path !== "")
                 return;
             if(path == "*NULL")
@@ -73,7 +73,7 @@
             return res;
         },
 
-        setValueOnPath: function(data, path, value){
+        setValueOnPath: function (data, path, value){
             //never set value for *
             if(path[path.length-1] == "*")
                 return;
@@ -96,7 +96,7 @@
         },
 
 
-        getXHRS: function(){
+        getXHRS: function (){
             if (window.XMLHttpRequest){
                 return new XMLHttpRequest();
             }
@@ -106,7 +106,7 @@
         },
 
 
-        getBlockInfo: function(str, startIndex, startMark, endMark){
+        getBlockInfo: function (str, startIndex, startMark, endMark){
             var info = {start:-1, end:-1};
             info.start = str.indexOf(startMark, startIndex);
             if(info.start<0)
@@ -142,7 +142,7 @@
         },
 
         //actual_apName[optionName:option,optionName2:option2...]
-        parseInAPNameDefinition: function(apName){
+        parseInAPNameDefinition: function (apName){
             var res = {apName:null, options:[]}
             var block = this.getBlockInfo(apName, 0, "[", "]");
             if(block){
@@ -157,7 +157,7 @@
             }
         },
 
-        splitWithBlockCheck: function(str, splitorChar){
+        splitWithBlockCheck: function (str, splitorChar){
             var pos = 0; prev=0;
             var res = [];
             var bracketCount =0;
@@ -189,6 +189,6 @@
             return res;
         }
     }
-})((function() {
+})((function () {
         return this;
     })());

@@ -1,18 +1,18 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    QUnit.test( "private.DataObserver: Event Manager", function( assert ) {
+    QUnit.test( "private.DataObserver: Event Manager", function ( assert ) {
         var data1 = {}, data2 = {};
 
         var propertyName = null;
         var changedData = null;
         var oldData=null, newData = null
-        var onSexChanged = function(p, o, n){
+        var onSexChanged = function (p, o, n){
             propertyName = p;
             oldData = o; newData = n;
             changedData = this;
         }
-        var onNameChanged = function(n){
+        var onNameChanged = function (n){
             propertyName = n;
             changedData = this;
         }
@@ -52,7 +52,7 @@
 
 
 
-        var onAnyPropertiesChanged = function(n){
+        var onAnyPropertiesChanged = function (n){
             propertyName = n;
             changedData = this;
         };
@@ -64,14 +64,14 @@
         assert.equal(propertyName, "name", "registering to * works");
     });
 
-    QUnit.test( "private.DataObserver: Property Hook", function( assert ) {
+    QUnit.test( "private.DataObserver: Property Hook", function ( assert ) {
         var testObject= {name:"Satoshi"};
 
 
         scope.DataObserver.hookProperty(testObject, "name");
 
         var propertyName, changedData, oldData, newData;
-        scope.DataObserver.on(testObject, "*", function(p, o, n){
+        scope.DataObserver.on(testObject, "*", function (p, o, n){
             propertyName = p;
             changedData = this;
             oldData = o;
@@ -121,7 +121,7 @@
     });
 
 
-    QUnit.test( "private.DataObserver: Object Monitor", function( assert ) {
+    QUnit.test( "private.DataObserver: Object Monitor", function ( assert ) {
         var testObject= {name:"Satoshi"};
 
         var propertyName = null;
@@ -129,13 +129,13 @@
         var oldData=null, newData = null;
         var dataChangedRaised = false;
         var dataChangedRaisedCount = 0;
-        var resetTest = function(){
+        var resetTest = function (){
             testObject= {name:"Satoshi"};
             dataChangedRaised=  false;
             dataChangedRaisedCount = 0;
             propertyName = changedData = oldData = newData = undefined;
         };
-        var onDataChanged = function(p, o, n){
+        var onDataChanged = function (p, o, n){
             if(propertyName){
                 if(propertyName instanceof  Array){
                     propertyName.push(p)
@@ -253,7 +253,7 @@
         scope.DataObserver.monitor(testObject, "test", onDataChanged);
         var objectChangedCount = 0;
         var propertyNameGetWhenMonitoringAnyChanges;
-        scope.DataObserver.monitor(testObject, "*", function(p){objectChangedCount++;propertyNameGetWhenMonitoringAnyChanges=p;});
+        scope.DataObserver.monitor(testObject, "*", function (p){objectChangedCount++;propertyNameGetWhenMonitoringAnyChanges=p;});
         testObject.test = "ttt";
         assert.equal(propertyName, "test","monitor * (any change of the object)");
         assert.equal(propertyNameGetWhenMonitoringAnyChanges, "test","monitor * (any change of the object)");
@@ -317,6 +317,6 @@
         assert.equal(propertyName, "length", "monitoring array length");
 
     });
-})((function() {
+})((function () {
         return this;
     })());

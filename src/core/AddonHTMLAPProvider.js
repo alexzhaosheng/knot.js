@@ -1,4 +1,4 @@
-(function(window){
+(function (window){
     var __private = Knot.getPrivateScope();
 
     function findOption(options, startIndex, data) {
@@ -154,7 +154,7 @@
     }
 
     var AddonHTMLAPProvider={
-        doesSupport:function(target, apName){
+        doesSupport: function (target, apName){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -171,7 +171,7 @@
 
             return false;
         },
-        getValue: function(target, apName){
+        getValue: function (target, apName){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -194,7 +194,7 @@
                 return getValueFromAlias(target, apName);
             }
         },
-        setValue: function(target, apName, value, options){
+        setValue: function (target, apName, value, options){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -213,7 +213,7 @@
                 setValueFromAlias(target, apName, value);
             }
         },
-        doesSupportMonitoring: function(target, apName){
+        doesSupportMonitoring: function (target, apName){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -225,7 +225,7 @@
 
             return false;
         },
-        monitor: function(target, apName, callback){
+        monitor: function (target, apName, callback){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -235,7 +235,7 @@
                 target.addEventListener("change", callback);
             }
         },
-        stopMonitoring: function(target, apName, callback){
+        stopMonitoring: function (target, apName, callback){
             if(apName[0] == "#"){
                 target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
@@ -248,6 +248,6 @@
     };
 
     __private.AccessPointManager.registerAPProvider(AddonHTMLAPProvider);
-})((function() {
+})((function () {
         return this;
     })());

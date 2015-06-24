@@ -51,28 +51,54 @@ li{
     text-shadow:  0px 0px 4px #BBBBBB;
 }
 
-.contentPanel{
-    padding: 2px 3px;
-    border-radius: 4px;
-    background-color: lightgoldenrodyellow;
+.attributeTable{
+    margin-left: 0px;
+}
+.attributeTable .attributeItem{
+    margin: 2px 4px 2px 0px;
+    display: inline-block;
 }
 
 .people>i{
     float: left;
-    margin-top: 2px;
+    margin-top: 8px;
 }
 .people>div:first-of-type{
     margin-left: 20px;
 }
 
+.contentPanel .title{
+    padding: 2px 10px 2px 2px;
+    display: inline-block;
+    border-radius: 3px;
+    box-shadow: 0 0 2px black;
+    margin: 3px 0px;
+    cursor:pointer;
+    border: 3px solid transparent;
+}
+
+
+#systemTreePanel, #editArea{
+    display: inline-block;
+    float: left;
+    padding:2px 5px;
+    margin-right: 10px;
+    border: 1px solid lightgray;
+
+    height: 680px;
+    min-width: 200px;
+}
 
 #systemTree{
-
+    height: 600px;
+    width: 400px;
+    overflow: auto;
+    padding: 5px;
 }
 
 .treeNode .expander{
     float: left;
-    margin-top: 3px;
+    margin-top: 8px;
 }
 
 .treeNode .content{
@@ -85,7 +111,46 @@ li{
     margin-left: 20px;
 }
 
+.contentPanel .selected{
+    border: 3px solid #61ce3c;
+}
 
-.gangTemplate{
+
+.gangTemplate>.title{
+    background-color: #F35E04;
+    color:white;
+}
+
+.whiteBusinessTemplate>.title{
+    background-color: #FCB95F;
+    color:white;
+}
+.blackBusinessTemplate>.title{
+    background-color: #6B94A5;
+    color:white;
+}
+.manTemplate>.title{
+    background-color: #A57166;
+    color:white;
+}
+.womanTemplate>.title{
+    background-color: #EF94A5;
+    color:white;
+}
+
+.editorPanel .label{
+    width: 120px;
+    text-align: left;
+    margin-top: 6px;
+}
+.editorPanel > div{
+    margin: 2px;
+}
+.editorPanel > .errorMessage{
+    margin-right: 5px;
+    color:red;
+}
+
+.gangEditorTemplate{
 
 }

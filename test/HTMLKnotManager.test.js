@@ -1,14 +1,14 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    var findCBS = function(selector){
+    var findCBS = function (selector){
         return scope.HTMLKnotManager.publicCBS[selector];
     }
 
     var bodyNode = document.getElementsByTagName("body")[0];
     var headNode = document.getElementsByTagName("head")[0];
 
-    QUnit.test( "private.HTMLKnotManager.CBS", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.CBS", function ( assert ) {
         var scriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsTest{value:test} \r\n'+
             '.cbsTestClass span{text:title} \r\n'+
@@ -17,7 +17,7 @@
         headNode.appendChild(scriptBlock);
 
 
-        var resetTest = function(){
+        var resetTest = function (){
             headNode.removeChild(scriptBlock);
             scope.HTMLKnotManager.publicCBS = {};
         };
@@ -58,7 +58,7 @@
     });
 
 
-    QUnit.asyncTest("private.HTMLKnotManager.Loading CBS From File", function(assert){
+    QUnit.asyncTest("private.HTMLKnotManager.Loading CBS From File", function (assert){
         expect(9);
 
         var cbsFileScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="HTMLKnotManager.test.cbs">');
@@ -70,7 +70,7 @@
             '</script>');
         headNode.appendChild(cbsScriptBlock);
 
-        scope.HTMLKnotManager.parseCBS().done(function(){
+        scope.HTMLKnotManager.parseCBS().done(function (){
                 assert.equal(findCBS("#cbsTest") != null, true, "parseCBS from stand along CBS file");
                 assert.equal(findCBS("#cbsTest").length, 3, "parseCBS from stand along CBS file");
                 assert.equal(findCBS("#cbsTest")[1].substr(0, "checked:gender>".length), "checked:gender>", "parseCBS from stand along CBS file");
@@ -87,13 +87,13 @@
                 scope.HTMLKnotManager.publicCBS = {};
                 QUnit.start();
             },
-            function(err){
+            function (err){
                 console.log(err);
                 QUnit.start();
             });;
     });
 
-    QUnit.test( "private.HTMLKnotManager.applyCBS", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.applyCBS", function ( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -137,7 +137,7 @@
         bodyNode.removeChild(testDiv);
     });
 
-    QUnit.test( "private.HTMLKnotManager.updateDataContext", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.updateDataContext", function ( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -231,7 +231,7 @@
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
-    QUnit.test( "private.HTMLKnotManager.AP with complex selector ", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.AP with complex selector ", function ( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -270,7 +270,7 @@
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
-    QUnit.test( "private.HTMLKnotManager.template", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.template", function ( assert ) {
 
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
@@ -294,98 +294,101 @@
             '</script>');
         headNode.appendChild(scriptBlock);
 
-        scope.HTMLKnotManager.parseCBS();
-        scope.HTMLKnotManager.applyCBS();
-        scope.HTMLKnotManager.processTemplateNodes();
-        scope.HTMLKnotManager.bind();
+        try{
+            scope.HTMLKnotManager.parseCBS();
+            scope.HTMLKnotManager.applyCBS();
+            scope.HTMLKnotManager.processTemplateNodes();
+            scope.HTMLKnotManager.bind();
 
-        var list =document.querySelector("#userList");
-        var selected =document.querySelector("#selectedUser");
+            var list =document.querySelector("#userList");
+            var selected =document.querySelector("#selectedUser");
 
-        var einstein = {firstName:"albert", lastName:"einstein"};
-        var satoshi = {firstName:"satoshi", lastName:"nakamoto"};
-        var laoZi={firstName:"dan", lastName:"li"};
-        var newton={firstName:"issac", lastName:"newton"};
-        window.templateTestData = {userList:[einstein, satoshi, laoZi], selectedUser:satoshi};
-        assert.equal(list.childNodes.length, 3, "check the nodes created by knot by foreach binding");
-        assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by knot with foreach binding");
-        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by knot with foreach binding");
-        assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName, "check the nodes created by knot with foreach binding");
-        assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName, "check the nodes created by knot with foreach binding");
-        assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName, "check the nodes created by knot with foreach binding");
-        assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName, "check the nodes created by knot with foreach binding");
+            var einstein = {firstName:"albert", lastName:"einstein"};
+            var satoshi = {firstName:"satoshi", lastName:"nakamoto"};
+            var laoZi={firstName:"dan", lastName:"li"};
+            var newton={firstName:"issac", lastName:"newton"};
+            window.templateTestData = {userList:[einstein, satoshi, laoZi], selectedUser:satoshi};
+            assert.equal(list.childNodes.length, 3, "check the nodes created by knot by foreach binding");
+            assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by knot with foreach binding");
+            assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by knot with foreach binding");
+            assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.firstName, "check the nodes created by knot with foreach binding");
+            assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.lastName, "check the nodes created by knot with foreach binding");
+            assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.firstName, "check the nodes created by knot with foreach binding");
+            assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.lastName, "check the nodes created by knot with foreach binding");
 
-        assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName, "check the node created by knot with content binding");
-        assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName, "check the node created by knot with content binding");
-
-
-        window.templateTestData.userList.push(newton);
-        assert.equal(list.childNodes.length, 4, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
-
-        window.templateTestData.userList.splice(1,1);
-        assert.equal(list.childNodes.length, 3, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[1].childNodes[0].innerText, laoZi.firstName, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[1].childNodes[2].innerText, laoZi.lastName, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[2].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
-        assert.equal(list.childNodes[2].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
-
-        window.templateTestData.userList = null;
-        assert.equal(list.childNodes.length, 0, "set list to null");
-        window.templateTestData.userList = [newton, einstein];
-        assert.equal(list.childNodes.length, 2, "set list from null");
-        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "set list from null");
-        assert.equal(list.childNodes[0].childNodes[2].innerText, newton.lastName, "set list from null");
-        assert.equal(list.childNodes[1].childNodes[0].innerText, einstein.firstName, "set list from null");
-        assert.equal(list.childNodes[1].childNodes[2].innerText, einstein.lastName, "set list from null");
-
-        newton.firstName = "Newton";
-        assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "change value on item, the change reflect to html elements");
-        newton.firstName = "newton";
-
-        window.templateTestData.userList.push(satoshi);
-        window.templateTestData.userList.push(laoZi);
-
-        assert.equal(list.childNodes.length, 4, "test sort array");
-        assert.equal(list.childNodes[2].childNodes[0].innerText, satoshi.firstName, "test sort array");
-        assert.equal(list.childNodes[2].childNodes[2].innerText, satoshi.lastName, "test sort array");
-
-        window.templateTestData.userList.sort(function(a,b){return a.firstName> b.firstName?1:-1});
-        assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "test sort array");
-        assert.equal(list.childNodes[3].childNodes[2].innerText, satoshi.lastName, "test sort array");
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, satoshi.firstName, "check the node created by knot with content binding");
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, satoshi.lastName, "check the node created by knot with content binding");
 
 
-        //test duplicated element in array
-        window.templateTestData.userList.push(newton);
-        assert.equal(list.childNodes.length, 5, "duplicated items in array");
-        assert.equal(list.childNodes[4].childNodes[0].innerText, newton.firstName, "duplicated items in array");
-        assert.equal(list.childNodes[4].childNodes[2].innerText, newton.lastName, "duplicated items in array");
+            window.templateTestData.userList.push(newton);
+            assert.equal(list.childNodes.length, 4, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
+
+            window.templateTestData.userList.splice(1,1);
+            assert.equal(list.childNodes.length, 3, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[1].childNodes[0].innerText, laoZi.firstName, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[1].childNodes[2].innerText, laoZi.lastName, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[2].childNodes[0].innerText, newton.firstName, "change array and the change reflects to html elements");
+            assert.equal(list.childNodes[2].childNodes[2].innerText, newton.lastName, "change array and the change reflects to html elements");
+
+            window.templateTestData.userList = null;
+            assert.equal(list.childNodes.length, 0, "set list to null");
+            window.templateTestData.userList = [newton, einstein];
+            assert.equal(list.childNodes.length, 2, "set list from null");
+            assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "set list from null");
+            assert.equal(list.childNodes[0].childNodes[2].innerText, newton.lastName, "set list from null");
+            assert.equal(list.childNodes[1].childNodes[0].innerText, einstein.firstName, "set list from null");
+            assert.equal(list.childNodes[1].childNodes[2].innerText, einstein.lastName, "set list from null");
+
+            newton.firstName = "Newton";
+            assert.equal(list.childNodes[0].childNodes[0].innerText, newton.firstName, "change value on item, the change reflect to html elements");
+            newton.firstName = "newton";
+
+            window.templateTestData.userList.push(satoshi);
+            window.templateTestData.userList.push(laoZi);
+
+            assert.equal(list.childNodes.length, 4, "test sort array");
+            assert.equal(list.childNodes[2].childNodes[0].innerText, satoshi.firstName, "test sort array");
+            assert.equal(list.childNodes[2].childNodes[2].innerText, satoshi.lastName, "test sort array");
+
+            window.templateTestData.userList.sort(function (a,b){return a.firstName> b.firstName?1:-1});
+            assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "test sort array");
+            assert.equal(list.childNodes[3].childNodes[2].innerText, satoshi.lastName, "test sort array");
 
 
-        window.templateTestData.selectedUser =laoZi;
-        assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.firstName, "change data binding by content");
-        assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.lastName, "change data binding by content");
-
-        window.templateTestData.selectedUser =null;
-        assert.equal(selected.childNodes.length, 0, "change data binding by content");
-
-        window.templateTestData.optionsList = [{name:"einstein"}, {name:"satoshi"}, {name:"laozi"}];
-        assert.equal(template2.children.length, 3, "embedded template works");
-        assert.equal(template2.children[0].value, "einstein", "embedded template works");
+            //test duplicated element in array
+            window.templateTestData.userList.push(newton);
+            assert.equal(list.childNodes.length, 5, "duplicated items in array");
+            assert.equal(list.childNodes[4].childNodes[0].innerText, newton.firstName, "duplicated items in array");
+            assert.equal(list.childNodes[4].childNodes[2].innerText, newton.lastName, "duplicated items in array");
 
 
-        delete window.templateTestData;
+            window.templateTestData.selectedUser =laoZi;
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.firstName, "change data binding by content");
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.lastName, "change data binding by content");
 
-        scope.HTMLKnotManager.clear();
-        headNode.removeChild(scriptBlock);
-        bodyNode.removeChild(testDiv);
-        scope.HTMLKnotManager.publicCBS = {};
+            window.templateTestData.selectedUser =null;
+            assert.equal(selected.childNodes.length, 0, "change data binding by content");
 
-        KnotTestUtility.clearAllKnotInfo(document.body);
+            window.templateTestData.optionsList = [{name:"einstein"}, {name:"satoshi"}, {name:"laozi"}];
+            assert.equal(template2.children.length, 3, "embedded template works");
+            assert.equal(template2.children[0].value, "einstein", "embedded template works");
+
+        }
+        finally{
+            delete window.templateTestData;
+
+            scope.HTMLKnotManager.clear();
+            headNode.removeChild(scriptBlock);
+            bodyNode.removeChild(testDiv);
+            scope.HTMLKnotManager.publicCBS = {};
+
+            KnotTestUtility.clearAllKnotInfo(document.body);
+        }
     });
 
-    QUnit.test("private.HTMLKnotManager.templateSelector", function(assert){
+    QUnit.test("private.HTMLKnotManager.templateSelector", function (assert){
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -409,12 +412,12 @@
         headNode.appendChild(scriptBlock);
 
         var latestThisPointer;
-        window.testTemplateSelector = function(value){
+        window.testTemplateSelector = function (value){
             latestThisPointer = this;
             if(value.isEastAsianName)
-                return scope.HTMLKnotManager.createFromTemplateAndUpdateData("easternUserTemplate", value);
+                return scope.HTMLKnotManager.createFromTemplate("easternUserTemplate", value);
             else
-                return scope.HTMLKnotManager.createFromTemplateAndUpdateData("westernUserTemplate", value);
+                return scope.HTMLKnotManager.createFromTemplate("westernUserTemplate", value);
         }
 
         scope.HTMLKnotManager.parseCBS();
@@ -471,7 +474,7 @@
         }
     });
 
-    QUnit.test( "private.HTMLKnotManager.event", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.event", function ( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -479,7 +482,7 @@
         testDiv.appendChild(bt);
 
         var latestSender;
-        window.eventTestOnMouseOver = function(arg, sender){
+        window.eventTestOnMouseOver = function (arg, sender){
             latestSender = sender;
         };
 
@@ -517,7 +520,7 @@
         KnotTestUtility.clearAllKnotInfo(document.body);
     });
 
-    QUnit.test( "private.HTMLKnotManager.bind to exception", function( assert ) {
+    QUnit.test( "private.HTMLKnotManager.bind to exception", function ( assert ) {
         var testDiv =  KnotTestUtility.parseHTML('<div style="opacity: 0"></div>')
         bodyNode.appendChild(testDiv);
         var testElements = KnotTestUtility.parseHTML('<div><input id="testInput" type="text" value="test"/><div id="validateMsg"></div></div>');
@@ -578,7 +581,7 @@
     });
 
 
-    QUnit.asyncTest("private.HTMLKnotManager.Apply Private CBS From File", function(assert){
+    QUnit.asyncTest("private.HTMLKnotManager.Apply Private CBS From File", function (assert){
         expect(4);
 
         var cbsFileScriptBlock = KnotTestUtility.parseHTML('<script type="text/cbs" src="privateScope.test.cbs">');
@@ -587,7 +590,7 @@
         bodyNode.appendChild(testDiv);
 
 
-        scope.HTMLKnotManager.parseCBS().done(function(){
+        scope.HTMLKnotManager.parseCBS().done(function (){
                 scope.HTMLKnotManager.applyCBS();
                 scope.HTMLKnotManager.processTemplateNodes();
 
@@ -606,11 +609,11 @@
                 scope.HTMLKnotManager.privateScope = null;
                 QUnit.start();
             },
-            function(err){
+            function (err){
                 console.log(err);
                 QUnit.start();
             });;
     });
-})((function() {
+})((function () {
         return this;
     })());

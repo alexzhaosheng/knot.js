@@ -39,12 +39,12 @@
  }
 
  */
-(function(window){
+(function (window){
     var __private = window.Knot.getPrivateScope();
 
 
     function createEmbeddedFunction(text){
-        var func = "(function(value){" + text + "})";
+        var func = "(function (value){" + text + "})";
         try{
             var newName = __private.GlobalSymbolHelper.registerSymbol(eval(func))
         }
@@ -58,7 +58,7 @@
 
     __private.OptionParser = {
 
-        parse: function(optionText) {
+        parse: function (optionText) {
             var options = [];
 
             optionText = this.processEmbeddedFunctions(optionText);
@@ -78,7 +78,7 @@
             return options;
         },
 
-        processEmbeddedFunctions: function(text){
+        processEmbeddedFunctions: function (text){
             var blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             while(blockInfo){
                 var funcText = text.substr(blockInfo.start+1, blockInfo.end - blockInfo.start - 1);
@@ -89,7 +89,7 @@
             return text;
         },
 
-        parseEvent: function(eventsStr){
+        parseEvent: function (eventsStr){
             var events = eventsStr.split(",");
             var res ={};
             for(var i=0; i< events.length; i++){
@@ -124,7 +124,7 @@
             return res;
         },
 
-        parseKnot: function(text){
+        parseKnot: function (text){
             text = __private.Utility.trim(text);
             if(!text)
                 return null;
@@ -145,7 +145,7 @@
             return {leftAP:left, rightAP:right};
         },
 
-        parseAccessPoint: function(text){
+        parseAccessPoint: function (text){
             text = __private.Utility.trim(text);
             if(text[0] == "("){
                 return this.parseCompositeAP(text);
@@ -153,7 +153,7 @@
             var parts =  __private.Utility.splitWithBlockCheck(text, ">");
             var AP = __private.Utility.trim(parts[0]);
             parts.splice(0, 1);
-            var pipes = parts.map(function(t){return __private.Utility.trim(t)});
+            var pipes = parts.map(function (t){return __private.Utility.trim(t)});
             var options = null;
             //if AP is a global symbol, that means AP is a function. so there's actually no AP is specified.
             //in this case, use "*" as AP and take everything as pipes
@@ -174,7 +174,7 @@
             return {description:AP, pipes:pipes, options:options};
         },
 
-        getAPOptions: function(optionStr){
+        getAPOptions: function (optionStr){
             var options = {};
             var arr = __private.Utility.splitWithBlockCheck(optionStr, ";");
             for(var i=0; i< arr.length; i++){
@@ -189,7 +189,7 @@
             return options;
         },
 
-        parseCompositeAP: function(text){
+        parseCompositeAP: function (text){
             var block = __private.Utility.getBlockInfo(text, 0, "(", ")");
             if(!block){
                 __private.Log.error("Invalid composite option:"+text);
@@ -223,6 +223,6 @@
             return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
         }
     }
-})((function() {
+})((function () {
         return this;
     })());

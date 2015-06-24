@@ -1,45 +1,46 @@
-(function(window){
+
+(function (window) {
     var __private = {};
 
-    __private.Setting={
+    __private.Setting = {
         enablePropertyHook: true
     };
 
-    var defaultLogger = function(level, msg, exception){
-        console.log("["+ level + "]" + msg);
-        if(exception){
-            console.log(exception);
+    function defaultLogger(level, msg, exception) {
+        window.console.log("[" +  level + "]" + msg);
+        if (exception) {
+            window.console.log(exception);
         }
-    };
+    }
 
-    __private.Log={
-        Level:{Info:"Info", Warning:"Warning", Error:"Error"},
+    __private.Log = {
+        Level: {Info: "Info", Warning: "Warning", Error: "Error"},
         log: defaultLogger,
-        info:function(msg, exception){
-            this.log( this.Level.Info, msg, exception);
+        info: function (msg, exception) {
+            this.log(this.Level.Info, msg, exception);
         },
-        warning:function(msg, exception){
-            this.log( this.Level.Warning, msg, exception);
+        warning: function (msg, exception) {
+            this.log(this.Level.Warning, msg, exception);
         },
-        error:function(msg, exception){
+        error: function (msg, exception) {
             this.log(this.Level.Error, msg, exception);
         }
     };
 
     __private.Debugger = {
-        knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+        knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
 
         },
-        knotTied: function(leftTarget, rightTarget, knotOption){
+        knotTied: function (leftTarget, rightTarget, knotOption) {
         },
-        knotUntied:function(leftTarget, rightTarget, knotOption){
+        knotUntied: function (leftTarget, rightTarget, knotOption) {
 
         },
 
-        nodeAdded: function(node){
+        nodeAdded: function (node) {
 
         },
-        nodeRemoved: function(node){
+        nodeRemoved: function (node) {
 
         }
     };
@@ -47,10 +48,10 @@
     //window.Knot will be overwritted in Knot.js so that "getPrivateScope" would not be exposed
     //to outside once Knot.js is loaded.
     window.Knot = {
-        getPrivateScope: function(){
+        getPrivateScope: function (){
             return __private;
         }
     }
-})((function() {
+})((function () {
         return this;
     })());

@@ -11,25 +11,25 @@
 
 
     <link rel="stylesheet" href="./styles/tomorrow-night-bright.css">
-    <script src="highlight.pack.js"></script>
+    <script src="highlight.pack"></script>
 
     <link rel="stylesheet" href="styles/debugger.css">
 
-    <!--<script src="../core/PrivateScope.js"></script>-->
-    <!--<script src="../core/Utility.js"></script>-->
-    <!--<script src="../core/Deferred.js"></script>-->
-    <!--<script src="../core/AttachedData.js"></script>-->
-    <!--<script src="../core/DataObserver.js"></script>-->
-    <!--<script src="../core/ArrayMonitor.js"></script>-->
-    <!--<script src="../core/GlobalSymbolHelper.js"></script>-->
-    <!--<script src="../core/OptionParser.js"></script>-->
-    <!--<script src="../core/AccessPointManager.js"></script>-->
-    <!--<script src="../core/HTMLAPProvider.js"></script>-->
-    <!--<script src="../core/HTMLKnotManager.js"></script>-->
-    <!--<script src="../addon/AddonHTMLAPProvider.js"></script>-->
-    <!--<script src="../core/KnotInterface.js"></script>-->
+    <script src="../core/PrivateScope.js"></script>
+    <script src="../core/Utility.js"></script>
+    <script src="../core/Deferred.js"></script>
+    <script src="../core/AttachedData.js"></script>
+    <script src="../core/DataObserver.js"></script>
+    <script src="../core/ArrayMonitor.js"></script>
+    <script src="../core/GlobalSymbolHelper.js"></script>
+    <script src="../core/OptionParser.js"></script>
+    <script src="../core/AccessPointManager.js"></script>
+    <script src="../core/HTMLAPProvider.js"></script>
+    <script src="../core/HTMLKnotManager.js"></script>
+    <script src="../core/AddonHTMLAPProvider.js"></script>
+    <script src="../core/KnotInterface.js"></script>
 
-    <script src="../../release/knot.all.min.js"></script>
+    <!--<script src="../../release/knot.min.js"></script>-->
 
     <script src="debugger.js"></script>
 
@@ -50,7 +50,7 @@
         <div id="domViewer" class="pageContent selected">
             <div>
                 <div class="domViewerToolBar">
-                    <input id="searchText" type="text" placeholder="Search">
+                    <input id="searchText" type="text" placeholder="Filter">
                     <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
                     <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
                     <i id="enableFilterButton" class="iconButton fa fa-filter" title="Toggle automatically collapsing irrelevant nodes"></i>
@@ -58,6 +58,7 @@
                         <ul>
                             <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Node</span> </li>
                             <li><i class="type-indicator fa fa-wrench"></i></i> <span class="knotOption">Knot Options</span> </li>
+                            <li><span class="knotValue">Values (<i class="fa fa-long-arrow-left"></i> input; <i class="fa fa-long-arrow-right"></i> output)</span> </li>
                         </ul>
                     </div>
                 </div>
@@ -106,7 +107,7 @@
                         <i class="fa fa-chevron-circle-down"></i>
                         <span>Knot change log</span>
                     </div>
-                    <i class="clearLogButton iconButton fa fa-life-ring" title="Clear logs"></i>
+                    <i class="clearLogButton iconButton fa fa-square-o" title="Clear logs"></i>
                 </div>
                 <div class="knotChangeLog">
                     <div class="knotChangeLogItemTemplate" knot-template-id="knotChangeLogItemTemplate">

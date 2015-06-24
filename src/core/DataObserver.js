@@ -3,13 +3,13 @@
     Note it is not only able to detecting the change or the property, but also
      be able to observe a "path" so that you can get the change in it's children
  */
-(function(window){
+(function (window){
     var __private = window.Knot.getPrivateScope();
 
     var PATH_FOR_OBJECT_ITSELF = "*";
     __private.DataObserver = {
         //if property is "*", callback will be executed when any property is changed.
-        on: function(data, path, callback, attachedData) {
+        on: function (data, path, callback, attachedData) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks) {
                 attachedInfo.changedCallbacks = {};
@@ -24,7 +24,7 @@
 
             attachedInfo.changedCallbacks[path].push({callback: callback, attachedData:attachedData});
         },
-        off: function(data, path, callback) {
+        off: function (data, path, callback) {
             if(!path)
                 path = PATH_FOR_OBJECT_ITSELF;
 
@@ -44,7 +44,7 @@
                     __private.AttachedData.releaseAttachedInfo(data);
             }
         },
-        hasRegistered: function(data, path, callback) {
+        hasRegistered: function (data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
                 for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
@@ -55,7 +55,7 @@
             }
             return false;
         },
-        getAttachedData: function(data, path, callback) {
+        getAttachedData: function (data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
                 for (var i = 0; i < attachedInfo.changedCallbacks[path].length; i++) {
@@ -66,7 +66,7 @@
             }
             return null;
         },
-        notifyDataChanged: function(data, path, oldValue, newValue) {
+        notifyDataChanged: function (data, path, oldValue, newValue) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
 
             if(!attachedInfo.changedProperties){
@@ -99,20 +99,20 @@
                 }
             }
         },
-        getPropertiesChangeRecords: function(data){
+        getPropertiesChangeRecords: function (data){
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo)
                 return null;
             return attachedInfo.changedProperties?attachedInfo.changedProperties:[];
         },
-        clearPropertiesChangeRecords: function(data){
+        clearPropertiesChangeRecords: function (data){
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo)
                 return null;
             attachedInfo.changedProperties = null;
         },
 
-        hookProperty:function(object, property){
+        hookProperty: function (object, property){
             if(property == "*")
                 return;
             var attached = __private.AttachedData.getAttachedInfo(object);
@@ -132,14 +132,14 @@
             //define a new property to overwrite the current one
             try{
                 Object.defineProperty(object, property, {
-                    set:function(v){
+                    set: function (v){
                         var oldValue = attached.dataHookInfo.data[property];
                         if(oldValue == v)
                             return;
                         attached.dataHookInfo.data[property] = v;
                         __private.DataObserver.notifyDataChanged(this, property, oldValue, v);
                     },
-                    get:function(){
+                    get: function (){
                         return attached.dataHookInfo.data[property];
                     },
                     configurable:true, enumerable:true
@@ -152,7 +152,7 @@
             }
         },
 
-        unhookProperty: function(object, property){
+        unhookProperty: function (object, property){
             if(property == "*")
                 return;
             var attached = __private.AttachedData.getAttachedInfo(object);
@@ -177,7 +177,7 @@
             delete attached.dataHookInfo.hookRefCount[property];
         },
 
-        hasHookedProperty: function(object, propertyName){
+        hasHookedProperty: function (object, propertyName){
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo){
                 return false;
@@ -185,7 +185,7 @@
             return attached.dataHookInfo.hookedProperties.indexOf(propertyName) >=0;
         },
 
-        monitorObject:function(object, path, callback, skipCheckingArray){
+        monitorObject: function (object, path, callback, skipCheckingArray){
             var restPath;
             var property = path.substr(0, path.indexOf("."));
             if(!property){
@@ -200,11 +200,11 @@
             __private.DataObserver.on(object, path, callback, attachedData);
 
             if(restPath){
-                attachedData.childChangedCallback = function(p, oldValue, newValue){
+                attachedData.childChangedCallback = function (p, oldValue, newValue){
                     var path = property +"." + restPath;
                     __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
                 }
-                attachedData.monitorChildChangedCallback = function(p, oldValue, newValue){
+                attachedData.monitorChildChangedCallback = function (p, oldValue, newValue){
                     if(oldValue){
                         __private.DataObserver.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
                     }
@@ -228,13 +228,13 @@
                 //so if the value on the property is an array, it must be monitored too
                 //and we need to setup a monitoring callback to monitor the change of the property so that we can hook
                 //the array object when it is set with an array object
-                attachedData.changedCallback = function(p, oldValue, newValue){
+                attachedData.changedCallback = function (p, oldValue, newValue){
                     if(oldValue instanceof  Array){
                         __private.DataObserver.off(oldValue, "*", attachedData.arrayChangedCallback);
                         delete attachedData.arrayChangedCallback;
                     }
                     if(newValue instanceof Array){
-                        attachedData.arrayChangedCallback = function(){
+                        attachedData.arrayChangedCallback = function (){
                             __private.DataObserver.notifyDataChanged(object, path, newValue, newValue);
                         }
                         __private.DataObserver.on(newValue, "*", attachedData.arrayChangedCallback);
@@ -251,7 +251,7 @@
             __private.DataObserver.hookProperty(object, property);
         },
 
-        monitor: function(object, path, callback){
+        monitor: function (object, path, callback){
             if(path){
                 if(path[0] == "/"){
                     path = path.substr(1);
@@ -264,7 +264,7 @@
             }
         },
 
-        stopMonitoring:function(object, path, callback){
+        stopMonitoring: function (object, path, callback){
             if(!path){
                 __private.DataObserver.off(object, path, callback);
             }
@@ -307,6 +307,6 @@
         }
     }
 
-})((function() {
+})((function () {
         return this;
     })());

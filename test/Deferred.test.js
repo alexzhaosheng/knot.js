@@ -1,15 +1,15 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    QUnit.test( "private.Deferred", function( assert ) {
+    QUnit.test( "private.Deferred", function ( assert ) {
         var result = null;
         var error = null;
 
         var d = new scope.Deferred();
-        d.done(function(res){
+        d.done(function (res){
                 result = res;
             },
-            function(err){
+            function (err){
 
             });
 
@@ -24,9 +24,9 @@
         error = null;
 
         d = new scope.Deferred();
-        d.done(function(res){
+        d.done(function (res){
             },
-            function(err){
+            function (err){
                 error = err;
             });
 
@@ -43,10 +43,10 @@
 
         d = new scope.Deferred();
         d.resolve("test result");
-        d.done(function(res){
+        d.done(function (res){
                 result = res;
             },
-            function(err){
+            function (err){
                 error = err;
             });
 
@@ -58,10 +58,10 @@
         error = null;
         d = new scope.Deferred();
         d.reject("test result");
-        d.done(function(res){
+        d.done(function (res){
                 result = res;
             },
-            function(err){
+            function (err){
                 error = err;
             });
 
@@ -69,6 +69,6 @@
         assert.equal(result, null, '"done" is executed immediately by calling fail callback');
     });
 
-})((function() {
+})((function () {
         return this;
     })());

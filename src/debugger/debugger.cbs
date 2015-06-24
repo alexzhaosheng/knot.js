@@ -29,7 +29,7 @@ body{
 }
 
 #domTree>li .nodeTitle{
-    textContent: description;
+    text: description;
     class:noKnotSetting>{return value?"+emptyNode":"";}
 }
 #domTree>li .highlightMark{
@@ -61,7 +61,7 @@ body{
 
 
 .knotList>li .knotOption{
-    textContent:description;
+    text:description;
     title:description
 }
 
@@ -74,7 +74,7 @@ body{
 }
 
 .knotList>li .knotValue{
-    innerText[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
+    text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
     title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
 }
 
@@ -88,19 +88,22 @@ body{
     foreach: knotChangeLog
 }
 .knotChangeLog .id{
-    textContent: id
+    text: id
 }
 .knotChangeLog .nodeTitle{
-    textContent: nodeDescription
+    text: nodeDescription;
+    title: nodeDescription
 }
 .knotChangeLog .knotOption{
-    textContent: knotOption.description
+    text: knotOption.description;
+    title: knotOption.description;
 }
 .knotChangeLog  .knotValueDirection{
     class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
 }
 .knotChangeLog .knotValue{
-    textContent: value>{return JSON.stringify(value);};
+    text: value>{return JSON.stringify(value);};
+    title: value>{return JSON.stringify(value);};
 }
 .knotChangeLog .knotValueDetail{
     @click:@/debuggerModel.onShowKnotValueLogDetail
@@ -145,18 +148,18 @@ body{
     };
 }
 .logTemplate .level{
-    textContent:level
+    text:level
 }
 .logTemplate .time{
-    textContent:time>{
+    text:time>{
         return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
                 " " + value.getMilliseconds();
     }
 }
 .logTemplate .message{
-    textContent: message
+    text: message
 }
 .logTemplate .exception{
-    textContent: exception>{return value.toString();}
+    text: exception>{return value.toString();}
 }
 

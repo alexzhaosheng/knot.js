@@ -1,11 +1,11 @@
 window.sourceTab = {
     sourceInformation: [],
 
-    onPageAdded: function(node){
+    onPageAdded: function (node){
         hljs.highlightBlock($(node).find("code")[0]);
     }
 };
-$(document).ready(function(){
+$(document).ready(function (){
     if($(".knot_example").length > 0){
         var text = "";
         for(var i=0; i<$("body>.knot_example").length; i++){
@@ -27,7 +27,7 @@ $(document).ready(function(){
 
     function loadScript(tagSelector, typeName){
         for(var i=0; i<$(tagSelector).length; i++){
-            (function(){
+            (function (){
                 var script = $(tagSelector).eq(i)[0];
                 var data  ={name:typeName, content: script.innerText, title:typeName};
                 if(script.getAttribute("title"))
@@ -35,7 +35,7 @@ $(document).ready(function(){
                 window.sourceTab.sourceInformation.push(data);
                 if(script.src || script.href){
                     var hr = getXHRS();
-                    hr.onreadystatechange = function(){
+                    hr.onreadystatechange = function (){
                         if(hr.readyState == 4){
                             if(hr.status == 200){
                                 data.content  = hr.responseText;

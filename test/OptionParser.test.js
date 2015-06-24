@@ -1,8 +1,8 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
 
-    QUnit.test( "private.OptionParser", function( assert ) {
+    QUnit.test( "private.OptionParser", function ( assert ) {
         var knots = scope.OptionParser.parse("text:name;"+"isEnabled:nameInputRequired;");
 
         assert.equal(knots.length, 2, "parse works with simple option string");
@@ -106,6 +106,6 @@
         assert.equal(knot.leftAP.description, "value", "parse ap with css selector");
         assert.equal(knot.rightAP.description, "#(.nameInputSection> input).value", "parse ap with css selector");
     });
-})((function() {
+})((function () {
         return this;
     })());

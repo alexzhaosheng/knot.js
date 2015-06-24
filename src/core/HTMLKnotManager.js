@@ -1,4 +1,4 @@
-(function(window){
+(function (window){
     var __private = window.Knot.getPrivateScope();
 
     function removeComments(text){
@@ -38,11 +38,35 @@
         return null;
     }
 
+    function createFromStaticTemplate(templateId){
+        if(!__private.HTMLKnotManager.templates[templateId]){
+            __private.Log.error( "Failed find template. id:"+templateId);
+            return;
+        }
+        return cloneTemplateNode(__private.HTMLKnotManager.templates[templateId]);
+    }
+
+    function copyAttachedData(n, c){
+        if(n.__knot){
+            c.__knot =  JSON.parse(JSON.stringify( n.__knot));
+        }
+        else{
+            delete c.__knot;
+        }
+        for(var i=0; i< n.children.length; i++)
+            copyAttachedData(n.children[i], c.children[i]);
+    }
+    function cloneTemplateNode(node){
+        var cloned = node.cloneNode(true);
+        copyAttachedData(node, cloned);
+        return cloned;
+    }
+
     __private.HTMLKnotManager = {
         publicCBS:{},
         privateCBSScope:[],
         templates:{},
-        parseCBS:function(){
+        parseCBS: function (){
             var deferred = new __private.Deferred();
             var blocks = window.document.querySelectorAll('script[type="text/cbs"]');
             var that =this;
@@ -51,10 +75,10 @@
             for(var i =0; i< blocks.length; i++){
                 if(blocks[i].src){
                     scriptToLoad ++;
-                    (function(){
+                    (function (){
                         var src = blocks[i].src;
                         var hr = __private.Utility.getXHRS();
-                        hr.onreadystatechange = function(){
+                        hr.onreadystatechange = function (){
                             if(hr.readyState == 4){
                                 if(hr.status == 200){
                                     try{
@@ -100,7 +124,7 @@
             return deferred;
         },
 
-        normalize: function(text){
+        normalize: function (text){
             text = __private.Utility.trim(text);
             if(__private.Utility.startsWith(text, "$private")){
                 var result = {CBS:{}};
@@ -114,7 +138,7 @@
             }
         },
 
-        extractEmbeddedHTML: function(res, text){
+        extractEmbeddedHTML: function (res, text){
             if(!res.HTML)
                 res.HTML = "";
             var pos = 0;
@@ -132,7 +156,7 @@
             return textRemains;
         },
 
-        normalizeCBS: function(res, text){
+        normalizeCBS: function (res, text){
             var pos = 0;
             var blockInfo = __private.Utility.getBlockInfo(text, pos, "{", "}");
             while(blockInfo != null){
@@ -157,7 +181,7 @@
         },
 
         _nodesWithTemplate:[],
-        applyCBSForNode: function(node){
+        applyCBSForNode: function (node){
             var cbsOptions = null;
             if(node.__knot && node.__knot.cbsOptions){
                 cbsOptions = node.__knot.cbsOptions;
@@ -169,7 +193,7 @@
                     cbsOptions = [];
                 var embeddedOptions = node.attributes["binding"].value;
                 embeddedOptions = __private.OptionParser.processEmbeddedFunctions(embeddedOptions);
-                embeddedOptions = embeddedOptions.split(";").map(function(t){return __private.Utility.trim(t);});
+                embeddedOptions = embeddedOptions.split(";").map(function (t){return __private.Utility.trim(t);});
                 cbsOptions = cbsOptions.concat(embeddedOptions);
             }
             if(cbsOptions){
@@ -193,11 +217,11 @@
                 this.applyCBSForNode(node.children[i]);
         },
 
-        isTemplateRelevantOption: function(ap){
+        isTemplateRelevantOption: function (ap){
             return (ap.description == "foreach" || ap.description == "content");
         },
 
-        applyCBS: function(){
+        applyCBS: function (){
             if(this.privateCBSScope.length > 0){
                 var privateScopeHTML = "";
                 for(var i=0; i<this.privateCBSScope.length;i++){
@@ -215,7 +239,7 @@
             this.applyCBSForNode(document.body);
         },
 
-        attachCBS:function(scope, cbs){
+        attachCBS: function (scope, cbs){
             for(var selector in cbs){
                 var elements = scope.querySelectorAll(selector);
                 if(elements.length == 0){
@@ -235,7 +259,7 @@
         },
 
         _templateNameCount:0,
-        processTemplateNodes:function(){
+        processTemplateNodes: function (){
             var templateNodes = [];
             if(this.privateScope){
                 templateNodes = templateNodes.concat(this.processTemplateNodesForScope(this.privateScope));
@@ -266,7 +290,7 @@
                 this.privateScope = null;
             }
         },
-        processTemplateNodesForScope: function(scope){
+        processTemplateNodesForScope: function (scope){
             var templateNodes = scope.querySelectorAll("*[knot-template], *[knot-template-id]");
             for(var i=0; i<templateNodes.length; i++){
                 var name;
@@ -282,7 +306,7 @@
             //turn it into a standard array
             return Array.prototype.slice.apply(templateNodes, [0]);
         },
-        processTemplateOption: function(node, ap){
+        processTemplateOption: function (node, ap){
             var templateNode
             if(!ap.options || !ap.options["template"]){
                 templateNode = node.children[0];
@@ -315,35 +339,14 @@
             ap.options["template"] = templateNode.__knot_template_id;
         },
 
-        copyAttachedData: function(n, c){
-            if(n.__knot){
-                c.__knot =  JSON.parse(JSON.stringify( n.__knot));
-            }
-            else{
-                delete c.__knot;
-            }
-            for(var i=0; i< n.children.length; i++)
-                this.copyAttachedData(n.children[i], c.children[i]);
-        },
-        cloneTemplateNode: function(node){
-            var cloned = node.cloneNode(true);
-            this.copyAttachedData(node, cloned);
-            return cloned;
-        },
         //if the template is from template method, we call it dynamic
-        isDynamicTemplate: function(templateId){
+        isDynamicTemplate: function (templateId){
             return !this.templates[templateId];
         },
-        createFromTemplate:function(templateId){
-            if(!this.templates[templateId]){
-                __private.Log.error( "Failed find template. id:"+templateId);
-                return;
-            }
-            return this.cloneTemplateNode(this.templates[templateId]);
-        },
-        createFromTemplateAndUpdateData:function(template, data, owner){
-            var newNode;
+
+        createFromTemplate: function (template, data, owner){
             if((typeof(template) == "function") || !this.templates[template]){
+                var newNode;
                 var templateFunction;
                 if(typeof(template) == "function"){
                     templateFunction = template;
@@ -355,30 +358,30 @@
                     newNode = templateFunction.apply(owner, [data]);
                     if(!newNode){
                         __private.Log.error( "Template function must return a HTML element. template:"+template);
-                        return;
                     }
                 }
                 else{
                     __private.Log.error( "Unknown template:"+template);
-                    return;
                 }
+                return newNode;
             }
             else{
-                newNode = this.createFromTemplate(template);
-                if(!newNode)
-                    return;
-                this.updateDataContext(newNode, data);
+                return createFromStaticTemplate(template);
             }
-
-
-            if(!newNode.__knot)
-                newNode.__knot = {dataContext:data};
-            else
-                newNode.__knot.dataContext = data;
-            return newNode;
         },
 
-        removeKnots: function(node){
+        hasDataContext: function (node){
+            return node.__knot && ("dataContext" in node.__knot);
+        },
+        setDataContext: function (node, data){
+            this.updateDataContext(node, data);
+            if(!node.__knot)
+                node.__knot = {dataContext:data};
+            else
+                node.__knot.dataContext = data;
+        },
+
+        removeKnots: function (node){
             if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
                     if(node.__knot.options[i].leftAP.description == "dataContext")
@@ -387,7 +390,7 @@
                 }
             }
         },
-        tieKnots:function(node){
+        tieKnots: function (node){
             if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
                     if(node.__knot.options[i].leftAP.description == "dataContext")
@@ -397,7 +400,7 @@
             }
         },
 
-        updateDataContext: function(node, data){
+        updateDataContext: function (node, data){
             if(node.__knot){
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 var contextData = data;
@@ -417,7 +420,7 @@
 
                     dataContextOption.data = data;
                     if((dataContextOption.data || dataContextOption.rightAP.description[0]=="/")){
-                        dataContextOption.changedCallback = function(){
+                        dataContextOption.changedCallback = function (){
                             __private.HTMLKnotManager.updateDataContext(node, data);
                         };
 
@@ -444,7 +447,7 @@
             }
         },
 
-        getDataContextOfHTMLNode: function(node){
+        getDataContextOfHTMLNode: function (node){
             var n = node;
             while(n){
                 if(n.__knot)
@@ -453,7 +456,7 @@
             }
         },
 
-        clearBinding:function(node){
+        clearBinding: function (node){
             if(node.__knot){
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 if(dataContextOption){
@@ -473,25 +476,25 @@
                 this.clearBinding(node.childNodes[i]);
         },
 
-        bind: function(){
+        bind: function (){
             this.updateDataContext(document.body, null);
         },
 
-        clear:function(){
+        clear: function (){
             this.clearBinding(document.body);
         },
 
-        setOnNodeDataContext:function(node, data){
+        setOnNodeDataContext: function (node, data){
             if(!node.__knot)
                 node.__knot = {};
             node.__knot.dataContext = data;
         },
-        getOnNodeDataContext:function(node){
+        getOnNodeDataContext: function (node){
             if(node.__knot)
                 return node.__knot.dataContext;
         },
 
-        forceUpdateValues:function(node){
+        forceUpdateValues: function (node){
             if(node.__knot && node.__knot.options){
                 for(var i=0; i<node.__knot.options.length; i++){
                     if(node.__knot.options[i].leftAP.description == "dataContext")
@@ -507,6 +510,6 @@
             }
         }
     }
-})((function() {
+})((function () {
         return this;
     })());

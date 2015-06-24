@@ -1,4 +1,4 @@
-(function(window){
+(function (window){
     var _debuggerIsRead = false;
     var _debugWindow;
     var _debugButton;
@@ -7,7 +7,7 @@
     var _cachedDebugLogs = [];
     window.knotjsDebugger ={
         //only clear the debug log cache, always keep the log cache
-        pushCached:function(){
+        pushCached: function (){
             _debuggerIsRead = true;
             for(var i=0; i<_cachedLogs.length; i++){
                 logger(_cachedLogs[i].level, _cachedLogs[i].message, _cachedLogs[i].exception);
@@ -22,7 +22,7 @@
 
     var _levels=["Info", "Warning", "Error"];
     var _currentMaxLevel = 0;
-    var logger = function(level, msg, exception){
+    var logger = function (level, msg, exception){
         var log = {level:level, message:msg, exception:exception, time:new Date()};
         _currentMaxLevel = Math.max(_currentMaxLevel, _levels.indexOf(level));
         updateDebugButtonStyle();
@@ -36,7 +36,8 @@
                     _debugWindow.calledByOpener.log(log);
                 }
             catch(err) {
-                //skip
+                console.log("Call logger failed.");
+                console.log(err);
             }
         }
     }
@@ -80,7 +81,7 @@
         document.body.removeChild(_debugButton);
         setCookie(getCookieName(), "1");
 
-        _closingCheckIntervalHandler = setInterval(function(){
+        _closingCheckIntervalHandler = setInterval(function (){
             if(_debugWindow.closed){
                 _debuggerIsRead = false;
                 _debugWindow=  null;
@@ -100,24 +101,25 @@
                 _debugWindow.calledByOpener.debugger[funcName].apply(_debugWindow.calledByOpener.debugger, args);
             }
             catch (err){
-                //skip error
+                console.log("Call debugger failed. func:"+funcName);
+                console.log(err);
             }
         }
     }
     var debuggerProxy = {
-        knotChanged:function(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
+        knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight){
             callDebugger("knotChanged", arguments);
         },
-        knotTied: function(leftTarget, rightTarget, knotOption){
+        knotTied: function (leftTarget, rightTarget, knotOption){
             callDebugger("knotTied", arguments);
         },
-        knotUntied:function(leftTarget, rightTarget, knotOption){
+        knotUntied: function (leftTarget, rightTarget, knotOption){
             callDebugger("knotUntied", arguments);
         },
-        nodeAdded: function(node){
+        nodeAdded: function (node){
             callDebugger("nodeAdded", arguments);
         },
-        nodeRemoved: function(node){
+        nodeRemoved: function (node){
             callDebugger("nodeRemoved", arguments);
         }
     };
@@ -152,14 +154,14 @@
     function getCookieName(){
         return "knot-debugger-show-debug-window";
     }
-    window.addEventListener("load", function(){
+    window.addEventListener("load", function (){
         _debugButton = parseHTML('<img id="knotjs-debugger-debuggerButton" title="Show knot.js debugger">');
         document.body.appendChild(_debugButton);
         updateDebugButtonStyle();
         if(getCookie(getCookieName())){
             startDebugger();
         }
-        _debugButton.onclick = function(){
+        _debugButton.onclick = function (){
             startDebugger();
         };
     });
@@ -177,6 +179,6 @@
     document.writeln("#knotjs-debugger-debuggerButton:hover{opacity:1}");
     document.writeln('.knotjs-debugger-flash{-webkit-animation: knotjs-debugger-flash-keyframes 1s infinite;-o-animation: knotjs-debugger-flash-keyframes 1s infinite;animation: knotjs-debugger-flash-keyframes 1s infinite;}')
     document.writeln('</style>');
-})((function() {
+})((function () {
         return this;
     })());

@@ -5,17 +5,17 @@
 
     this is the interface of access point provider:
     {
-        doesSupport:function(target, accessPointName);  //required. return true if the access point on the target is supported
-        getValue:function(target, accessPointName, options); //required. get current value for the access point on the target
-        setValue:function(target, accessPointName, value, options); //required. get current value for the access point on the target
-        doesSupportMonitoring:function(target, accessPointName); //required. return true if the access point support data awareness
+        doesSupport: function (target, accessPointName);  //required. return true if the access point on the target is supported
+        getValue: function (target, accessPointName, options); //required. get current value for the access point on the target
+        setValue: function (target, accessPointName, value, options); //required. get current value for the access point on the target
+        doesSupportMonitoring: function (target, accessPointName); //required. return true if the access point support data awareness
 
-        monitor:function(target, accessPointName, callback, options); //optional. monitor the change of the access point (on the target)
-        stopMonitoring:function(target, accessPointName, callback, options) //optional. stop monitoring the change of the access point(on the target)
+        monitor: function (target, accessPointName, callback, options); //optional. monitor the change of the access point (on the target)
+        stopMonitoring: function (target, accessPointName, callback, options) //optional. stop monitoring the change of the access point(on the target)
     }
  */
 
-(function(window){
+(function (window) {
     var __private = window.Knot.getPrivateScope();
 
     var _APProviders = [];
@@ -90,7 +90,7 @@
     __private.AccessPointManager = {
         //search the provider in reversed sequence, so that the later registered providers can
         //overwrite the default ones
-        getProvider:function(target, apName){
+        getProvider: function (target, apName){
             if(isErrorStatusApName(apName)){
                 return this.getErrorAPProvider(target, apName) || __private.DefaultProvider;
             }
@@ -101,7 +101,7 @@
 
             return __private.DefaultProvider;
         },
-        getErrorAPProvider:function(target, apName){
+        getErrorAPProvider: function (target, apName){
             for(var i=_errorAPProvider.length-1; i >= 0; i--){
                 if(_errorAPProvider[i].doesSupport(target, apName))
                     return _errorAPProvider[i];
@@ -109,7 +109,7 @@
 
             return null;
         },
-        registerAPProvider: function(apProvider, isErrorAP){
+        registerAPProvider: function (apProvider, isErrorAP){
             if(isErrorAP){
                 if(_errorAPProvider.indexOf(apProvider) < 0)
                     _errorAPProvider.push(apProvider);
@@ -119,7 +119,7 @@
                     _APProviders.push(apProvider);
             }
         },
-        unregisterAPProvider:function(apProvider, isErrorAP){
+        unregisterAPProvider: function (apProvider, isErrorAP){
             if(isErrorAP){
                 if(_errorAPProvider.indexOf(apProvider) >=0)
                     _errorAPProvider.splice(_APProviders.indexOf(apProvider), 1);
@@ -134,7 +134,7 @@
 
 
         objectToIndicateError:{},
-        getValueThroughPipe: function(target, ap){
+        getValueThroughPipe: function (target, ap){
             this.checkProvider(target, ap);
             var value = ap.provider.getValue(target, ap.description, ap.options);
             try{
@@ -158,7 +158,7 @@
             return value;
         },
 
-        safeSetValue: function(target, ap, value){
+        safeSetValue: function (target, ap, value){
             if(ap.ignoreSettingValue){
                 return;
             }
@@ -174,7 +174,7 @@
             }
         },
 
-        notifyKnotChanged:function(left, right, option, value, isSetFromLeftToRight){
+        notifyKnotChanged: function (left, right, option, value, isSetFromLeftToRight){
             if(option && option.knotEvent && option.knotEvent["@change"]){
                 for(var i=0; i<option.knotEvent["@change"].length; i++){
                     try{
@@ -190,17 +190,17 @@
             __private.Debugger.knotChanged(left, right, option, value, isSetFromLeftToRight);
         },
 
-        checkProvider:function(target, ap){
+        checkProvider: function (target, ap){
             if(!ap.provider){
                 ap.provider = this.getProvider(target, ap.description);
                 ap.errorAPProvider = this.getErrorAPProvider(target, ap.description);
             }
         },
-        monitor:function(src, srcAP, target, targetAP, knotInfo){
+        monitor: function (src, srcAP, target, targetAP, knotInfo){
             this.checkProvider(src, srcAP);
             this.checkProvider(target, targetAP);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)){
-                srcAP.changedCallback = function(){
+                srcAP.changedCallback = function (){
                     if(targetAP.ignoreSettingValue)
                         return;
 
@@ -227,7 +227,7 @@
             }
         },
 
-        stopMonitoring:function(target, ap){
+        stopMonitoring: function (target, ap){
             this.checkProvider(target, ap);
             if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback){
                 ap.provider.stopMonitoring(target, ap.description, ap.changedCallback, ap.options);
@@ -285,7 +285,7 @@
             compositeAP.changedCallback();
         },
 
-        tieKnot:function(leftTarget, rightTarget, knotInfo){
+        tieKnot: function (leftTarget, rightTarget, knotInfo){
             var r = correctTarget(leftTarget, rightTarget, knotInfo);
             leftTarget = r.left.target; rightTarget = r.right.target;
             var leftAP = r.left.ap, rightAP = r.right.ap;
@@ -310,7 +310,7 @@
             __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },
 
-        untieKnot: function(leftTarget, rightTarget, knotInfo){
+        untieKnot: function (leftTarget, rightTarget, knotInfo){
             var r = correctTarget(leftTarget, rightTarget, knotInfo);
             leftTarget = r.left.target; rightTarget = r.right.target;
             var leftAP = r.left.ap, rightAP = r.right.ap;
@@ -342,7 +342,7 @@
             __private.Debugger.knotUntied(leftTarget, rightTarget, knotInfo);
         },
 
-        forceUpdateValue: function(ap){
+        forceUpdateValue: function (ap){
             if(ap.changedCallback)
                 ap.changedCallback();
         }
@@ -351,10 +351,10 @@
 
 
     __private.DefaultProvider = {
-        doesSupport:function(target, apName){
+        doesSupport: function (target, apName){
             return true;
         },
-        getValue: function(target, apName, options){
+        getValue: function (target, apName, options){
             var returnFunc = false;
             if(apName[0] == "@"){
                 returnFunc = true;
@@ -377,16 +377,16 @@
 
 
 
-        setValue: function(target, apName, value, options){
+        setValue: function (target, apName, value, options){
             __private.Utility.setValueOnPath(target, apName, value);
         },
-        doesSupportMonitoring: function(target, apName){
+        doesSupportMonitoring: function (target, apName){
             if(typeof(target) != "object" && typeof(target) != "array"){
                 return false;
             }
             return true;
         },
-        monitor: function(target, apName, callback, options){
+        monitor: function (target, apName, callback, options){
             if(apName && apName[0] == "/"){
                 target = window;
                 apName = apName.substr(1);
@@ -395,7 +395,7 @@
                 __private.DataObserver.monitor(target, apName, callback);
             }
         },
-        stopMonitoring: function(target, apName, callback, options){
+        stopMonitoring: function (target, apName, callback, options){
             if(apName && apName[0] == "/"){
                 target = window;
                 apName = apName.substr(1);
@@ -405,6 +405,6 @@
             }
         }
     };
-})((function() {
+})((function () {
         return this;
     })());

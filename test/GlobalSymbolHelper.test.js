@@ -1,7 +1,7 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    QUnit.test( "private.GlobalSymbolHelper", function( assert ) {
+    QUnit.test( "private.GlobalSymbolHelper", function ( assert ) {
         var n = scope.GlobalSymbolHelper.registerSymbol({p1:1, p2:2});
         assert.equal(scope.GlobalSymbolHelper.getSymbol(n+".p1"), 1, "getSymbol works");
         assert.equal(scope.GlobalSymbolHelper.getSymbol(n+".p2"), 2, "getSymbol works");
@@ -15,6 +15,6 @@
         assert.equal(scope.GlobalSymbolHelper.getSymbol("nothing"), undefined, "getSymbol works with no-existed object");
         assert.equal(scope.GlobalSymbolHelper.getSymbol("nothing.p4"), undefined, "getSymbol works with no-existed object");
     });
-})((function() {
+})((function () {
         return this;
     })());

@@ -1,7 +1,7 @@
-(function(window){
+(function (window){
     var scope = window.Knot.getPrivateScope();
 
-    QUnit.test("private.Utility", function( assert ) {
+    QUnit.test("private.Utility", function ( assert ) {
         assert.equal(true, scope.Utility.isEmptyObj({}), "isEmptyObj works with the empty objects");
         assert.equal(false,scope.Utility.isEmptyObj({name:"alex"}, "isEmptyObj works with the objects has something"));
 
@@ -75,6 +75,6 @@
         assert.equal(arr[0], "abc(sdf:[123:456])", "split with block check");
     });
 
-})((function() {
+})((function () {
         return this;
     })());
