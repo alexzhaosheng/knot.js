@@ -237,6 +237,14 @@
         assert.equal(target2.boolValue, true, "untie knot with n to 1 pipe");
 
 
+        knot = scope.OptionParser.parse("text:(name & sex) > @{return this.name+','+this.sex;}")[0];
+        target1 = {text:""};
+        target2 = {name:"laozi", sex:"m"};
+        scope.AccessPointManager.tieKnot(target1, target2, knot);
+        assert.equal(target1.text, "laozi,m", "test this pointer in n to 1 binding");
+
+
+
         knot = scope.OptionParser.parse("count:list.length")[0];
         target1 = {count:0};
         target2 = {list:[1,2]};
@@ -245,13 +253,6 @@
         target2.list.push(10);
         assert.equal(target2.list.length, 3, "tie to array length");
         assert.equal(target1.count, 3, "tie to array length");
-
-
-        knot = scope.OptionParser.parse('display:{return this.isVisible?"block":"none";}')[0];
-        target1={display:""};
-        target2={isVisible:true};
-        scope.AccessPointManager.tieKnot(target1, target2, knot);
-        assert.equal(target1.display, "block", "Directly tie to function");
 
 
         knot = scope.OptionParser.parse('content:organization.leader.*')[0];
@@ -273,16 +274,9 @@
 
     global.QUnit.test( "private.AccessPointerManager.knotEvent", function ( assert ) {
         var target1, target2;
-        var latestLeft, latestRight, latestChangedKnot, latestValue, latestIsFromLeftToRight, latestTarget,fireCount=0;
+        var  latestChangedKnot, latestValue,  latestTarget;
 
         global.accessPointerEventTest = {
-            nameChanged: function (left, right, knot, value, isFromleftToRight) {
-                latestLeft = left;
-                latestRight = right;
-                latestChangedKnot = knot;
-                latestValue= value;
-                fireCount++;
-            },
             valueSetForAP: function (apDescription, value) {
                 latestTarget = this; latestChangedKnot = apDescription; latestValue=value;
             },
@@ -291,35 +285,9 @@
             }
         };
 
-        var knot = scope.OptionParser.parse("value:name|@change:@/accessPointerEventTest.nameChanged")[0];
-        target1 = {value: ""};
-        target2 = {name: "satoshi"};
-        scope.AccessPointManager.tieKnot(target1, target2, knot);
-        assert.equal(target1.value, "satoshi", "Knot event works");
-        assert.equal(latestLeft, target1, "Knot event works");
-        assert.equal(latestRight, target2, "Knot event works");
-        assert.equal(latestValue, "satoshi", "Knot event works");
-        assert.equal(fireCount,1, "Knot event works");
 
-        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
-        fireCount=0;
-        target2.name = "laozi";
-        assert.equal(target1.value, "laozi", "Knot event works");
-        assert.equal(latestLeft, target1, "Knot event works");
-        assert.equal(latestRight, target2, "Knot event works");
-        assert.equal(latestValue, "laozi", "Knot event works");
-        assert.equal(fireCount,1, "Knot event works");
-
-        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
-        target1.value = "einstein";
-        assert.equal(target2.name, "einstein", "Knot event works");
-        assert.equal(latestLeft, target1, "Knot event works");
-        assert.equal(latestRight, target2, "Knot event works");
-        assert.equal(latestValue, "einstein", "Knot event works");
-
-
-        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
-        knot = scope.OptionParser.parse("value[@set:@/accessPointerEventTest.valueSetForAP]:name")[0];
+        latestTarget=latestValue=latestChangedKnot=undefined;
+        var knot = scope.OptionParser.parse("value[@set:@/accessPointerEventTest.valueSetForAP]:name")[0];
         target1 = {value: ""};
         target2 = {name: "satoshi"};
         scope.AccessPointManager.tieKnot(target1, target2, knot);
@@ -328,19 +296,19 @@
         assert.equal(latestChangedKnot, "value", "ap event @set works");
         assert.equal(latestValue, "satoshi", "ap event @set works");
 
-        latestTarget = latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        latestTarget=latestValue=latestChangedKnot=undefined;
         target2.name = "einstein";
         assert.equal(target1.value, "einstein", "ap event @set works");
         assert.equal(latestTarget, target1, "ap event @set works");
         assert.equal(latestChangedKnot, "value", "ap event @set works");
         assert.equal(latestValue, "einstein", "ap event @set works");
 
-        latestTarget = latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        latestTarget=latestValue=latestChangedKnot=undefined;
         target1.value = "laozi";
         assert.equal(target2.name, "laozi", "ap event @set works");
         assert.equal(latestTarget, undefined, "ap event @set works");
 
-        latestLeft=latestRight=latestValue=latestChangedKnot=latestIsFromLeftToRight=undefined;
+        latestTarget=latestValue=latestChangedKnot=undefined;
         knot = scope.OptionParser.parse("value[@change:@/accessPointerEventTest.valueChangeForAP]:name")[0];
         target1 = {value: ""};
         target2 = {name: "satoshi"};

@@ -162,24 +162,34 @@
             return textRemains;
         },
 
-        normalizeCBS: function (res, text) {
+        normalizeCBS: function (res, text, parentSelector) {
             var pos = 0;
             var blockInfo = __private.Utility.getBlockInfo(text, pos, "{", "}");
             while(blockInfo !== null) {
                 var selector = text.substr(pos, blockInfo.start-pos);
                 selector = __private.Utility.trim(selector);
+
+                if(parentSelector){
+                    selector = parentSelector + " " + selector;
+                }
+
                 if(!res[selector]) {
                     res[selector] = [];
                 }
 
                 var options = text.substr(blockInfo.start+1,  blockInfo.end - blockInfo.start - 1);
-                options = __private.OptionParser.processEmbeddedFunctions(options);
                 var opArray = __private.Utility.splitWithBlockCheck(options, ";");
 
                 for(var i=0; i< opArray.length; i++) {
                     var option = __private.Utility.trim(opArray[i]);
-                    if(res[selector].indexOf(option) < 0) {
-                        res[selector].push(option);
+                    if(option.indexOf("=>") === 0){
+                        this.normalizeCBS(res, option.substr(2), selector);
+                    }
+                    else{
+                        option = __private.OptionParser.processEmbeddedFunctions(option);
+                        if(res[selector].indexOf(option) < 0) {
+                            res[selector].push(option);
+                        }
                     }
                 }
 
@@ -253,7 +263,15 @@
 
         attachCBS: function (scope, cbs) {
             for(var selector in cbs) {
-                var elements = scope.querySelectorAll(selector);
+                var elements;
+                try
+                {
+                    elements = scope.querySelectorAll(selector);
+                }
+                catch(err) {
+                    __private.Log.warning("Invalid selector:" + selector, err);
+                    continue;
+                }
                 if(elements.length === 0) {
                     __private.Log.warning("There is no element selected with selector:" + selector);
                 }

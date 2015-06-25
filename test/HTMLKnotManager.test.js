@@ -46,7 +46,7 @@
 
         scope.HTMLKnotManager.parseCBS();
 
-        assert.equal(findCBS("#cbsTest") !== null, true, "parseCBS with embedded function works");
+        assert.equal(findCBS("#cbsTest") != null, true, "parseCBS with embedded function works");
         assert.equal(findCBS("#cbsTest").length, 1, "parseCBS with embedded function works");
         assert.equal(findCBS("#cbsTest")[0].substr(0, "value:test>".length), "value:test>", "parseCBS with embedded function works");
         var func = findCBS("#cbsTest")[0].substr("value:test>".length);
@@ -55,6 +55,30 @@
         assert.equal(findCBS(".cbsTestClass span")[0], "text:title", "parseCBS with embedded function works");
         assert.equal(findCBS(".cbsTestClass span")[1], "text:description", "parseCBS with embedded function works");
         assert.equal(findCBS(".cbsTestClass span")[2], "isEnabled:valid", "parseCBS with embedded function works");
+
+        resetTest();
+
+
+        scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
+            '#cbsContainer{' +
+                'style.display:test;'+
+                '=>input{value:name};'+
+                '=>.details{'+
+                    '=>.ageInput{value:age};'+
+                    '=>.addressInput{value:address}'+
+                '}'+
+            '}'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        scope.HTMLKnotManager.parseCBS();
+
+        assert.equal(findCBS("#cbsContainer") !== null, true, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer").length, 1, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer")[0], "style.display:test", "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer input") != null, true, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer .details .ageInput") != null, true, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer .details .addressInput") != null, true, "parseCBS with inner cbs blocks");
 
         resetTest();
     });
@@ -531,7 +555,7 @@
 
         var scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">' +
             'body {dataContext:/exceptionTestData;}'+
-            '#testInput{value>{if(value.length<4) throw new Error("short");if(value.length>8) throw new Error("long");}:name}'+
+            '#testInput{value[@error:/exceptionTestOnError] >{if(value.length<4) throw new Error("short");if(value.length>8) throw new Error("long");}:name}'+
             '#validateMsg{innerText:!#testInput.value>{if(value)return value.message; else return "";}; style.color:!#testInput.value>{if(value)return "red"; else return "black";}} '+
             '</script>');
         headNode.appendChild(scriptBlock);
@@ -542,6 +566,11 @@
         scope.HTMLKnotManager.bind();
 
         try{
+            var latestAP, latestError, latestTarget;
+            global.exceptionTestOnError = function(ap, error){
+                latestAP = ap; latestError = error; latestTarget=this;
+            };
+
             global.exceptionTestData = {name:"test"};
 
             var testInput = document.querySelector("#testInput");
@@ -551,11 +580,18 @@
             global.KnotTestUtility.raiseDOMEvent(testInput, "change");
             assert.equal(msg.innerText, "short", "binding to exception works");
             assert.equal(msg.style.color, "red", "binding to exception works");
+            assert.equal(latestAP, "value", "test onerror event");
+            assert.equal(latestError.message, "short", "test onerror event");
+            assert.equal(latestTarget, testInput, "test onerror event");
 
+            latestAP = latestError = latestTarget = undefined;
             testInput.value = "bingoando";
             global.KnotTestUtility.raiseDOMEvent(testInput, "change");
             assert.equal(msg.innerText, "long", "binding to exception works");
             assert.equal(msg.style.color, "red", "binding to exception works");
+            assert.equal(latestAP, "value", "test onerror event");
+            assert.equal(latestError.message, "long", "test onerror event");
+            assert.equal(latestTarget, testInput, "test onerror event");
 
             var status = [];
             scope.HTMLErrorAPProvider.getErrorStatusInformation(bodyNode, status);
@@ -564,14 +600,28 @@
             assert.equal(status[0].accessPointName, "value", "getErrorStatusInformation works");
             assert.equal(status[0].error.message, "long", "getErrorStatusInformation works");
 
+            latestAP = latestError = latestTarget = undefined;
             testInput.value = "bingo";
             global.KnotTestUtility.raiseDOMEvent(testInput, "change");
             assert.equal(msg.innerText, "", "error status is cleared");
             assert.equal(msg.style.color, "black", "error status is cleared");
+            assert.equal(latestAP, "value", "test onerror event");
+            assert.equal(latestError, undefined, "test onerror event");
+            assert.equal(latestTarget, latestTarget, "test onerror event");
 
             status = [];
             scope.HTMLErrorAPProvider.getErrorStatusInformation(bodyNode, status);
             assert.equal(status.length, 0, "error status is cleared");
+
+
+            latestAP = latestError = latestTarget = undefined;
+            testInput.value = "bingox";
+            global.KnotTestUtility.raiseDOMEvent(testInput, "change");
+            assert.equal(msg.innerText, "", "error status is cleared");
+            assert.equal(msg.style.color, "black", "error status is cleared");
+            assert.equal(latestAP, undefined, "test onerror event");
+            assert.equal(latestError, undefined, "test onerror event");
+            assert.equal(latestTarget, undefined, "test onerror event");
         }
         finally{
 

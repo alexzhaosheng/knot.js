@@ -29,14 +29,14 @@
         }
         var f = __private.Utility.getValueOnPath(null, options[eventName]);
         if(!f || typeof(f) !== "function") {
-            __private.Log.error("'"+options[options[eventName]]+"' must be a function.");
+            __private.Log.error("'"+options[eventName]+"' must be a function.");
         }
         else{
             try{
                 f.apply(target, params);
             }
             catch (err) {
-                __private.Log.error("Call AP event handler '"+options[options[eventName]]+"' failed.", err);
+                __private.Log.error("Call AP event handler '"+options[eventName]+"' failed.", err);
             }
         }
     }
@@ -161,13 +161,13 @@
                         value = p.apply(target, [value]);
                     }
                     if(ap.errorAPProvider) {
-                        ap.errorAPProvider.setValue(target, "!" + ap.description, undefined);
+                        ap.errorAPProvider.setValue(target, "!" + ap.description, undefined, ap.options);
                     }
                 }
             }
             catch (exception) {
                 if(ap.errorAPProvider) {
-                    ap.errorAPProvider.setValue(target, "!" + ap.description, exception);
+                    ap.errorAPProvider.setValue(target, "!" + ap.description, exception, ap.options);
                 }
                 return this.objectToIndicateError;
             }
@@ -191,18 +191,6 @@
         },
 
         notifyKnotChanged: function (left, right, option, value, isSetFromLeftToRight) {
-            if(option && option.knotEvent && option.knotEvent["@change"]) {
-                for(var i=0; i<option.knotEvent["@change"].length; i++) {
-                    try{
-                        var handler = __private.Utility.getValueOnPath(null, option.knotEvent["@change"][i].substr(1));
-                        handler(left, right, option, value, isSetFromLeftToRight);
-                    }
-                    catch (err) {
-                        __private.Log.error("Call knot event 'change' handler failed.", err);
-                    }
-                }
-            }
-
             __private.Debugger.knotChanged(left, right, option, value, isSetFromLeftToRight);
         },
 
@@ -277,7 +265,7 @@
                 var values = [];
                 for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
                     var v = __private.AccessPointManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
-                    if (v === this.objectToIndicateError) {
+                    if (v === __private.AccessPointManager.objectToIndicateError) {
                         return;
                     }
                     values.push(v);
@@ -287,7 +275,7 @@
                 if (typeof(p) !== "function") {
                     __private.Log.error("Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
                 }
-                var latestValue = p.apply(compositeAP, [values]);
+                var latestValue = p.apply(compositeAPTarget, [values]);
 
                 __private.AccessPointManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget === rightTarget);
                 __private.AccessPointManager.safeSetValue(normalTarget, normalAP, latestValue);

@@ -56,7 +56,7 @@ $(document).ready(function () {
     loadScript(".exampleCSS", "CSS");
 });
 
-document.writeln('<div id="sourceTab">'+
+document.writeln('<div id="sourceTab" knot-debugger-ignore>'+
     '<div id="codePageTemplate" knot-template-id="codePageTemplate">'+
         '<pre><code></code></pre>'+
     '</div>'+

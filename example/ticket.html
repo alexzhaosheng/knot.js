@@ -38,7 +38,8 @@
     }
 
     .clearButton{
-        disabled:selected>{return value?false:true;}
+        disabled:selected>{return value?false:true;};
+        @click:{this.selected = null;}
     }
 
 
@@ -67,7 +68,7 @@
 
     /* For Ticket 1*/
     #classSelect2{
-        options[displayMember:{return this.name+"("+this.price+")";}]:tickets;
+        options[displayMember:(name & price)>@{return value[0] + "("+value[1]+")";}]:tickets;
         selectedData:selected;
     }
     </script>
@@ -80,9 +81,7 @@
         ],
         selected:null
     }
-    function clearSelection() {
-        model.selected = null;
-    }
+
     </script>
 </head>
 <body>
@@ -96,7 +95,7 @@
     </p>
     <p>
         Choose a ticket class: <select id="classSelect"><option knot-template></option></select>
-        <button class="clearButton" onclick="clearSelection();">clear</button>
+        <button class="clearButton">clear</button>
     </p>
     <p class="selectionResult">
         You have chosen <b></b>
@@ -111,7 +110,7 @@
     </p>
     <p>
         Choose a ticket class: <select id="classSelect2"></select>
-        <button class="clearButton" onclick="clearSelection();">clear</button>
+        <button class="clearButton">clear</button>
     </p>
     <p class="selectionResult">
         You have chosen <b></b>

@@ -218,6 +218,7 @@
             if(apName[0] === "@") {
                 if(typeof(value) !== "function") {
                     __private.Log.error( "Event listener must be a function!");
+                    return;
                 }
 
                 if(target) {
@@ -352,6 +353,10 @@
                 if(!target.__knot_errorStatusInfo[apName]) {
                     target.__knot_errorStatusInfo[apName] = {};
                 }
+                if(target.__knot_errorStatusInfo[apName].currentStatus === value) {
+                    return;
+                }
+
                 target.__knot_errorStatusInfo[apName].currentStatus = value;
                 if(target.__knot_errorStatusInfo[apName].changedCallbacks) {
                     var callbacks = target.__knot_errorStatusInfo[apName].changedCallbacks;
@@ -361,6 +366,21 @@
                         }
                         catch (error) {
                             __private.Log.warning( "Call error status changed callback failed.", error);
+                        }
+                    }
+                }
+
+                if(options && options["@error"]){
+                    var f = __private.Utility.getValueOnPath(null, options["@error"]);
+                    if(!f || typeof(f) !== "function") {
+                        __private.Log.error("'"+options["@error"]+"' must be a function.");
+                    }
+                    else{
+                        try{
+                            f.apply(target, [apName, value]);
+                        }
+                        catch (err) {
+                            __private.Log.error("Call AP error event handler '"+options["@error"]+"' failed.", err);
                         }
                     }
                 }

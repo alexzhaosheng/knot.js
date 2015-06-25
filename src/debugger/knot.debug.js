@@ -1,7 +1,7 @@
 (function (window) {
     "use strict";
 
-    var _cacheDebugLog = true;
+    var _shouldCacheDebugLog = true;
     var _debugWindow;
     var _debugButton;
     var _closingCheckIntervalHandler;
@@ -9,6 +9,7 @@
     var _cachedDebugLogs = [];
     window.knotjsDebugger ={
         getCachedDebugLog: function(){
+            _shouldCacheDebugLog = false;
             var r = _cachedDebugLogs.slice(0);
             _cachedDebugLogs.length = 0;
             return r;
@@ -23,23 +24,34 @@
     var logger = function (level, msg, exception) {
         var log = {level:level, message:msg, exception:exception, time:new Date()};
         _currentMaxLevel = Math.max(_currentMaxLevel, _levels.indexOf(level));
+        updateDebugButtonVisibility();
         updateDebugButtonStyle();
 
-        if(!_cacheDebugLog) {
-            _cachedLogs.push(log);
+       _cachedLogs.push(log);
+
+        try{
+            if(_debugWindow){
+                _debugWindow.calledByOpener.log(log);
+            }
         }
-        else{
-            try{
-                if(_debugWindow){
-                    _debugWindow.calledByOpener.log(log);
-                }
-            }
-            catch(err) {
-                window.console.log("Call logger failed.");
-                window.console.log(err);
-            }
+        catch(err) {
+            console.log("Call logger failed.");
+            console.log(err);
         }
     };
+
+    function updateDebugButtonVisibility(){
+        if(_currentMaxLevel === 0 && _debugWindow){
+            if(_debugButton.parentNode){
+                _debugButton.parentNode.removeChild(_debugButton);
+            }
+        }
+        else{
+            if(!_debugButton.parentNode) {
+                document.body.appendChild(_debugButton);
+            }
+        }
+    }
 
     function updateDebugButtonStyle() {
         if(_currentMaxLevel <= 0) {
@@ -74,17 +86,22 @@
         var url = getBaseDir() + "debugger.html";
         var name =  window.location.href + window.location.pathname;
         _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=600,resizable=yes,scrollbars=yes");
+
     }
     function startDebugger() {
+        if(_debugWindow){
+            _debugWindow.focus();
+            return;
+        }
         showDebugWindow();
-        document.body.removeChild(_debugButton);
+        updateDebugButtonVisibility();
         setCookie(getCookieName(), "1");
 
         _closingCheckIntervalHandler = setInterval(function () {
             if(_debugWindow.closed) {
-                _cacheDebugLog = true;
+                _shouldCacheDebugLog = true;
                 _debugWindow=  null;
-                document.body.appendChild(_debugButton);
+                updateDebugButtonVisibility();
                 delCookie(getCookieName());
                 clearInterval(_closingCheckIntervalHandler);
             }
@@ -92,7 +109,7 @@
     }
 
     function callDebugger(funcName, args) {
-        if(_cacheDebugLog) {
+        if(_shouldCacheDebugLog) {
             _cachedDebugLogs.push({func:funcName, args:args});
         }
         else{
@@ -100,8 +117,8 @@
                 _debugWindow.calledByOpener.debugger[funcName].apply(_debugWindow.calledByOpener.debugger, args);
             }
             catch (err) {
-                window.console.log("Call debugger failed. func:"+funcName);
-                window.console.log(err);
+                console.log("Call debugger failed. func:"+funcName);
+                console.log(err);
             }
         }
     }
@@ -152,14 +169,17 @@
     function parseHTML (html) {
         var div = document.createElement('div');
         div.innerHTML = html;
-        return div.childNodes[0];
+        var r =  div.childNodes[0];
+        div.removeChild(r);
+        return r;
     }
     function getCookieName() {
         return "knot-debugger-show-debug-window";
     }
+
     window.addEventListener("load", function () {
         _debugButton = parseHTML('<img id="knotjs-debugger-debuggerButton" title="Show knot.js debugger">');
-        document.body.appendChild(_debugButton);
+        updateDebugButtonVisibility();
         updateDebugButtonStyle();
         if(getCookie(getCookieName())) {
             startDebugger();

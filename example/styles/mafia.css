@@ -34,6 +34,16 @@ li{
     margin: 0px;
 }
 
+@keyframes flash {
+    0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;}
+}
+@-webkit-keyframes flash {
+    0% {opacity: 1;} 50% {opacity: 0.5;} 100% {opacity: 1;}
+}
+.flash{
+    -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
+}
+
 
 .iconButton{
     cursor: pointer;
@@ -114,7 +124,13 @@ li{
 .contentPanel .selected{
     border: 3px solid #61ce3c;
 }
-
+.contentPanel i{
+    color: gray;
+}
+.contentPanel .levelInStar{
+    margin-right: 10px;
+    margin-left: 0px;
+}
 
 .gangTemplate>.title{
     background-color: #F35E04;
@@ -146,9 +162,13 @@ li{
 .editorPanel > div{
     margin: 2px;
 }
-.editorPanel > .errorMessage{
+.editorPanel .errorMessage{
     margin-right: 5px;
     color:red;
+    font-size: 0.9em;
+}
+.editorPanel .error{
+    box-shadow: 0px 0px 3px red;
 }
 
 .gangEditorTemplate{

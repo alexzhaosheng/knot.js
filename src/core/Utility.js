@@ -2,6 +2,10 @@
     "use strict";
     var __private = global.Knot.getPrivateScope();
 
+    var _blockStartMarks= {"(":true, "{":true, "[":true};
+    var _blockEndMarks= {")":true, "}":true, "]":true};
+    var _blockPairs = {"(":")", "{":"}", "[":"]"};
+
     /////////////////////////////////////
     // Utility functions
     /////////////////////////////////////
@@ -150,31 +154,32 @@
             }
         },
 
-        splitWithBlockCheck: function (str, splitorChar) {
+        splitWithBlockCheck: function (str, splitter) {
             var pos = 0, prev=0;
             var res = [];
-            var bracketCount =0;
-            var squreBracketCount =0;
+
+            var blockStack = [];
+
             while(pos < str.length) {
-                switch (str[pos]) {
-                    case "(":
-                        bracketCount++; break;
-                    case ")":
-                        bracketCount = Math.max(0, bracketCount-1); break;
-                    case "[":
-                        squreBracketCount++;break;
-                    case "]":
-                        squreBracketCount = Math.max(0, squreBracketCount-1); break;
-                    case splitorChar:
-                        if(bracketCount === 0 && squreBracketCount === 0) {
-                            res.push(str.substr(prev, pos-prev));
-                            prev = pos+1;
-                        }
-                        break;
-                    default :
-                        break;
+                if(_blockStartMarks[str[pos]]){
+                    blockStack.push(str[pos]);
+                }
+                else if(_blockEndMarks[str[pos]]){
+                    var b = blockStack.pop();
+                    if(_blockPairs[b] !== str[pos]){
+                        __private.log.warning("Unclosed block is detected.\r" + str);
+                        blockStack.push(b);
+                    }
+                }
+                else if(str[pos] === splitter && blockStack.length === 0){
+                    res.push(str.substr(prev, pos-prev));
+                    prev = pos+1;
                 }
                 pos++;
+            }
+
+            if(blockStack.length > 0){
+                __private.log.warning("Unclosed block is detected.\r" + str);
             }
 
             if(pos >= prev){
@@ -183,4 +188,5 @@
             return res;
         }
     };
+
 })(window);

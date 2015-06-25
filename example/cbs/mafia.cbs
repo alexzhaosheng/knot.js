@@ -2,6 +2,10 @@ body{
     dataContext:/mafiaSystem
 }
 
+
+///////////////////////////////////////////
+// tree
+///////////////////////////////////////////
 #systemTree{
     foreach[template:treeNode]: gangs
 }
@@ -20,59 +24,243 @@ body{
     foreach[template:treeNode]: children;
 }
 
-.gangTemplate .title,  .whiteBusinessTemplate .title,  .blackBusinessTemplate .title{
-    text: title;
-}
-
-
-
-.people>div:first-of-type{
-    content[template: @/mafiaSystem.nodeContentTemplateSelector]: leader;
-}
-
-
-.manTemplate .title, .womanTemplate .title{
-    text: name
-}
-
-
 .treeNode .childrenList, .gangTemplate .people, .whiteBusinessTemplate .people,  .blackBusinessTemplate .people{
     style.display: collapsed>{return value?"none":"block";}
 }
 
+
+/////////////////////////////
+// item templates
+////////////////////////////
 .contentPanel .title{
     @click: @/mafiaSystem.onSelectClicked;
     class:isSelected >{return value?"+selected":"-selected"};
 }
 
-#editArea>div{
+.gangTemplate .title,  .whiteBusinessTemplate .title,  .blackBusinessTemplate .title{
+    text: title;
+}
+.people>div:first-of-type{
+    content[template: @/mafiaSystem.nodeContentTemplateSelector]: leader;
+}
+.manTemplate .title, .womanTemplate .title{
+    text: name
+}
+
+
+.gangTemplate .businessCount{
+    text: businessCount
+}
+.gangTemplate .handsCount{
+    text: handsCount
+}
+
+.whiteBusinessTemplate .income{
+    text: income>@/mafiaSystem.pipes.toMoneyStr
+}
+.whiteBusinessTemplate .landedMoney{
+    text: landedMoney>@/mafiaSystem.pipes.toMoneyStr
+}
+
+.blackBusinessTemplate .income{
+    text: income>@/mafiaSystem.pipes.toMoneyStr
+}
+.blackBusinessTemplate .caseNumber{
+    text: caseNumber
+}
+.blackBusinessTemplate .exposureLevel{
+    text: exposureLevel
+}
+
+
+.contentPanel .levelInStar{
+    class: *>{
+        if(value==1)
+            return "-fa-star-o +fa-star-half -fa-star";
+        else if(value==2)
+            return "-fa-star-o -fa-star-half +fa-star";
+        else
+            return "+fa-star-o -fa-star-half -fa-star";
+    };
+
+    style.color: *>{
+        if(value==1)
+            return "#81fe7c";
+        else if(value==2)
+            return "#61ce3c";
+        else
+            return "#a1ffac";
+    }
+}
+
+.contentPanel .loyalty .levelInStar{
+    style.color:*>{
+        if(value==1)
+            return "#aaaa00";
+        else if(value==2)
+            return "#61ce3c";
+        else
+            return "red";
+    };
+    class:*>{
+        return (value)? "-flash": "+flash";
+    }
+}
+
+.manTemplate .intelligence, .womanTemplate .intelligence{
+    dataContext: intelligence
+}
+.manTemplate .skill, .womanTemplate .skill{
+    dataContext: skill
+}
+.manTemplate .loyalty, .womanTemplate .loyalty{
+    dataContext: loyalty
+}
+
+.manTemplate .strength{
+    dataContext:strength
+}
+
+.womanTemplate .attraction{
+    dataContext:attraction
+}
+
+
+///////////////////////////////////////////
+// editor and templates
+///////////////////////////////////////////
+
+#editArea>div:first-of-type{
     content[template:@/mafiaSystem.editorTemplateSelector] : selected
 }
+#editArea>div:last-of-type{
+    style.display:selected>{return (!value|| value.sex)?"none":"block";};
+    =>div{
+        content[template: @/mafiaSystem.nodeContentTemplateSelector]: selected.leader;
+    }
+}
 
-.gangEditor .title>input{
+
+.editorPanel input[type=text]{
+    class:!*LEFT.value>{return value?"+error":"-error";}
+}
+
+.gangEditor .title{
+    =>input{
     value>@mafiaSystem.pipes.checkTitle: title
-}
-.gangEditor .title .errorMessage{
-    text:!#(.gangEditor .title>input).value
-}
-
-.whiteBusinessEditor .title>input{
-    value>@mafiaSystem.pipes.checkTitle: title
-}
-.whiteBusinessEditor .title .errorMessage{
-    text:!#(.whiteBusinessEditor .title>input).value>{return value?value.message:"";}
+    };
+    => .errorMessage{
+        text:!#(.gangEditor .title>input).value
+    };
 }
 
-.whiteBusinessEditor .income>input{
-    value>@mafiaSystem.pipes.checkMoney: income
-}
-.whiteBusinessEditor .income .errorMessage{
-    text:!#(.whiteBusinessEditor .income>input).value>{return value?value.message:"";}
+
+.whiteBusinessEditor {
+    =>.title{
+        =>input{
+            value>@mafiaSystem.pipes.checkTitle: title
+        };
+        =>.errorMessage{
+            text:!#(.whiteBusinessEditor .title>input).value>{return value?value.message:"";}
+        }
+    };
+
+    =>.income{
+        =>input{
+            value>@mafiaSystem.pipes.checkNumber: income
+        };
+        =>.errorMessage{
+            text:!#(.whiteBusinessEditor .income>input).value>{return value?value.message:"";}
+        }
+    };
+
+    =>.landedMoney{
+            =>input{
+                value>@mafiaSystem.pipes.checkNumber: landedMoney
+            };
+            =>.errorMessage{
+                text:!#(.whiteBusinessEditor .landedMoney>input).value>{return value?value.message:"";}
+            }
+        };
 }
 
-.whiteBusinessEditor .landedMoney>input{
-    value>@mafiaSystem.pipes.checkMoney: landedMoney
+
+.blackBusinessEditor {
+    =>.title{
+        =>input{
+            value>@mafiaSystem.pipes.checkTitle: title
+        };
+        =>.errorMessage{
+            text:!#(.blackBusinessEditor .title>input).value>{return value?value.message:"";}
+        }
+    };
+
+    =>.income{
+        =>input{
+            value>@mafiaSystem.pipes.checkNumber: income
+        };
+        =>.errorMessage{
+            text:!#(.blackBusinessEditor .income>input).value>{return value?value.message:"";}
+        }
+    };
+
+    =>.caseNumber{
+            =>input{
+                value>@mafiaSystem.pipes.checkNumber: caseNumber
+            };
+            =>.errorMessage{
+                text:!#(.blackBusinessEditor .caseNumber>input).value>{return value?value.message:"";}
+            }
+        };
+
+    =>.exposureLevel select{
+        value:exposureLevel
+    }
 }
-.whiteBusinessEditor .landedMoney .errorMessage{
-    text:!#(.whiteBusinessEditor .landedMoney>input).value
+
+
+.manEditor{
+    =>.name{
+        =>input{
+            value>@mafiaSystem.pipes.checkName: name
+        };
+        =>.errorMessage{
+            text:!#(.manEditor .name>input).value>{return value?value.message:"";}
+        };
+    };
+    =>.intelligence select{
+        selectedIndex:intelligence
+    };
+    =>.skill select{
+        selectedIndex:skill
+    };
+    =>.loyalty select{
+        selectedIndex:loyalty
+    };
+    =>.strength select{
+        selectedIndex:strength
+    };
+}
+
+.womanEditor{
+    =>.name{
+        =>input{
+            value>@mafiaSystem.pipes.checkName: name
+        };
+        =>.errorMessage{
+            text:!#(.womanEditor .name>input).value>{return value?value.message:"";}
+        };
+    };
+    =>.intelligence select{
+        selectedIndex:intelligence
+    };
+    =>.skill select{
+        selectedIndex:skill
+    };
+    =>.loyalty select{
+        selectedIndex:loyalty
+    };
+    =>.attraction select{
+        selectedIndex:attraction
+    };
 }

@@ -51,6 +51,13 @@
         <div id="editArea">
             <h3>Editor</h3>
             <div></div>
+            <div>
+                <h4>Leader</h4>
+                <div></div>
+            </div>
+        </div>
+        <div id="editArea">
+            <h3>Free</h3>
         </div>
     </div>
 
@@ -67,7 +74,7 @@
         <div class="title"></div>
         <div class="attributeTable">
             <div class="attributeItem" title="Number of businesses"><i class="fa fa-university"></i> <span class="businessCount">5</span></div>
-            <div class="attributeItem" title="Number of hands"><i class="fa fa-users"></i> <span class="handsCount"></span>21</div>
+            <div class="attributeItem" title="Number of hands"><i class="fa fa-users"></i> <span class="handsCount"></span></div>
         </div>
         <div class="people">
             <i class="fa fa-user-secret"></i>
@@ -80,9 +87,9 @@
     <div knot-template-id="whiteBusinessTemplate" class="whiteBusinessTemplate contentPanel">
         <div class="title"></div>
         <div class="attributeTable">
-            <div class="attributeItem" title="Income"><i class="fa fa-money"></i> <span class="income">5</span></div>
+            <div class="attributeItem" title="Income"><i class="fa fa-money"></i> <span class="income"></span></div>
             <div class="attributeItem" title="Money landed">
-                <i class="fa fa-paper-plane"></i> <span class="moneyLanded"></span>21</div>
+                <i class="fa fa-paper-plane"></i> <span class="landedMoney"></span></div>
         </div>
         <div class="people">
             <i class="fa fa-user-secret"></i>
@@ -95,8 +102,8 @@
         <div class="title"></div>
         <div class="attributeTable">
             <div class="attributeItem" title="Income"><i class="fa fa-money"></i> <span class="income">5</span></div>
-            <div class="attributeItem" title="Case executed"><i class="fa fa-fire"></i> <span class="caseExecuted"></span>21</div>
-            <div class="attributeItem" title="Exposure level"><i class="fa fa-lightbulb-o"></i> <span class="exposureLevel"></span>Safe</div>
+            <div class="attributeItem" title="Case number"><i class="fa fa-fire"></i> <span class="caseNumber"></span></div>
+            <div class="attributeItem" title="Exposure level"><i class="fa fa-lightbulb-o"></i> <span class="exposureLevel"></span></div>
         </div>
         <div class="people">
             <i class="fa fa-user-secret"></i>
@@ -109,43 +116,161 @@
     <div knot-template-id="manTemplate" class="manTemplate contentPanel">
         <div class="title"></div>
         <div class="attributeTable">
-            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="caseExecuted"></span>21</div>
-            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i><span class="exposureLevel"></span>Safe</div>
-            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"></span>Safe</div>
-            <div class="attributeItem" title="Strength"><i class="fa fa-gavel"></i> <span class="strength">5</span></div>
+            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i><span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Strength"><i class="fa fa-gavel"></i> <span class="strength"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
         </div>
     </div>
 
     <div knot-template-id="womanTemplate" class="womanTemplate contentPanel">
         <div class="title"></div>
         <div class="attributeTable">
-            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="caseExecuted"></span>21</div>
-            <div class="attributeItem" title="Leadership"><i class="fa fa-user-secret"></i> <span class="exposureLevel"></span>Safe</div>
-            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"></span>Safe</div>
-            <div class="attributeItem" title="Hot rating"><i class="fa fa-bolt"></i><span class="hotRating">5</span></div>
+            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i> <span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Attraction"><i class="fa fa-bolt"></i><span class="attraction"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
         </div>
     </div>
 
 
     <div knot-template-id="gangEditorTemplate" class="gangEditor editorPanel">
+        <h3>Gang</h3>
         <div class="title" >
-            <div class="label">Title <span class="errorMessage"></span></div>
+            <div class="label">Title</span></div>
             <input type="text">
+            <div><span class="errorMessage"></span></div>
         </div>
     </div>
 
     <div knot-template-id="whiteBusinessEditorTemplate" class="whiteBusinessEditor editorPanel">
+        <h3>Legal business</h3>
         <div class="title">
-            <div class="label">Title<span class="errorMessage"></span></div>
+            <div class="label">Title</div>
             <input type="text">
+            <div><span class="errorMessage"></span></div>
         </div>
         <div class="income">
-            <div class="label">Income<span class="errorMessage"></span></div>
+            <div class="label">Income</div>
             <input type="text">
+            <div><span class="errorMessage"></span></div>
         </div>
         <div class="landedMoney">
-            <div class="label">Landed Money<span class="errorMessage"></span></div>
+            <div class="label">Landed Money</div>
             <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+    </div>
+
+    <div knot-template-id="blackBusinessEditorTemplate" class="blackBusinessEditor editorPanel">
+        <h3>Black business</h3>
+        <div class="title">
+            <div class="label">Title</div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+        <div class="income">
+            <div class="label">Income</div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+        <div class="caseNumber">
+            <div class="label">Case Number</div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+        <div class="exposureLevel">
+            <div class="label">Exposure Level</div>
+            <select>
+                <option value="s">Safe</option>
+                <option value="w">Warning</option>
+                <option value="d">Danger</option>
+            </select>
+        </div>
+    </div>
+
+    <div knot-template-id="manEditorTemplate" class="manEditor editorPanel">
+        <h3>Man</h3>
+        <div class="name">
+            <div class="label">Name</div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+        <div class="intelligence">
+            <div class="label">Intelligence</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+        <div class="skill">
+            <div class="label">Skills</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+        <div class="loyalty">
+            <div class="label">Loyalty</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+
+        <div class="strength">
+            <div class="label">Strength</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+    </div>
+
+
+    <div knot-template-id="womanEditorTemplate" class="womanEditor editorPanel">
+        <h3>Woman</h3>
+        <div class="name">
+            <div class="label">Name</div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+        <div class="intelligence">
+            <div class="label">Intelligence</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+        <div class="skill">
+            <div class="label">Skills</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+        <div class="loyalty">
+            <div class="label">Loyalty</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
+        </div>
+
+        <div class="attraction">
+            <div class="label">Attraction</div>
+            <select>
+                <option>Bad</option>
+                <option>Moderate</option>
+                <option>Good</option>
+            </select>
         </div>
     </div>
 </section>

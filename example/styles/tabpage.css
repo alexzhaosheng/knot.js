@@ -32,12 +32,12 @@
     border-radius: 2px;
     border:1px solid lightgray;
     margin-top: -1px;
-
+    background-color: whitesmoke;
     padding: 3px;
 }
 
 .knot-example-tabPage .page-contentArea>.pageContent{
-    display:none
+    display:none;
 }
 .knot-example-tabPage .page-contentArea .selected{
     display:block

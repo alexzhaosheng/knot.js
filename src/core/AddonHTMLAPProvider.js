@@ -170,7 +170,8 @@
             }
             //check whether target is html element
             if(target instanceof HTMLElement) {
-                if(target.tagName.toLowerCase() ==="select" && (__private.Utility.startsWith(apName,"options") || apName === "selectedData")) {
+                if(target.tagName.toLowerCase() ==="select" &&
+                    (__private.Utility.startsWith(apName,"options") || apName === "selectedData" || apName === "value")) {
                     return true;
                 }
                 else if(apName === "class") {
@@ -189,7 +190,7 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
-            if(apName === "selectedData") {
+            if(target.tagName.toLowerCase() ==="select" && apName === "selectedData") {
                 var selectedOption = target.options[target.selectedIndex];
                 if(selectedOption) {
                     return (selectedOption.__knot ? selectedOption.__knot.dataContext : undefined);
@@ -198,10 +199,15 @@
                     return undefined;
                 }
             }
+
+            if(target.tagName.toLowerCase() ==="select" && apName === "value"){
+                return target.selectedIndex>=0? target.options[target.selectedIndex].value: undefined;
+            }
+
             if(apName === "class") {
                 return target.className;
             }
-            if(__private.Utility.startsWith(apName,"options")) {
+            if(target.tagName.toLowerCase() ==="select" && __private.Utility.startsWith(apName,"options")) {
                 return target.options;
             }
             if(_alias[apName]) {
@@ -215,13 +221,23 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
-            if(apName === "selectedData") {
-                setSelectedData(target, value);
-            }
-            else if(apName === "class") {
+            if(apName === "class") {
                 setClass(target, value);
             }
-            else if(__private.Utility.startsWith(apName,"options")) {
+            else if(target.tagName.toLowerCase() ==="select" && apName === "value") {
+                for(var i=0; i<target.options.length; i++){
+                    //use weak type equal here to make it more flexible
+                    if(target.options[i].value == value){
+                        target.selectedIndex = i;
+                        return;
+                    }
+                }
+                target.selectedIndex = -1;
+            }
+            else if(target.tagName.toLowerCase() ==="select" && apName === "selectedData") {
+                setSelectedData(target, value);
+            }
+            else if(target.tagName.toLowerCase() ==="select" && __private.Utility.startsWith(apName,"options")) {
                 setSelectOptions(target, value, options);
             }
             else if(_alias[apName]) {
@@ -233,7 +249,7 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
-            return (apName === "selectedData");
+            return target.tagName.toLowerCase() ==="select" && (apName === "selectedData" || apName === "value");
         },
         monitor: function (target, apName, callback) {
             if(apName[0] === "#") {
@@ -241,7 +257,8 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
-            if(apName === "selectedData") {
+            if(target.tagName.toLowerCase() ==="select" &&
+                (apName === "selectedData" || apName === "value")) {
                 target.addEventListener("change", callback);
             }
         },
@@ -251,7 +268,8 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
             }
 
-            if(apName === "selectedData") {
+            if(target.tagName.toLowerCase() ==="select" &&
+                (apName === "selectedData" || apName === "value")) {
                 target.removeEventListener("change", callback);
             }
         }

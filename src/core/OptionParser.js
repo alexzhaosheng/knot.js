@@ -66,14 +66,9 @@
             var sections = __private.Utility.splitWithBlockCheck(optionText, ";");
 
             for(var i=0; i<sections.length; i++) {
-                var optionSections =  __private.Utility.splitWithBlockCheck(sections[i], "|");
-                var knot = this.parseKnot(optionSections[0]);
+                var knot = this.parseKnot(sections[i]);
                 if(!knot) {
                     continue;
-                }
-
-                if(optionSections.length > 1) {
-                    knot.knotEvent = this.parseEvent(optionSections[1]);
                 }
                 options.push(knot);
             }
@@ -160,21 +155,13 @@
             parts.splice(0, 1);
             var pipes = parts.map(function (t) {return __private.Utility.trim(t);});
             var options = null;
-            //if AP is a global symbol, that means AP is a function. so there's actually no AP is specified.
-            //in this case, use "*" as AP and take everything as pipes
-            if(__private.GlobalSymbolHelper.isGlobalSymbol(AP)) {
-                pipes.splice(0,0,AP);
-                AP = "*";
-            }
-            else{
-                if(AP[AP.length-1] === "]") {
-                    var optionBlock = __private.Utility.getBlockInfo(AP, 0, "[", "]");
-                    if(optionBlock) {
-                        options = this.getAPOptions(AP.substr(optionBlock.start+1, optionBlock.end-optionBlock.start-1));
-                        AP = AP.substr(0, optionBlock.start);
-                    }
-
+            if(AP[AP.length-1] === "]") {
+                var optionBlock = __private.Utility.getBlockInfo(AP, 0, "[", "]");
+                if(optionBlock) {
+                    options = this.getAPOptions(AP.substr(optionBlock.start+1, optionBlock.end-optionBlock.start-1));
+                    AP = AP.substr(0, optionBlock.start);
                 }
+
             }
             return {description:AP, pipes:pipes, options:options};
         },

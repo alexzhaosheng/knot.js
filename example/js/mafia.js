@@ -82,11 +82,19 @@
         },
 
         onSelectClicked: function () {
-            var sender = this;
-            travelTree(window.mafiaSystem.gangs, null, function (node) {
-                node.isSelected = (sender === node);
-            });
-            window.mafiaSystem.selected = this;
+            var r = Knot.getErrorStatusInformation($("#editArea")[0]);
+            if(r.length > 0){
+                alert("Please fix the errors first.");
+                $(r[0].node).focus();
+                return;
+            }
+            else{
+                var sender = this;
+                travelTree(window.mafiaSystem.gangs, null, function (node) {
+                    node.isSelected = (sender === node);
+                });
+                window.mafiaSystem.selected = this;
+            }
         },
 
 
@@ -98,14 +106,34 @@
                 else if(value.length > 50) {
                     throw new Error("Title must not be longer than 50 chars!");
                 }
-                return value;
+                return value.trim();
             },
-            checkMoney: function (value) {
+            checkName:function(value){
+                if(!value || value.length<3) {
+                    throw new Error("Title must be longer than 3 chars!");
+                }
+                else if(value.length > 50) {
+                    throw new Error("Title must not be longer than 50 chars!");
+                }
+                value = value.trim();
+                var sec = value.split(" ").filter(function(t){return t;});
+                if(sec.length < 2){
+                    throw new Error("Must input the first name and last name(split with space)");
+                }
+                return sec.join(" ");
+            },
+            checkNumber: function (value) {
                 value = Number(value);
                 if(isNaN(value)) {
                     throw new Error("Invalid number!");
                 }
                 return value;
+            },
+            toMoneyStr: function(value){
+                if(value === null || typeof(value) === undefined || isNaN(Number(value))) {
+                    return "";
+                }
+                return "$"+ Number(value).toFixed(2).replace(/(\d)(?=(\d{3})+\.)/g, '$1,');
             }
         }
     };

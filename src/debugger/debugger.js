@@ -153,22 +153,33 @@ Knot.js debugger
         }
     }
     //highlight the target node while remove highlight from the other nodes
-    function searchByNode(node, targetNode) {
+    function searchByNodeInTree(treeRoot, targetNode) {
         var found = false;
-        for(var i=0;i<node.childrenInfo.length; i++) {
-            if(searchByNode(node.childrenInfo[i], targetNode)) {
+        for (var i = 0; i < treeRoot.childrenInfo.length; i++) {
+            if (searchByNodeInTree(treeRoot.childrenInfo[i], targetNode)) {
                 found = true;
             }
         }
 
-        if(node.options) {
-            for(i=0; i< node.options.length; i++) {
-                node.options[i].isHighlighted = false;
+        if (treeRoot.options) {
+            for (i = 0; i < treeRoot.options.length; i++) {
+                treeRoot.options[i].isHighlighted = false;
             }
         }
-        if(!found)
-            node.isHighlighted = (node.node === targetNode);
-        return found || node.isHighlighted;
+        if (!found)
+            treeRoot.isHighlighted = (treeRoot.node === targetNode);
+        return found || treeRoot.isHighlighted;
+    }
+
+    function searchByNode(node, targetNode) {
+        try{
+            while(!searchByNodeInTree(node, targetNode) && targetNode.parentNode){
+                targetNode = targetNode.parentNode;
+            }
+        }
+        catch (err){
+            alert(err.toString());
+        }
     }
 
     //collapse node as many as possible to emphasis the highlighted ones
