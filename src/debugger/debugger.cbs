@@ -2,111 +2,124 @@ body{
     dataContext:/debuggerModel;
 }
 
-#tabPage .page-headerArea>.header:first-child{
-    @click:@{this.showLogViewer = false;}
-}
-#tabPage .page-headerArea>.header:last-child{
-    @click:@{this.showLogViewer = true;}
-}
-#tabPage .page-headerArea>.header:last-child>span{
-    className:highestLogLevel
-}
+#tabPage{
+    =>.page-headerArea>.header:first-child{
+        @click:@{this.showLogViewer = false;}
+    };
+    =>.page-headerArea>.header:last-child{
+        @click:@{this.showLogViewer = true;}
+    };
+    =>.page-headerArea>.header:last-child>span{
+        className:highestLogLevel
+    };
 
-#tabPage .page-headerArea>.header:first-child, #tabPage .page-contentArea>.pageContent:first-child{
-    class:showLogViewer>{return value?"-selected":"+selected";}
-}
-#tabPage .page-headerArea>.header:last-child, #tabPage .page-contentArea>.pageContent:last-child{
-    class:showLogViewer>{return !value?"-selected":"+selected";}
+    =>.page-headerArea>.header:first-child, .pageContent:first-child{
+        class:showLogViewer>{return value?"-selected":"+selected";}
+    };
+    =>.page-headerArea>.header:last-child, .page-contentArea>.pageContent:last-child{
+        class:showLogViewer>{return !value?"-selected":"+selected";}
+    };
 }
 
 #domTree{
     foreach: domTreeNodes
 }
 
-#domTree>li .expander>i{
-    @click:@{this.isExpanded = !this.isExpanded;};
-    class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
+#domTree>li {
+    =>.expander>i{
+        @click:@{this.isExpanded = !this.isExpanded;};
+        class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
+    };
+
+    =>.nodeTitle{
+        text: description;
+        class:noKnotSetting>{return value?"+emptyNode":"";}
+    };
+
+    =>.highlightMark{
+        style.display:isHighlighted>{return value?"inline-block":"none";}
+    };
+
+    =>.locateElementButton{
+        @click:@/debuggerModel.onLocateElement
+    };
+
+    =>.checkDataContextButton{
+        style.display:dataContext>{return value?"inline-block":"none"};
+        @click:@/debuggerModel.onShowDataContext
+    };
+
+    =>.knotList{
+        foreach :options;
+        style.display:options>{return (value&&value.length>0)?"block":"none";}
+    };
+
+    =>.nodeChildren{
+        foreach[template:domTreeItem]: childrenInfo;
+        style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
+    };
+
+    =>.collapsibleContent{
+        style.display : isExpanded>{return value?"block":"none";}
+    };
 }
 
-#domTree>li .nodeTitle{
-    text: description;
-    class:noKnotSetting>{return value?"+emptyNode":"";}
-}
-#domTree>li .highlightMark{
-    style.display:isHighlighted>{return value?"inline-block":"none";}
-}
 
-#domTree>li .locateElementButton{
-    @click:@/debuggerModel.onLocateElement
+.knotList>li{
+    =>.knotOption{
+        text:description;
+        title:description
+    };
+
+    =>.knotValueDirection, .knotValue, .knotValueDetail{
+        style.display:latestValueInfo>{return value?"inline-block":"none";};
+    };
+
+    =>.knotValueDirection{
+        class:latestValueInfo.isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
+    };
+
+    =>.knotValue{
+        text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
+        title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
+    };
+
+    =>.knotValueDetail{
+        @click:@/debuggerModel.onShowKnotDetail
+    };
+
+    =>.errorStatusIndicator{
+        style.display:errorStatus>{return value?"inline-block":"none";};
+        title:errorStatus>{return value?"Error message: "+ value.message:"";};
+    };
 }
-#domTree>li .checkDataContextButton{
-    style.display:dataContext>{return value?"inline-block":"none"};
-    @click:@/debuggerModel.onShowDataContext
-}
-
-#domTree>li .knotList{
-    foreach :options;
-    style.display:options>{return (value&&value.length>0)?"block":"none";}
-}
-
-#domTree>li .nodeChildren{
-    foreach[template:domTreeItem]: childrenInfo;
-    style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
-}
-
-#domTree>li .collapsibleContent{
-    style.display : isExpanded>{return value?"block":"none";}
-}
-
-
-
-.knotList>li .knotOption{
-    text:description;
-    title:description
-}
-
-.knotList>li .knotValueDirection, .knotList>li .knotValue, .knotList>li .knotValueDetail{
-    style.display:latestValueInfo>{return value?"inline-block":"none";};
-}
-
-.knotList>li .knotValueDirection{
-    class:latestValueInfo.isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
-}
-
-.knotList>li .knotValue{
-    text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
-    title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
-}
-
- .knotList>li .knotValueDetail{
-    @click:@/debuggerModel.onShowKnotDetail
- }
 
 
 /* knot change log*/
 .knotChangeLog{
-    foreach: knotChangeLog
-}
-.knotChangeLog .id{
-    text: id
-}
-.knotChangeLog .nodeTitle{
-    text: nodeDescription;
-    title: nodeDescription
-}
-.knotChangeLog .knotOption{
-    text: knotOption.description;
-    title: knotOption.description;
-}
-.knotChangeLog  .knotValueDirection{
-    class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
-}
-.knotChangeLog .knotValue{
-    text: value>{return JSON.stringify(value);};
-    title: value>{return JSON.stringify(value);};
-}
-.knotChangeLog .knotValueDetail{
-    @click:@/debuggerModel.onShowKnotValueLogDetail
+    foreach: knotChangeLog;
+
+    =>.id{
+        text: id
+    };
+    =>.nodeTitle{
+        text: nodeDescription;
+        title: nodeDescription
+    };
+    => .knotOption{
+        text: knotOption.description;
+        title: knotOption.description;
+    };
+    =>  .knotValueDirection{
+        class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
+    };
+    => .knotValue{
+        text: value>{return JSON.stringify(value);};
+        title: value>{return JSON.stringify(value);};
+    };
+    => .knotValueDetail{
+        @click:@/debuggerModel.onShowKnotValueLogDetail
+    };
 }
 
 /*knot change log expander */
@@ -114,16 +127,18 @@ body{
     class: isKnotLogExpanded>{return value?"-expander-top-collapsed +expander-top-expanded":"+expander-top-collapsed -expander-top-expanded";}
 }
 #knotChangeLogExpander{
-    class: isKnotLogExpanded>{return value?"-expander-bottom-collapsed +expander-bottom-expanded":"+expander-bottom-collapsed -expander-bottom-expanded";}
-}
-#knotChangeLogExpander .expanderButton>i{
-    class: isKnotLogExpanded>{return value?"+fa-chevron-circle-down -fa-chevron-circle-up":"-fa-chevron-circle-down +fa-chevron-circle-up";}
-}
-#knotChangeLogExpander .expanderButton{
-    @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
-}
-#knotChangeLogExpander .clearLogButton{
-    @click: @/debuggerModel.onClearLogs;
+    class: isKnotLogExpanded>{return value?"-expander-bottom-collapsed +expander-bottom-expanded":"+expander-bottom-collapsed -expander-bottom-expanded";};
+
+    =>.expanderButton>i{
+        class: isKnotLogExpanded>{return value?"+fa-chevron-circle-down -fa-chevron-circle-up":"-fa-chevron-circle-down +fa-chevron-circle-up";}
+    };
+    =>.expanderButton{
+        @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
+    };
+
+    =>.clearLogButton{
+        @click: @/debuggerModel.onClearLogs;
+    }
 }
 
 
@@ -146,20 +161,23 @@ body{
                 return "#dc322f";
         }
     };
-}
-.logTemplate .level{
-    text:level
-}
-.logTemplate .time{
-    text:time>{
-        return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
-                " " + value.getMilliseconds();
-    }
-}
-.logTemplate .message{
-    text: message
-}
-.logTemplate .exception{
-    text: exception>{return value.toString();}
-}
 
+    => .level{
+        text:level
+    };
+
+    => .time{
+        text:time>{
+            return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
+                    " " + value.getMilliseconds();
+        }
+    };
+
+    => .message{
+        text: message
+    };
+
+    => .exception{
+        text: exception>{return value.toString();}
+    };
+}

@@ -137,6 +137,10 @@
         },
         nodeRemoved: function (node) {
             callDebugger("nodeRemoved", arguments);
+        },
+
+        errorStatusChanged: function(node, ap, errorStatus){
+            callDebugger("errorStatusChanged", arguments);
         }
     };
 

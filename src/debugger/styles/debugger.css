@@ -275,6 +275,10 @@ li{
 .knotList>li div{
     display: inline-block;
 }
+.errorStatusIndicator{
+    color:red;
+    -webkit-animation: flash 1s infinite;-o-animation: flash 1s infinite;animation: flash 1s infinite;
+}
 .knotValue{
     font-size: 11px;
     color:white;

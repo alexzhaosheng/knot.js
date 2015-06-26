@@ -89,18 +89,9 @@ Knot.js debugger
         },
 
         onShowKnotDetail: function () {
-            function getDes(info) {
-                var msg  = "id:" +  info.id + " " +  (info.isFromLeftToRight?"output":"input") +"\n";
-                msg += JSON.stringify(info.value);
-                return msg;
-            }
-            var content = getDes(this.latestValueInfo);
-            for(var i=this.historyValueInfo.length-1; i>=0 ; i--) {
-                content += "\n\n";
-                content += getDes(this.historyValueInfo[i]);
-            }
+            var content = JSON.stringify(this.latestValueInfo, null, 3);
 
-            showJson("Value changed history for knot \"" + this.description + "\"" , content);
+            showJson("Current value for knot \"" + this.description + "\"" , content);
         },
 
         onShowKnotValueLogDetail: function () {
@@ -305,8 +296,7 @@ Knot.js debugger
                     nodeInfo.options.push({
                         description:getKnotOptionsStr(node.__knot.options[i]),
                         knotOption:node.__knot.options[i],
-                        latestValueInfo:null,
-                        historyValueInfo:[]
+                        latestValueInfo:null
                     });
                 }
             }
@@ -347,6 +337,10 @@ Knot.js debugger
                 global.debuggerModel.highestLogLevel = log.level;
             }
             global.debuggerModel.logs.unshift(log);
+            //only keep the latest 200 logs
+            if(global.debuggerModel.logs.length > 200){
+                global.debuggerModel.logs.pop();
+            }
         },
         debugger:{
             helper:{
@@ -372,9 +366,6 @@ Knot.js debugger
                 }
                 for(var i=0; i<info.options.length; i++) {
                     if(info.options[i].knotOption === knotOption) {
-                        if(info.options[i].latestValueInfo) {
-                            info.options[i].historyValueInfo.push(info.options[i].latestValueInfo);
-                        }
                         info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
                         global.debuggerModel.knotChangeLog.unshift({
                             id:info.options[i].latestValueInfo.id,
@@ -383,6 +374,9 @@ Knot.js debugger
                             value:latestValue,
                             isFromLeftToRight:isFromLeftToRight
                         });
+                        if(global.debuggerModel.knotChangeLog.length > 200) {
+                            global.debuggerModel.knotChangeLog.pop();
+                        }
                         return;
                     }
                 }
@@ -424,6 +418,19 @@ Knot.js debugger
                 if(info.parent) {
                     info.parent.childrenInfo.splice(info.parent.childrenInfo.indexOf(info), 1);
                     info.parent = null;
+                }
+            },
+
+            errorStatusChanged: function(node, ap, errorStatus){
+                var info = getNodeInfo(node);
+                if(!info) {
+                    return;
+                }
+                for(var i=0; i<info.options.length; i++) {
+                    if(info.options[i].knotOption.leftAP === ap || info.options[i].knotOption.rightAP === ap){
+                        info.options[i].errorStatus = errorStatus;
+                        break;
+                    }
                 }
             }
         }
@@ -479,10 +486,12 @@ Knot.js debugger
                 arg.preventDefault();
                 $("#fullWindowMessage").hide();
                 _mouseTip.remove();
-
-
+                global.opener.document.body.style.cursor = prevCursor;
             };
             global.opener.addEventListener("mousedown",downHandler , true);
+
+            var prevCursor = global.opener.document.body.style.cursor;
+            global.opener.document.body.style.cursor = "crosshair";
 
             $(global.opener.document.body).append(_mouseTip);
             var mouseMoveHandler = function (arg) {

@@ -66,20 +66,33 @@
                 '=>.details{'+
                     '=>.ageInput{value:age};'+
                     '=>.addressInput{value:address}'+
-                '}'+
+                '};'+
+                '=>.col1, col2, col3{' +
+                    "text:title"+
+                '};'+
+                '=>p1, p2{' +
+                    "=>c1, c2{" +
+                        "value:data"+
+                    "};" +
+                '};'+
             '}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 
         scope.HTMLKnotManager.parseCBS();
 
-        assert.equal(findCBS("#cbsContainer") !== null, true, "parseCBS with inner cbs blocks");
+        assert.notEqual(findCBS("#cbsContainer"), undefined, "parseCBS with inner cbs blocks");
         assert.equal(findCBS("#cbsContainer").length, 1, "parseCBS with inner cbs blocks");
         assert.equal(findCBS("#cbsContainer")[0], "style.display:test", "parseCBS with inner cbs blocks");
-        assert.equal(findCBS("#cbsContainer input") != null, true, "parseCBS with inner cbs blocks");
-        assert.equal(findCBS("#cbsContainer .details .ageInput") != null, true, "parseCBS with inner cbs blocks");
-        assert.equal(findCBS("#cbsContainer .details .addressInput") != null, true, "parseCBS with inner cbs blocks");
+        assert.notEqual(findCBS("#cbsContainer input"), undefined, "parseCBS with inner cbs blocks");
+        assert.notEqual(findCBS("#cbsContainer .details .ageInput"), undefined,"parseCBS with inner cbs blocks");
+        assert.notEqual(findCBS("#cbsContainer .details .addressInput"), undefined, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer .col1, col2, col3"), undefined, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer .col1, col2, col3"), undefined, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer .col1,#cbsContainer col2,#cbsContainer col3")[0], "text:title", "parseCBS with inner cbs blocks");
 
+        assert.notEqual(findCBS("#cbsContainer p1 c1,#cbsContainer p2 c1,#cbsContainer p1 c2,#cbsContainer p2 c2"), undefined, "parseCBS with inner cbs blocks");
+        assert.equal(findCBS("#cbsContainer p1 c1,#cbsContainer p2 c1,#cbsContainer p1 c2,#cbsContainer p2 c2")[0], "value:data", "parseCBS with inner cbs blocks");
         resetTest();
     });
 

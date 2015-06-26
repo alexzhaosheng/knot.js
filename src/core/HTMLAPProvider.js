@@ -77,6 +77,19 @@
             __private.Log.error("No valid template is specified for 'content' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(target));
             return;
         }
+
+        var raiseEvt = function(childNode, evt){
+            if(options && options[evt]){
+                var f = __private.Utility.getValueOnPath(value, options[evt]);
+                try{
+                    f.apply(target, [childNode, value]);
+                }
+                catch(err) {
+                    __private.Log.warning("Raise " + evt + " event failed.", err);
+                }
+            }
+        };
+
         var currentContent =  target.childNodes[0];
         if(!currentContent) {
             if(value === null || typeof(value) === "undefined") {
@@ -88,6 +101,7 @@
                 if(!__private.HTMLKnotManager.hasDataContext(n)) {
                     __private.HTMLKnotManager.setDataContext(n, value);
                 }
+                raiseEvt(n, "@added");
                 __private.Debugger.nodeAdded(n);
             }
         }
@@ -97,6 +111,7 @@
             }
             if(value === null || typeof(value) === "undefined") {
                 removeNodeCreatedFromTemplate(currentContent);
+                raiseEvt(currentContent, "@removed");
             }
             else{
                 if( __private.HTMLKnotManager.isDynamicTemplate(options.template)) {
@@ -108,6 +123,7 @@
                             __private.HTMLKnotManager.setDataContext(currentContent, value);
                         }
                         __private.Debugger.nodeAdded(currentContent);
+                        raiseEvt(currentContent, "@added");
                     }
                 }
                 else{
@@ -163,7 +179,7 @@
                     }
                     __private.Debugger.nodeAdded(n);
                     if(onItemCreated) {
-                        onItemCreated.apply(node, [n]);
+                        onItemCreated.apply(node, [n, values[i]]);
                     }
                 }
             }

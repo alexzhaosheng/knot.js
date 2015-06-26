@@ -79,16 +79,14 @@ li{
 
 .contentPanel .title{
     padding: 2px 10px 2px 2px;
-    display: inline-block;
     border-radius: 3px;
     box-shadow: 0 0 2px black;
     margin: 3px 0px;
-    cursor:pointer;
     border: 3px solid transparent;
 }
 
 
-#systemTreePanel, #editArea{
+#systemTreePanel, #editArea, #freeEntities{
     display: inline-block;
     float: left;
     padding:2px 5px;
@@ -132,6 +130,10 @@ li{
     margin-left: 0px;
 }
 
+.gangTemplate, .whiteBusinessTemplate, .blackBusinessTemplate{
+    border: #cccccc 1px solid;
+}
+
 .gangTemplate>.title{
     background-color: #F35E04;
     color:white;
@@ -171,6 +173,22 @@ li{
     box-shadow: 0px 0px 3px red;
 }
 
-.gangEditorTemplate{
 
+#freeEntityList .contentContainer{
+    margin: 2px 4px;
+}
+#freeEntityList .contentContainer:hover{
+    box-shadow: 0px 0px 3px black;
+}
+
+
+
+#dragDropVisual{
+    position: fixed;
+    opacity: 0.8;
+    max-width: 300px;
+    max-height: 200px;
+    z-index: 100;
+    padding: 2px;
+    background-color: whitesmoke;
 }

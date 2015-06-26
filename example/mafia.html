@@ -34,8 +34,10 @@
     <script src="../src/debugger/knot.debug.js"></script>
 
     <link rel="stylesheet" href="styles/mafia.css" class="exampleCSS">
-    <script src="js/mafia.js" class="exampleJS"></script>
     <script type="text/cbs" src="cbs/mafia.cbs" class="exampleCBS"></script>
+    <script src="js/DNDHelper.js"></script>
+    <script src="js/mafia.js" class="exampleJS"></script>
+    <script src="js/mafia.data.js" class="exampleJS" title="Initial Data"></script>
 
 </head>
 <body>
@@ -53,11 +55,15 @@
             <div></div>
             <div>
                 <h4>Leader</h4>
+                <i class="iconButton fa fa-minus-square" click="mafiaSystem.onRemoveLeader(this)"></i>
                 <div></div>
             </div>
         </div>
-        <div id="editArea">
-            <h3>Free</h3>
+        <div id="freeEntities">
+            <h3>Not assigned</h3>
+            <div id="freeEntityList">
+                <div class="contentContainer" knot-template></div>
+            </div>
         </div>
     </div>
 
@@ -275,6 +281,7 @@
     </div>
 </section>
 
+<div id="dragDropVisual"></div>
 
 <script src="js/tabpage.js"></script>
 <script type="text/javascript" src="js/sourceTab.js"></script>

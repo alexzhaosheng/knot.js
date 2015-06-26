@@ -163,11 +163,13 @@
                     if(ap.errorAPProvider) {
                         ap.errorAPProvider.setValue(target, "!" + ap.description, undefined, ap.options);
                     }
+                    __private.Debugger.errorStatusChanged(target, ap, undefined);
                 }
             }
             catch (exception) {
                 if(ap.errorAPProvider) {
                     ap.errorAPProvider.setValue(target, "!" + ap.description, exception, ap.options);
+                    __private.Debugger.errorStatusChanged(target, ap, exception);
                 }
                 return this.objectToIndicateError;
             }

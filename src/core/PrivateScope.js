@@ -42,6 +42,10 @@
         },
         nodeRemoved: function (node) {
 
+        },
+
+        errorStatusChanged: function(node, ap, errorStatus){
+
         }
     };
 

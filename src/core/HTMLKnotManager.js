@@ -170,7 +170,20 @@
                 selector = __private.Utility.trim(selector);
 
                 if(parentSelector){
-                    selector = parentSelector + " " + selector;
+                    selector = selector
+                        .split(",")
+                        .filter(function(t){return t;})
+                        .map(function(t){
+                            t = __private.Utility.trim(t);
+                            return parentSelector
+                                .split(",")
+                                .filter(function(p){ return p;})
+                                .map(function(p){
+                                    return __private.Utility.trim(p) + " " + t;
+                                })
+                                .join(",");
+                        })
+                        .join(",");
                 }
 
                 if(!res[selector]) {
@@ -182,6 +195,9 @@
 
                 for(var i=0; i< opArray.length; i++) {
                     var option = __private.Utility.trim(opArray[i]);
+                    if(!option) {
+                        continue;
+                    }
                     if(option.indexOf("=>") === 0){
                         this.normalizeCBS(res, option.substr(2), selector);
                     }
@@ -191,6 +207,9 @@
                             res[selector].push(option);
                         }
                     }
+                }
+                if(res[selector].length ===0){
+                    delete  res[selector];
                 }
 
                 pos = blockInfo.end + 1;

@@ -36,10 +36,57 @@
         }
     }
 
+    function addDNDSrcSupport(node, data, startCallback, doneCallback, cancelCallback){
+        node.className += " dragSource";
+        node.dragSourceListener = {
+            getData:function(){return data;},
+
+            dragStart: function(pos){
+                window.mafiaSystem.inDragging = {
+                    data:data, pos:pos
+                };
+                if(startCallback) {
+                    startCallback();
+                }
+            },
+
+            dragMove:function(pos){
+                window.mafiaSystem.inDragging.pos = pos;
+            },
+
+            notifyDropIsDone:function(){
+                window.mafiaSystem.inDragging = null;
+                if(doneCallback) {
+                    doneCallback();
+                }
+            },
+
+            notifyDropIsCancelled:function(){
+                window.mafiaSystem.inDragging = null;
+                if(cancelCallback) {
+                    cancelCallback();
+                }
+            }
+        };
+    }
+
+    function addDNDTargetSupport(node, dragTestCallback, dropCallback){
+        node.className += " dropTarget";
+        node.dropListener = {
+            test:dragTestCallback,
+            drop:dropCallback
+        };
+    }
+
+
     window.mafiaSystem = {
         gangs:null,
 
+        freeEntities:[],
+
         selected:null,
+
+        inDragging: null,
 
         nodeContentTemplateSelector: function (data) {
             var template;
@@ -93,10 +140,77 @@
                 travelTree(window.mafiaSystem.gangs, null, function (node) {
                     node.isSelected = (sender === node);
                 });
+                for(var i=0; i<window.mafiaSystem.freeEntities.length; i++){
+                    window.mafiaSystem.freeEntities[i].isSelected = (sender === window.mafiaSystem.freeEntities[i]);
+                }
                 window.mafiaSystem.selected = this;
             }
         },
 
+        onRemoveSelectedLeader:function(organization){
+
+        },
+
+        onTreeChildAdded: function(node, data){
+            if(!data.sex){
+                addDNDTargetSupport(node, function(droppedData){
+                        return droppedData.type !== "gang";
+                    },
+                    function(droppedData){
+                        if(!data.children){
+                            data.children = [droppedData];
+                        }
+                        else{
+                            data.children.push(droppedData);
+                        }
+                    });
+            }
+
+            if(data.type !== "gang"){
+                var index, parent, isLeader;
+                addDNDSrcSupport(node, data, function(){
+                        var r = findInTree(data, window.mafiaSystem.gangs, null);
+                        if(r){
+                            parent = r.parent;
+                            index = parent.children.indexOf(data);
+                            isLeader = r.isLeader;
+                            if(isLeader) {
+                                parent.leader = null;
+                            }
+                            else {
+                                parent.children.splice(index, 1);
+                            }
+                        }
+                        else{
+                            parent = index = isLeader = undefined;
+                        }
+                    },
+                    function(){},
+                    function(){
+                        if(parent){
+                            if(isLeader){
+                                parent.leader = data;
+                            }
+                            else{
+                                parent.children.splice(index, 0, data);
+                            }
+                        }
+                    });
+            }
+        },
+
+        onFreeEntityAdded:function(node, data){
+            var index;
+            addDNDSrcSupport(node, data,
+                function(){
+                    index = window.mafiaSystem.freeEntities.indexOf(data);
+                    window.mafiaSystem.freeEntities.splice(index, 1);
+                },
+                function(){},
+                function(){
+                    window.mafiaSystem.freeEntities.splice(index, 0, data);
+                });
+        },
 
         pipes:{
             checkTitle: function (value) {
@@ -110,10 +224,10 @@
             },
             checkName:function(value){
                 if(!value || value.length<3) {
-                    throw new Error("Title must be longer than 3 chars!");
+                    throw new Error("Name must be longer than 3 chars!");
                 }
                 else if(value.length > 50) {
-                    throw new Error("Title must not be longer than 50 chars!");
+                    throw new Error("Name must not be longer than 50 chars!");
                 }
                 value = value.trim();
                 var sec = value.split(" ").filter(function(t){return t;});
@@ -139,62 +253,4 @@
     };
 
 
-
-    window.mafiaSystem.gangs =[
-        {
-            type:"gang",
-            title:"Corleone",
-            leader:{
-                name:"Vito Corleone",
-                sex:"male"
-            },
-            children:[
-                {
-                    type:"white-business",
-                    title:"Tomorrow bar",
-                    leader:{
-                        name:"Adams Corleone",
-                        sex:"male"
-                    },
-                    projects:[
-
-                    ]
-                },
-
-                {
-                    type:"white-business",
-                    title:"Galaxy Fortune",
-                    leader:{
-                        name:"David Corleone",
-                        sex:"male"
-                    },
-                    children:[
-                        {
-                            type:"white-business",
-                            title:"Gamble Team"
-                        }
-                    ]
-                },
-
-                {
-                    type:"black-business",
-                    title:"Sisters in Shadow",
-                    leader:{
-                        name: "Diana Venom",
-                        sex:"female"
-                    },
-                    children:[
-                        {
-                            name: "Lili Venom",
-                            sex:"female"
-                        },
-                        {
-                            name: "Roxanne Venom",
-                            sex:"female"
-                        }
-                    ]
-                }
-            ]
-        }
-    ];
 })(window);
