@@ -69,6 +69,10 @@ li{
     display: inline-block;
 }
 
+.dropTarget>.contentPanel:hover{
+    box-shadow: 0px 0px 3px black;
+}
+
 .people>i{
     float: left;
     margin-top: 8px;
@@ -76,8 +80,16 @@ li{
 .people>div:first-of-type{
     margin-left: 20px;
 }
+.people .dropTarget{
+    font-size: 0.9em;
+    padding: 5px;
+    margin-left: 20px;
+    color:gray;
+    text-align: center;
+}
 
 .contentPanel .title{
+    cursor: pointer;
     padding: 2px 10px 2px 2px;
     border-radius: 3px;
     box-shadow: 0 0 2px black;
@@ -102,6 +114,10 @@ li{
     width: 400px;
     overflow: auto;
     padding: 5px;
+}
+
+.treeNode{
+    opacity: 0;
 }
 
 .treeNode .expander{
@@ -156,6 +172,11 @@ li{
     color:white;
 }
 
+
+#editArea>div:first-of-type{
+    height: calc(100% - 110px);
+}
+
 .editorPanel .label{
     width: 120px;
     text-align: left;
@@ -173,6 +194,19 @@ li{
     box-shadow: 0px 0px 3px red;
 }
 
+.buttonArea{
+    margin-top: 40px;
+}
+#addNew{
+    height: 80px;
+}
+
+
+
+#freeEntityList{
+    height: calc(100% - 60px);
+    overflow: auto;
+}
 
 #freeEntityList .contentContainer{
     margin: 2px 4px;
@@ -183,7 +217,7 @@ li{
 
 
 
-#dragDropVisual{
+#animationVisual, #dragDropVisual{
     position: fixed;
     opacity: 0.8;
     max-width: 300px;
@@ -191,4 +225,12 @@ li{
     z-index: 100;
     padding: 2px;
     background-color: whitesmoke;
+}
+
+#dragDropTip{
+    position: fixed;
+    z-index: 100;
+    padding: 4px;
+    background-color: lightgoldenrodyellow;
+    border: 1px solid darkgoldenrod;
 }

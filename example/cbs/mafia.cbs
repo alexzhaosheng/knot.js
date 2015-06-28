@@ -42,6 +42,10 @@ body{
 .people>div:first-of-type{
     content[template: @/mafiaSystem.nodeContentTemplateSelector; @added:@/mafiaSystem.onTreeChildAdded]: leader;
 }
+.people .dropTarget{
+    style.display: (leader & isInSystem) > { return value[1]? (value[0]?"none":"block"): "none"; }
+}
+
 .manTemplate .title, .womanTemplate .title{
     text: name
 }
@@ -137,21 +141,41 @@ body{
 // editor and templates
 ///////////////////////////////////////////
 
-#editArea{
+.ratingLevel{
+    options:/mafiaSystem.ratingLevelOptions
+}
+
+#editArea>div:first-of-type{
     => >div:first-of-type{
         content[template:@/mafiaSystem.editorTemplateSelector] : selected
     };
-    => >div:last-of-type{
-        style.display:selected>{return (!value|| value.sex)?"none":"block";};
-        =>div{
-            content[template: @/mafiaSystem.nodeContentTemplateSelector]: selected.leader;
+    => >.leaderArea{
+        style.display:selected>{return (!value|| value.isNew || value.sex)?"none":"block";};
+        => .leaderContainer{
+            content[template: @/mafiaSystem.nodeContentTemplateSelector;  @added:@/mafiaSystem.onTreeChildAdded]: selected.leader;
         };
-    }
+    };
+
+    => .dropTarget{
+          style.display: (selected.leader & selected.sex & selected.isInSystem)>{
+           if(value[2])
+                return value[1]?"none":(value[0]?"none":"block");
+           else
+                return "none";
+          }
+    };
+
+    => .buttonArea{
+        style.display: selected.isNew>{return value?"block":"none";}
+    };
 }
 
 
 .editorPanel input[type=text]{
     class:!*LEFT.value>{return value?"+error":"-error";}
+}
+.editorPanel .new{
+    style.display: isNew>{return (value)?"inline-block":"none";}
 }
 
 .gangEditor .title{
@@ -283,9 +307,20 @@ body{
     }
 }
 
+#dragDropTip{
+    style.left: inDragging.pos.x> { return (value + 30) + "px";};
+    style.top: inDragging.pos.y> { return (value) + "px";};
+    style.display: inDragging.message > { return value? "inline-block":"none";};
+    text: inDragging.message
+}
 #dragDropVisual{
     content [template: @/mafiaSystem.nodeContentTemplateSelector]: inDragging.data;
     style.left: inDragging.pos.x> { return value + "px";};
     style.top: inDragging.pos.y> { return (value + 30) + "px";};
     style.display: inDragging > { return value? "inline-block":"none";}
+}
+
+#animationVisual{
+    content [template: @/mafiaSystem.nodeContentTemplateSelector]: inAnimation;
+    style.display: inAnimation > { return value? "inline-block":"none";}
 }

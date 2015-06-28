@@ -51,15 +51,34 @@
             </ul>
         </div>
         <div id="editArea">
-            <h3>Editor</h3>
-            <div></div>
             <div>
-                <h4>Leader</h4>
-                <i class="iconButton fa fa-minus-square" click="mafiaSystem.onRemoveLeader(this)"></i>
+                <h3>Editor</h3>
                 <div></div>
+                <div class="leaderArea">
+                    <h4>Leader</h4>
+                    <div class="leaderContainer"></div>
+                    <div class="dropTarget">
+                        No leader. Drop someone here to assign
+                    </div>
+                </div>
+                <div class="buttonArea">
+                    <button onclick="commitNewEntity()">OK</button>
+                    <button onclick="cancelNew();">Cancel</button>
+                </div>
+            </div>
+            <div id="addNew">
+                <h4>Add New</h4>
+                <select id="newEntityType">
+                    <option value="gang">Gang</option>
+                    <option value="white-business">White Business</option>
+                    <option value="black-business">Black Business</option>
+                    <option value="male" selected>Man</option>
+                    <option value="female">Woman</option>
+                </select>
+                <button onclick="newEntity()" >Add</button>
             </div>
         </div>
-        <div id="freeEntities">
+        <div id="freeEntities"  class="dropTarget">
             <h3>Not assigned</h3>
             <div id="freeEntityList">
                 <div class="contentContainer" knot-template></div>
@@ -85,6 +104,9 @@
         <div class="people">
             <i class="fa fa-user-secret"></i>
             <div></div>
+            <div class="dropTarget">
+                No leader. Drop someone here to assign
+            </div>
             <div class="clearFloat"></div>
         </div>
 
@@ -100,6 +122,9 @@
         <div class="people">
             <i class="fa fa-user-secret"></i>
             <div></div>
+            <div class="dropTarget">
+                No leader. Drop someone here to assign
+            </div>
             <div class="clearFloat"></div>
         </div>
     </div>
@@ -114,6 +139,9 @@
         <div class="people">
             <i class="fa fa-user-secret"></i>
             <div></div>
+            <div class="dropTarget">
+                No leader. Drop someone here to assign
+            </div>
             <div class="clearFloat"></div>
         </div>
     </div>
@@ -141,7 +169,7 @@
 
 
     <div knot-template-id="gangEditorTemplate" class="gangEditor editorPanel">
-        <h3>Gang</h3>
+        <h3>Gang <span class="new">(new)</span> </h3>
         <div class="title" >
             <div class="label">Title</span></div>
             <input type="text">
@@ -150,7 +178,7 @@
     </div>
 
     <div knot-template-id="whiteBusinessEditorTemplate" class="whiteBusinessEditor editorPanel">
-        <h3>Legal business</h3>
+        <h3>Legal business<span class="new">(new)</span></h3>
         <div class="title">
             <div class="label">Title</div>
             <input type="text">
@@ -169,7 +197,7 @@
     </div>
 
     <div knot-template-id="blackBusinessEditorTemplate" class="blackBusinessEditor editorPanel">
-        <h3>Black business</h3>
+        <h3>Black business<span class="new">(new)</span></h3>
         <div class="title">
             <div class="label">Title</div>
             <input type="text">
@@ -196,7 +224,7 @@
     </div>
 
     <div knot-template-id="manEditorTemplate" class="manEditor editorPanel">
-        <h3>Man</h3>
+        <h3>Man<span class="new">(new)</span></h3>
         <div class="name">
             <div class="label">Name</div>
             <input type="text">
@@ -204,42 +232,26 @@
         </div>
         <div class="intelligence">
             <div class="label">Intelligence</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
         <div class="skill">
             <div class="label">Skills</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
         <div class="loyalty">
             <div class="label">Loyalty</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
 
         <div class="strength">
             <div class="label">Strength</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
     </div>
 
 
     <div knot-template-id="womanEditorTemplate" class="womanEditor editorPanel">
-        <h3>Woman</h3>
+        <h3>Woman<span class="new">(new)</span></h3>
         <div class="name">
             <div class="label">Name</div>
             <input type="text">
@@ -247,41 +259,27 @@
         </div>
         <div class="intelligence">
             <div class="label">Intelligence</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
         <div class="skill">
             <div class="label">Skills</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
         <div class="loyalty">
             <div class="label">Loyalty</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
 
         <div class="attraction">
             <div class="label">Attraction</div>
-            <select>
-                <option>Bad</option>
-                <option>Moderate</option>
-                <option>Good</option>
-            </select>
+            <select class="ratingLevel"></select>
         </div>
     </div>
 </section>
 
+<div id="dragDropTip"></div>
 <div id="dragDropVisual"></div>
+<div id="animationVisual"></div>
 
 <script src="js/tabpage.js"></script>
 <script type="text/javascript" src="js/sourceTab.js"></script>
