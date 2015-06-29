@@ -1,8 +1,15 @@
+/*
+    This is the Access Point Provider for general HTML elements
+    It provides the ability of accessing the standard HTML element fields, method and events
+    It supports monitoring some of the change of html properties (defined in htmlEventInfo)
+* */
 (function (global) {
     "use strict";
 
     var __private = global.Knot.getPrivateScope();
 
+    //the change event information for the properties of HTML elements
+    //only the properties that defined here supporting monitoring
     var htmlEventInfo = [];
     htmlEventInfo["input.value"] = "change";
     htmlEventInfo["textarea.value"] = "change";
@@ -10,6 +17,7 @@
     htmlEventInfo["select.selectedindex"] = "change";
     htmlEventInfo["select.value"] = "change";
 
+    //provide some helper functions for the HTML elements
     __private.HTMLAPHelper = {
         getNodeDescription: function (element) {
             var description = element.tagName;
@@ -25,11 +33,11 @@
             return description;
         },
 
-        getSelectorFromAPName: function (apName) {
+        getSelectorFromAPDescription: function (apName) {
             var arr = __private.Utility.splitWithBlockCheck(apName, ".");
             return __private.Utility.trim(arr[0]);
         },
-        getPropertyNameFromAPName: function (apName) {
+        getPropertyNameFromAPDescription: function (apName) {
             var arr = __private.Utility.splitWithBlockCheck(apName, ".");
             if(arr.length > 1) {
                 return arr.slice(1).join(".");
@@ -37,7 +45,7 @@
             return undefined;
         },
 
-        getPropertyFromElemnt: function (element, property) {
+        getPropertyFromElement: function (element, property) {
             if(!element) {
                 return undefined;
             }
@@ -67,11 +75,36 @@
         }
     };
 
+    ///////////////////////////////////////
+    // template relevant
+    ///////////////////////////////////////
+
     function removeNodeCreatedFromTemplate(node) {
-        __private.HTMLKnotManager.clearBinding(node);
+        __private.HTMLKnotBuilder.clearBinding(node);
         node.parentNode.removeChild(node);
         __private.Debugger.nodeRemoved(node);
     }
+
+    function findChildByDataContext(node, item, startIndex) {
+        for (var i = startIndex; i < node.children.length; i++) {
+            if (node.children[i].__knot && node.children[i].__knot.dataContext === item) {
+                return node.children[i];
+            }
+        }
+        return null;
+    }
+
+    function addChildTo(node, child, index) {
+        if (node.children.length === index) {
+            node.appendChild(child);
+        }
+        else {
+            node.insertBefore(child, node.children[index]);
+        }
+    }
+
+    //set "content" Access Point for the target
+    //it create a new element from template and set the item as the only child of the target element
     function setContent(target, value, options) {
         if(!options || !options.template) {
             __private.Log.error("No valid template is specified for 'content' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(target));
@@ -95,11 +128,11 @@
             if(value === null || typeof(value) === "undefined") {
                 return;
             }
-            var n  = __private.HTMLKnotManager.createFromTemplate(options.template, value, target);
+            var n  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
             if(n) {
                 target.appendChild(n);
-                if(!__private.HTMLKnotManager.hasDataContext(n)) {
-                    __private.HTMLKnotManager.setDataContext(n, value);
+                if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                    __private.HTMLKnotBuilder.setDataContext(n, value);
                 }
                 raiseEvt(n, "@added");
                 __private.Debugger.nodeAdded(n);
@@ -114,20 +147,20 @@
                 raiseEvt(currentContent, "@removed");
             }
             else{
-                if( __private.HTMLKnotManager.isDynamicTemplate(options.template)) {
+                if( __private.HTMLKnotBuilder.isDynamicTemplate(options.template)) {
                     removeNodeCreatedFromTemplate(currentContent);
-                    currentContent  = __private.HTMLKnotManager.createFromTemplate(options.template, value, target);
+                    currentContent  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
                     if(currentContent) {
                         target.appendChild(currentContent);
-                        if(!__private.HTMLKnotManager.hasDataContext(currentContent)) {
-                            __private.HTMLKnotManager.setDataContext(currentContent, value);
+                        if(!__private.HTMLKnotBuilder.hasDataContext(currentContent)) {
+                            __private.HTMLKnotBuilder.setDataContext(currentContent, value);
                         }
                         __private.Debugger.nodeAdded(currentContent);
                         raiseEvt(currentContent, "@added");
                     }
                 }
                 else{
-                    __private.HTMLKnotManager.updateDataContext(currentContent, value);
+                    __private.HTMLKnotBuilder.updateDataContext(currentContent, value);
                 }
                 if(currentContent) {
                     if(!currentContent.__knot) {
@@ -139,31 +172,17 @@
         }
     }
 
-    function findChild(node, item, startIndex) {
-        for (var i = startIndex; i < node.children.length; i++) {
-            if (node.children[i].__knot && node.children[i].__knot.dataContext === item) {
-                return node.children[i];
-            }
-        }
-        return null;
-    }
-    function addChildTo(node, child, index) {
-        if (node.children.length === index) {
-            node.appendChild(child);
-        }
-        else {
-            node.insertBefore(child, node.children[index]);
-        }
-    }
 
 
+    //it create the the elements from template and add them to node's children collection
+    //and synchronize the elements in node's children and array
     function syncItems(node, values, template, onItemCreated, onItemRemoved) {
         //take null values as empty array.
         if (!values) {
             values = [];
         }
         for (var i = 0; i < values.length; i++) {
-            var ele = findChild(node, values[i], i);
+            var ele = findChildByDataContext(node, values[i], i);
             if (ele) {
                 if (Array.prototype.indexOf.call(node.children, ele) !== i) {
                     node.removeChild(ele);
@@ -171,11 +190,11 @@
                 }
             }
             else {
-                var n = __private.HTMLKnotManager.createFromTemplate(template, values[i], node);
+                var n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
                 if (n) {
                     addChildTo(node, n, i);
-                    if(!__private.HTMLKnotManager.hasDataContext(n)) {
-                        __private.HTMLKnotManager.setDataContext(n, values[i]);
+                    if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                        __private.HTMLKnotBuilder.setDataContext(n, values[i]);
                     }
                     __private.Debugger.nodeAdded(n);
                     if(onItemCreated) {
@@ -193,6 +212,7 @@
         }
     }
 
+    //set "foreach" Access Point for the html node
     function setForeach(node, values, options) {
         if(!options || !options.template) {
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
@@ -201,9 +221,11 @@
         syncItems(node, values, options.template, __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
     }
 
+
+    //HTML Access Point Provider
     __private.HTMLAPProvider={
         doesSupport: function (target, apName) {
-            //if start from "#", then it's an id selector, we only support id selector
+            //if start from "#", then it's an css selector
             if(apName[0] === "#") {
                 return true;
             }
@@ -215,21 +237,23 @@
             //check whether target is html element
             return (target instanceof HTMLElement);
         },
+
         getValue: function (target, apName, options) {
             if(apName[0] === "@") {
                 return;
             }
 
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(__private.Utility.startsWith(apName, "content") || __private.Utility.startsWith(apName, "foreach")) {
                 return;
             }
-            return __private.HTMLAPHelper.getPropertyFromElemnt(target, apName);
+            return __private.HTMLAPHelper.getPropertyFromElement(target, apName);
         },
+
         setValue: function (target, apName, value, options) {
             if(apName[0] === "@") {
                 if(typeof(value) !== "function") {
@@ -247,8 +271,8 @@
             }
 
             if(apName[0] === "#") {
-                target  = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target  = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(__private.Utility.startsWith(apName, "content")) {
@@ -264,10 +288,11 @@
                 __private.Utility.setValueOnPath(target, apName, value);
             }
         },
+
         doesSupportMonitoring: function (target, apName) {
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             if(!target) {
                 return false;
@@ -275,10 +300,11 @@
             var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
             return (htmlEventInfo[eventKey]);
         },
+
         monitor: function (target, apName, callback, options) {
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
@@ -293,10 +319,11 @@
                 target.addEventListener("keyup", callback);
             }
         },
+
         stopMonitoring: function (target, apName, callback, options) {
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
             var events = htmlEventInfo[eventKey].split(",");
@@ -304,6 +331,8 @@
                 target.removeEventListener(events[i], callback);
             }
 
+            //for the text input and text area, there's an option "immediately". when "immediately" is on,
+            //report the change for each of the key stroke.
             if((target.tagName.toLowerCase() === "input" || target.tagName.toLowerCase() === "textarea") &&
                 (options && options.immediately &&
                     (options.immediately === "1" || options.immediately.toLowerCase() === "true"))) {
@@ -314,14 +343,21 @@
         //expose to interface
         syncItems:syncItems
     };
-    __private.AccessPointManager.registerAPProvider(__private.HTMLAPProvider);
+    //register the provider to system to make it alive
+    __private.KnotManager.registerAPProvider(__private.HTMLAPProvider);
 
+
+    //this is the provider for error status of HTML Access Point.
+    //when system requires monitoring the error status of a HTML Access Point, it stores the relevant information
+    //to "__knot_errorStatusInfo" property on the HTML element.
+    // When the error status is changed, it calls the callbacks to notify system the error status is changed
     __private.HTMLErrorAPProvider = {
         doesSupport: function (target, apName) {
             if(apName) {
                 if(apName[0] === "!") {
                     apName = apName.substr(1);
                 }
+                //if starts with "#", then it's a css selector
                 if(apName[0] === "#") {
                     return true;
                 }
@@ -335,8 +371,8 @@
             }
             apName = apName.substr(1);
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement((__private.HTMLAPHelper.getSelectorFromAPName(apName)));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement((__private.HTMLAPHelper.getSelectorFromAPDescription(apName)));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             if(!target) {
                 return undefined;
@@ -356,8 +392,8 @@
             }
             apName = apName.substr(1);
             if(apName[0] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             if(target) {
                 if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)) {
@@ -409,13 +445,13 @@
             if(apName[0] === "!") {
                 apName = apName.substr(1);
                 if(apName[0] === "#") {
-                    var selector = __private.HTMLAPHelper.getSelectorFromAPName(apName);
+                    var selector = __private.HTMLAPHelper.getSelectorFromAPDescription(apName);
                     target = __private.HTMLAPHelper.queryElement(selector);
                     if(!target) {
                         __private.Log.warning("Failed to bind to error status, target is not found.  target selector:" + selector);
                         return;
                     }
-                    apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                    apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
                 }
                 if(!target.__knot_errorStatusInfo) {
                     target.__knot_errorStatusInfo = {};
@@ -431,8 +467,8 @@
         },
         stopMonitoring: function (target, apName, callback, options) {
             if(apName[1] === "#") {
-                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPName(apName.substr(1)));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName.substr(1));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName.substr(1)));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName.substr(1));
             }
             if(!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks) {
                 return;
@@ -443,6 +479,8 @@
             }
         },
 
+        //get the error status information from the node and it's offspring
+        //returns all of the error status found
         getErrorStatusInformation: function (node, result) {
             if(node.__knot_errorStatusInfo) {
                 for(var apName in node.__knot_errorStatusInfo) {
@@ -457,5 +495,6 @@
         }
     };
 
-    __private.AccessPointManager.registerAPProvider(__private.HTMLErrorAPProvider, true);
+    //register to error status provider make alive
+    __private.KnotManager.registerAPProvider(__private.HTMLErrorAPProvider, true);
 })(window);

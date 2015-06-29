@@ -1,10 +1,24 @@
+/*
+
+    This is a HTML node Access Pointer to provider some shortcuts and cross-browser abilities
+    It provides these Access Points for HTML element:
+
+    text
+
+    class: set/get the class of an element. use"+" to add a class while "-" to remove a existing class
+
+    selectedData (for select only): get the selected option's data context, or set the selected option by it's data context
+
+    option (for select only): a shortcut to bind the options of the select to an array.
+
+* */
 (function (global) {
     "use strict";
     var __private = global.Knot.getPrivateScope();
 
     function findOption(options, startIndex, data) {
         for (var i = startIndex; i <options.length; i++) {
-            if (__private.HTMLKnotManager.getOnNodeDataContext(options[i]) === data) {
+            if (__private.HTMLKnotBuilder.getOnNodeDataContext(options[i]) === data) {
                 return options[i];
             }
         }
@@ -15,7 +29,7 @@
     function setupBinding(node, leftApInfo, data, rightApInfo) {
         var ap = __private.OptionParser.parse(leftApInfo + ":" + rightApInfo);
         if (ap.length > 0) {
-            __private.AccessPointManager.tieKnot(node, data, ap[0]);
+            __private.KnotManager.tieKnot(node, data, ap[0]);
             if (!node.__knot.options) {
                 node.__knot.options = [];
             }
@@ -32,7 +46,7 @@
             return;
         }
         for(var i=0; i<node.__knot.options.length; i++) {
-            __private.AccessPointManager.untieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
+            __private.KnotManager.untieKnot(node, node.__knot.dataContext, node.__knot.options[i]);
         }
         delete node.__knot.dataContext;
     }
@@ -87,7 +101,7 @@
             var option = findOption(target.options, i, value[i]);
             if (!option) {
                 option = document.createElement("option");
-                __private.HTMLKnotManager.setOnNodeDataContext(option, value[i]);
+                __private.HTMLKnotBuilder.setOnNodeDataContext(option, value[i]);
                 if (value[i]) {
                     if (options.displayMember) {
                         setupBinding(option, "text", value[i], options.displayMember);
@@ -165,8 +179,8 @@
     var AddonHTMLAPProvider={
         doesSupport: function (target, apName) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             //check whether target is html element
             if(target instanceof HTMLElement) {
@@ -186,8 +200,8 @@
         },
         getValue: function (target, apName) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(target.tagName.toLowerCase() ==="select" && apName === "selectedData") {
@@ -217,8 +231,8 @@
         },
         setValue: function (target, apName, value, options) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(apName === "class") {
@@ -246,15 +260,15 @@
         },
         doesSupportMonitoring: function (target, apName) {
             if(apName[0] === "#") {
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             return target.tagName.toLowerCase() ==="select" && (apName === "selectedData" || apName === "value");
         },
         monitor: function (target, apName, callback) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(target.tagName.toLowerCase() ==="select" &&
@@ -264,8 +278,8 @@
         },
         stopMonitoring: function (target, apName, callback) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPName(apName));
-                apName = __private.HTMLAPHelper.getPropertyNameFromAPName(apName);
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(target.tagName.toLowerCase() ==="select" &&
@@ -275,5 +289,5 @@
         }
     };
 
-    __private.AccessPointManager.registerAPProvider(AddonHTMLAPProvider);
+    __private.KnotManager.registerAPProvider(AddonHTMLAPProvider);
 })(window);

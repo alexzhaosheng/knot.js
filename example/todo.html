@@ -21,13 +21,11 @@
     <script src="../src/core/ArrayMonitor.js"></script>
     <script src="../src/core/GlobalSymbolHelper.js"></script>
     <script src="../src/core/OptionParser.js"></script>
-    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/KnotManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
-    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
-
-    <!--<script src="../release/knot.all.min.js"></script>-->
 
     <script src="../src/debugger/knot.debug.js"></script>
 
@@ -43,6 +41,8 @@
         <span id="listBriefMsg"></span>
         [ <a href="" onclick="archive();return false;">archive</a> ]
         <ul id="todoList">
+            <!-- template must be assigned with a "knot-template-id" or marked with "knot-template"(anonymous template)
+                for the anonymous template, it must be put right inside the element that uses it-->
             <li knot-template>
                 <input type="checkbox">
                 <span></span>

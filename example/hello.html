@@ -20,23 +20,26 @@
     <script src="../src/core/ArrayMonitor.js"></script>
     <script src="../src/core/GlobalSymbolHelper.js"></script>
     <script src="../src/core/OptionParser.js"></script>
-    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/KnotManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
-    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
-
-    <!--<script src="../release/knot.all.min.js"></script>-->
 
     <script src="../src/debugger/knot.debug.js"></script>
 
     <script type="text/cbs" class="exampleCBS">
+
+        /*bind #hello1Msg.text with #nameInput.value, add a string "Hello " before #nameInput.value
+        [immediately:1] tell knot.js that it should update for each stroke on #nameInput */
         #hello1Msg{
             text:#nameInput.value[immediately:1]>{return value?"Hello " + value:"";}
         }
 
+        /*bind #hello1Msg.text with #firstNameInput.value and #lastNameInput.value, the first name and last name will be joined by a " "
+        [immediately:1] tell knot.js that it should update for each stroke */
         #hello2Msg span{
-            text:(#firstNameInput.value[immediately:1] & #lastNameInput.value[immediately:1]) > {return value[0]+' '+value[1];}
+            text: (#firstNameInput.value[immediately:1] & #lastNameInput.value[immediately:1]) > {return value.join(" ");}
         }
     </script>
 </head>
@@ -48,8 +51,10 @@
             From angular.js
         </p>
         <label>Name:</label>
+
         <input type="text" id="nameInput" placeholder="Enter a name here">
         <h3 id="hello1Msg"></h3>
+
     </div>
 
     <br/>
@@ -59,6 +64,7 @@
         <p class="comment">
             From knockout.js
         </p>
+
         <p>First name: <input id="firstNameInput" value="Planet"/></p>
         <p>Last name: <input id="lastNameInput"  value="Earth"/></p>
         <h3 id="hello2Msg">Hello, <span> </span>!</h3>

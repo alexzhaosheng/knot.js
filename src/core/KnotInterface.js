@@ -1,3 +1,8 @@
+/*
+    This is the facede of the knot.js.
+    It seal the private scope, expose the APIs and do the automatic initialization works
+* */
+
 (function (global) {
     "use strict";
 
@@ -5,31 +10,45 @@
     //seal private scope
     delete global.Knot.getPrivateScope;
 
-    //register a access pointer provider
+    //These APIs are not
     global.Knot.Advanced = {
+        //register a access pointer provider
         registerAPProvider: function (provider) {
-            return __private.AccessPointManager.registerAPProvider(provider);
+            return __private.KnotManager.registerAPProvider(provider);
         },
 
-        registerLog: function (logger) {
+        //register a logger
+        registerLogger: function (logger) {
             __private.Log.log = logger;
         },
+        //register a debugger
         registerDebugger: function (dbg) {
             __private.Debugger = dbg;
         },
+
+        //it create the the elements from template and add them to node's children collection
+        //and synchronize the elements in node's children and array
         synchronizeItems: function (parentNode, valueArray, template, onCreated, onRemoved) {
             __private.HTMLAPProvider.syncItems(parentNode, valueArray, template, onCreated, onRemoved);
         },
+
+        //create a node from template. Note it only create the HTML node, it may not bind the data to the node
+        //call setDataContext to bind data to the node
         createFromTemplate: function (template, data, owner) {
-            return __private.HTMLKnotManager.createFromTemplate(template, data, owner);
+            return __private.HTMLKnotBuilder.createFromTemplate(template, data, owner);
         },
+
+        //set data context for the node and it's offspring
         setDataContext: function (node, data) {
-            __private.HTMLKnotManager.setDataContext(node, data);
+            __private.HTMLKnotBuilder.setDataContext(node, data);
         },
+
+        //get the value on data by the path
         getValueOnPath: function (data, path) {
             return __private.Utility.getValueOnPath(data, path);
         },
 
+        //register a global symbol with name
         registerNamedGlobalSymbol: function (name, value) {
             return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
         }
@@ -44,38 +63,47 @@
             rootNode = document.body;
         }
 
-        __private.HTMLKnotManager.forceUpdateValues(rootNode);
+        __private.HTMLKnotBuilder.forceUpdateValues(rootNode);
 
         var result = [];
         __private.HTMLErrorAPProvider.getErrorStatusInformation(rootNode, result);
         return result;
     };
 
+    //notify knot system that object is changed.
     global.Knot.notifyObjectChanged = function (object, path, oldValue, newValue) {
         __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
     };
+    //monitor the change of the object
     global.Knot.monitorObject = function (object, path, callback) {
         __private.DataObserver.monitorObject(object, path, callback);
     };
+    //stop monitoring the object
     global.Knot.stopMonitoringObject = function (object, path, callback) {
         __private.DataObserver.stopMonitoring(object, path, callback);
     };
+    //get properties changed records
     global.Knot.getPropertiesChangeRecords = function (object) {
         return __private.DataObserver.getPropertiesChangeRecords(object);
     };
+    //clear properties changed records
     global.Knot.clearPropertiesChangeRecords = function (object) {
         return __private.DataObserver.clearPropertiesChangeRecords(object);
     };
 
 
+    //clear all of the knots
     global.Knot.clear = function () {
-        __private.HTMLKnotManager.clear();
+        __private.HTMLKnotBuilder.clear();
     };
 
+    //get the current data context of the element
+    //if there's no dataContext on the node, search on it's ancestors
     global.Knot.getDataContext = function (htmlElement) {
-        return __private.HTMLKnotManager.getDataContextOfHTMLNode(htmlElement);
+        return __private.HTMLKnotBuilder.getDataContextOfHTMLNode(htmlElement);
     };
 
+    //returns the element that bound with the given data.
     global.Knot.findElementBindToData= function (elements, data) {
         for(var i=0; i<elements.length; i++) {
             if (global.Knot.getDataContext(elements[i]) === data) {
@@ -84,7 +112,9 @@
         }
     };
 
+    //////////////////////////////////////////////
     //automatically initialize when loading
+    //////////////////////////////////////////////
     var _onReadyCallback;
     var _initError;
     global.Knot.ready = function (callback) {
@@ -110,12 +140,12 @@
     global.Knot.isReady = false;
 
     global.addEventListener("load", function () {
-        var deferred =__private.HTMLKnotManager.parseCBS();
+        var deferred =__private.HTMLKnotBuilder.parseCBS();
 
         deferred.done(function () {
-            __private.HTMLKnotManager.applyCBS();
-            __private.HTMLKnotManager.processTemplateNodes();
-            __private.HTMLKnotManager.bind();
+            __private.HTMLKnotBuilder.applyCBS();
+            __private.HTMLKnotBuilder.processTemplateNodes();
+            __private.HTMLKnotBuilder.bind();
             global.Knot.isReady = true;
             _initError = null;
             notifyInitOver();

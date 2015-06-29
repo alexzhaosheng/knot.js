@@ -20,9 +20,9 @@
     <script src="../src/core/ArrayMonitor.js"></script>
     <script src="../src/core/GlobalSymbolHelper.js"></script>
     <script src="../src/core/OptionParser.js"></script>
-    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/KnotManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
-    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
@@ -43,44 +43,66 @@
     </style>
 
     <script type="text/cbs"  class="exampleCBS">
+
+    /*
+    this bind the style of the input to the error status of it's value for all of the inputs in the form
+    by this knot, the input will get red glow when it's value is invalid
+     */
     form input[type=text]{
         class: !*LEFT.value>@{return value?"+errorInput":"-errorInput";}
     }
 
-    #nameSection input{
-        value> @/validator.notEmpty> {
-                if(value.length < 3)
-                    throw new Error("Name must be more than 3 characters");
-                if(value.length > 10)
-                    throw new Error("Name must be no more than 10 characters");
+
+    #nameSection{
+        /*
+        add empty check and length check to the "name" text box
+        bind to *NULL so that we don't need to create a data model for it.
+        */
+        => input{
+            value> @/validator.notEmpty> {
+                    /* you can use either  */
+                    if(value.length < 3)
+                        throw new Error("Name must be more than 3 characters");
+                    if(value.length > 10)
+                        throw new Error("Name must be no more than 10 characters");
+                    return value;
+                }: *NULL;
+        };
+
+        /* bind the text to the "message" of error status of the value of the "name" input box.  */
+        => .errMessage{
+            text:!#(#nameSection input).value>{return value?value.message:"";}
+        };
+    }
+
+    #ageSection{
+        /*add empty check, number format check and number range check to the "age" text box*/
+        =>input{
+            value> @/validator.notEmpty> @/validator.checkAndConvertToNumber> @validator.checkAgeRange : *NULL;
+        };
+
+        => .errMessage{
+            text:!#(#ageSection input).value>{return value?value.message:"";}
+        }
+     }
+
+    #emailSection{
+        /*add empty check, email format check to the "email" text box*/
+         =>input{
+            value>@/validator.notEmpty> {
+                if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))
+                    throw new Error("Invalid email!");
                 return value;
-            }: *NULL;
-    }
+            }:*NULL;
+        };
 
-    #nameSection .errMessage{
-        text:!#(#nameSection input).value>{return value?value.message:"";}
-    }
-
-
-    #ageSection input{
-        value> @/validator.notEmpty> @/validator.checkAndConvertToNumber> @validator.checkAgeRange : *NULL;
-    }
-    #ageSection .errMessage{
-        text:!#(#ageSection input).value>{return value?value.message:"";}
-    }
-
-     #emailSection input{
-        value>@/validator.notEmpty> {
-            if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))
-                throw new Error("Invalid email!");
-            return value;
-        }:*NULL;
-    }
-    #emailSection .errMessage{
-        text:!#(#emailSection input).value>{return value?value.message:"";}
+        =>.errMessage{
+            text:!#(#emailSection input).value>{return value?value.message:"";}
+        }
     }
     </script>
     <script class="exampleJS">
+        //these functions will be called by knot.js system.
         window.validator ={
             notEmpty: function (v) {
                 if(v.trim() == "")
@@ -101,6 +123,7 @@
             }
         };
 
+        //validate the whole page, show the error messages if there's error
         function validate() {
             var err = Knot.getErrorStatusInformation();
             if(err.length > 0) {
@@ -109,10 +132,11 @@
                     msg += "\n - " + err[i].node.placeholder  + ": " + err[i].error.message;
                 }
                 alert(msg);
+                //set the focus to the first element in error status
                 err[0].node.focus();
                 return false;
             }
-            alert("Let's fake it committed !");
+            alert("Let's fake it is committed !");
             return true;
         }
     </script>

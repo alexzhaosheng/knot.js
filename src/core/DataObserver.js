@@ -1,20 +1,25 @@
 /*
     DataObserver provides the ability of monitoring the change of object
     Note it is not only able to detecting the change or the property, but also
-     be able to observe a "path" so that you can get the change in it's children
+     be able to observe a "path" so that you can get the notification when it's children is changed
  */
 (function (global) {
     "use strict";
     var __private = global.Knot.getPrivateScope();
 
+    //indicate object it self
     var PATH_FOR_OBJECT_ITSELF = "*";
+
     __private.DataObserver = {
-        //if property is "*", callback will be executed when any property is changed.
+        //hook data change event for the "path" on "data".
         on: function (data, path, callback, attachedData) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (!attachedInfo.changedCallbacks) {
                 attachedInfo.changedCallbacks = {};
             }
+
+            //if property is "*", callback will be executed when any property is changed.
+            //if there's no path, use "*" as default
             if(!path) {
                 path=PATH_FOR_OBJECT_ITSELF;
             }
@@ -25,6 +30,7 @@
 
             attachedInfo.changedCallbacks[path].push({callback: callback, attachedData:attachedData});
         },
+        //stop hooking the data change event
         off: function (data, path, callback) {
             if(!path) {
                 path = PATH_FOR_OBJECT_ITSELF;
@@ -48,6 +54,8 @@
                 }
             }
         },
+
+        //test whether an event is registered
         hasRegistered: function (data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
@@ -59,6 +67,8 @@
             }
             return false;
         },
+
+        //get attached data for a hooked change event
         getAttachedData: function (data, path, callback) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[path]) {
@@ -70,6 +80,8 @@
             }
             return null;
         },
+
+        //notify the data is changed, and call the callbacks registered with this data and path
         notifyDataChanged: function (data, path, oldValue, newValue) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
 
@@ -105,6 +117,8 @@
                 }
             }
         },
+
+        //return the changed properties for the data since "clearPropertiesChangeRecords" is called on the data last time
         getPropertiesChangeRecords: function (data) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo) {
@@ -112,6 +126,8 @@
             }
             return attachedInfo.changedProperties?attachedInfo.changedProperties:[];
         },
+
+        //clear the changed properties record.
         clearPropertiesChangeRecords: function (data) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
             if(!attachedInfo) {
@@ -120,6 +136,8 @@
             attachedInfo.changedProperties = null;
         },
 
+        //monitor the change for a property on object
+        //if it's "*", monitor all of the change of the properties
         hookProperty: function (object, property) {
             if(property === "*") {
                 return;
@@ -162,6 +180,7 @@
             }
         },
 
+        //unhook a property change
         unhookProperty: function (object, property) {
             if(property === "*") {
                 return;
@@ -189,6 +208,7 @@
             delete attached.dataHookInfo.hookRefCount[property];
         },
 
+        //test whether a property is hooked
         hasHookedProperty: function (object, propertyName) {
             var attached = __private.AttachedData.getAttachedInfo(object);
             if(!attached.dataHookInfo) {
@@ -197,6 +217,10 @@
             return attached.dataHookInfo.hookedProperties.indexOf(propertyName) >=0;
         },
 
+
+        //this is the recursive call to setup the monitoring hook for the properties in path
+        //Array is processed specially, "*" must be listened to capture the change in array. But it only
+        //needs to be listened once, therefore listen array process will be skipped when it's called recursively
         monitorObject: function (object, path, callback, skipCheckingArray) {
             var restPath;
             var property = path.substr(0, path.indexOf("."));
@@ -263,9 +287,13 @@
             __private.DataObserver.hookProperty(object, property);
         },
 
+        //monitor a path change on a object.
+        //it automatically hook the change of the object(s) relevant to the path and
+        //build the change event for the whole path
+        //the path can be absolute path starts with "/"
         monitor: function (object, path, callback) {
             if(path) {
-                if(path[0] === "/") {
+                if(path[0] === "/") {   //if it's absolute path
                     path = path.substr(1);
                     object = global;
                 }
@@ -276,6 +304,7 @@
             }
         },
 
+        //stop monitoring the change for the path on the object
         stopMonitoring: function (object, path, callback) {
             if(!path) {
                 __private.DataObserver.off(object, path, callback);

@@ -1,42 +1,7 @@
-///////////////////////////////////////////////////////
-// Parse options
-///////////////////////////////////////////////////////
 /*
- *Splitor
- ":"
-
- *access point (AP)
- *   - 2 APs make up a knot. like this: AP1:AP2
-     - The way it is interpreted depends on the target and the AP name
-     - Multiple APs can be composed in to one withe a n to 1 pipe
-
- *pipe
-     1 to 1
-     n to 1
-     can be a inline code segment marked by {}. it always use variant name "value" to access the inputed value and always return an output. it can access the attached AP by using "this"
-
- *type descriptor for attached APs
-     nothing special: data
-     "#":html element, followed by the element AP descriptor
-     "( & )>": composite AP. Made of multiple APs (can followed by pipe) that are included in "()" and connected by &. Their output is to be merged by a n to 1 pipe that follows >
-
-*******Examples*******
-
- //decode password in authentication.password and set to text
- //when text is changed, validate it by validatePassword and encode password then set it to authentication.password
- #passwordInput{authentication.password then
-    text >validatePassword>encodePassword: authentication.password>@decodePassword
- }
-
- //when regOption's selectedIndex is great than 2, then enable emailInput, other wise disable
- #emailInput{
-    isEnabled: #regOption.selectedIndex>{return value>2?true:false;}
- }
-
- //when isLogged and userId >0, textInput is enabled.
- #textInput{
-    isEnabled: (isLogged & userId>trueWhenNot0 )>trueWhenAllTrue
- }
+   Parse the knot options.
+   Note "knot options" is not CBS options, CBS options is parsed in HTMLKnotBuilder and the knot options in CBS options
+   are extracted then are parsed with OptionParser
 
  */
 (function (global) {
@@ -45,7 +10,10 @@
     var __private = global.Knot.getPrivateScope();
 
 
+    //create embedded functions with the text
+    //embedded functions are registered to Global Symbol
     function createEmbeddedFunction(text) {
+        //embedded functions always has a parameter named "value"
         var func = "(function (value) {" + text + "})";
         try{
             return  __private.GlobalSymbolHelper.registerSymbol(eval(func));
@@ -58,7 +26,7 @@
 
 
     __private.OptionParser = {
-
+        //parse options
         parse: function (optionText) {
             var options = [];
 
@@ -75,6 +43,8 @@
             return options;
         },
 
+        //extract the embedded function texts and create embedded function, replace the function text with the name of
+        // the created function
         processEmbeddedFunctions: function (text) {
             var blockInfo = __private.Utility.getBlockInfo(text, 0, "{", "}");
             while(blockInfo) {
@@ -86,43 +56,7 @@
             return text;
         },
 
-        parseEvent: function (eventsStr) {
-            var events = eventsStr.split(",");
-            var res ={};
-            for(var i=0; i< events.length; i++) {
-                if(!__private.Utility.trim(events[i])) {
-                    continue;
-                }
-
-                var arr = events[i].split(":");
-                if(arr.length !== 2) {
-                    __private.Log.error("Invalid knot event option:" + events[i]);
-                    continue;
-                }
-                var eventDes =  __private.Utility.trim(arr[0]);
-                if(eventDes[0] !== "@") {
-                    __private.Log.error("Invalid knot event :'"+ eventDes+ "', it must start with '@'." );
-                    continue;
-                }
-                var handlerDes = __private.Utility.trim(arr[1]).split("&");
-                var handlers = [];
-                for(var j=0; j<handlerDes.length; j++) {
-                    var h = __private.Utility.trim(handlerDes[j]);
-                    if(h[0] !== "@") {
-                        __private.Log.error("Invalid knot event handler:'"+ eventDes+ "', it must start with '@'." );
-                        continue;
-                    }
-                    handlers.push(h);
-                }
-                if(handlers.length === 0) {
-                    continue;
-                }
-
-                res[eventDes] = handlers;
-            }
-            return res;
-        },
-
+        //parse a knot option
         parseKnot: function (text) {
             text = __private.Utility.trim(text);
             if(!text) {
@@ -145,6 +79,7 @@
             return {leftAP:left, rightAP:right};
         },
 
+        //parse an access point definition
         parseAccessPoint: function (text) {
             text = __private.Utility.trim(text);
             if(text[0] === "(") {
@@ -166,6 +101,7 @@
             return {description:AP, pipes:pipes, options:options};
         },
 
+        //parse the options on access point
         getAPOptions: function (optionStr) {
             var options = {};
             var arr = __private.Utility.splitWithBlockCheck(optionStr, ";");
@@ -181,6 +117,7 @@
             return options;
         },
 
+        //parse composite AP
         parseCompositeAP: function (text) {
             var block = __private.Utility.getBlockInfo(text, 0, "(", ")");
             if(!block) {

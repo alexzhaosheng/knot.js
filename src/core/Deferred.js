@@ -1,6 +1,7 @@
 /*
     Deferred
-    This is simplified Deferred object for asynchronous validating and initialization.
+    This is simplified Deferred object for asynchronous validating and initialization (because it may have to load external CBS files
+    when initialize).
 */
 
 (function (global) {

@@ -144,7 +144,7 @@
         }
     };
 
-    window.Knot.Advanced.registerLog(logger);
+    window.Knot.Advanced.registerLogger(logger);
     window.Knot.Advanced.registerDebugger(debuggerProxy);
 
     function setCookie(cname, cvalue) {

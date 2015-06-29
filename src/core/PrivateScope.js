@@ -1,12 +1,21 @@
+/*
+    Knot private scope management and definition.
+
+* */
 (function (global) {
     "use strict";
+    //private scope of knot.js
     var __private = {};
 
     __private.Setting = {
         enablePropertyHook: true
     };
 
+    //default logger, simply write the msg to console
     function defaultLogger(level, msg, exception) {
+        if(!global.console) {
+            return;
+        }
         global.console.log("[" +  level + "]" + msg);
         if (exception) {
             global.console.log(exception);
@@ -27,6 +36,7 @@
         }
     };
 
+    //default debugger. do nothing
     __private.Debugger = {
         knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
 
@@ -49,9 +59,8 @@
         }
     };
 
-    //window.Knot will be overwritted in Knot.js so that "getPrivateScope" would not be exposed
-    //to outside once Knot.js is loaded.
     global.Knot = {
+        //this function will be deleted then private scope is sealed
         getPrivateScope: function () {
             return __private;
         }

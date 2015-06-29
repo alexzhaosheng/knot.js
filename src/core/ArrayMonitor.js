@@ -1,9 +1,9 @@
 /*
-overwrite the methods of array to provide data change event.
-Array.length is not overwritable, and it costs to much to overwrite the indexes. Therefore
-I have to leave these trap activated. Need to emphasis this problem in manual.
-When the array is changed in other way than these method, user must call Array.notifyChanged to
-have knot.js updating the relevant knots
+    overwrite the methods of array to provide data change event.
+    Array.length is not overwritable, and it costs to much to overwrite the indexes. Therefore
+    I have to leave these trap activated. Need to emphasis this problem in manual.
+    When the array is changed in other way than these method, user must call Array.notifyChanged to
+    have knot.js updating the relevant knots
 */
 (function (global) {
     "use strict";

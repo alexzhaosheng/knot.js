@@ -1,3 +1,6 @@
+/*
+    Helpers and utilities
+* */
 (function (global) {
     "use strict";
     var __private = global.Knot.getPrivateScope();
@@ -33,10 +36,12 @@
             return s.substr(0, startStr.length) === startStr;
         },
 
+        //get the value on data by the path
         getValueOnPath: function (rootData, path) {
             if((!path && path !== "") || (path === "*NULL")) {
                 return null;
             }
+            //if path is "*", return the data it-self
             if(path === "*" || path === "") {
                 return rootData;
             }
@@ -75,12 +80,13 @@
                 }
             }
             if(isFunction && res && typeof(res) !== "function") {
-                    __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
-                    return undefined;
+                __private.Log.error("'"+ path +"' is expected as a function, but it isn't.");
+                return undefined;
             }
             return res;
         },
 
+        //set value on path for data
         setValueOnPath: function (data, path, value) {
             //never set value for *
             if(path[path.length-1] === "*"){
@@ -105,7 +111,7 @@
             }
         },
 
-
+        //get XMLHttpRequest object.
         getXHRS: function () {
             if (global.XMLHttpRequest) {
                 return new XMLHttpRequest();
@@ -116,6 +122,8 @@
         },
 
 
+        //get the whole block information that between startMark and endMark
+        //it pairs the startMark and endMark support the embedded internal blocks
         getBlockInfo: function (str, startIndex, startMark, endMark) {
             var info = {start:-1, end:-1};
             info.start = str.indexOf(startMark, startIndex);
@@ -154,6 +162,8 @@
             }
         },
 
+        //split string with block check
+        //here "blocks" are those texts enclosed by "(,),[,],{,}"
         splitWithBlockCheck: function (str, splitter) {
             var pos = 0, prev=0;
             var res = [];

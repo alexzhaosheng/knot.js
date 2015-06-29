@@ -22,9 +22,9 @@
     <script src="../src/core/ArrayMonitor.js"></script>
     <script src="../src/core/GlobalSymbolHelper.js"></script>
     <script src="../src/core/OptionParser.js"></script>
-    <script src="../src/core/AccessPointManager.js"></script>
+    <script src="../src/core/KnotManager.js"></script>
     <script src="../src/core/HTMLAPProvider.js"></script>
-    <script src="../src/core/HTMLKnotManager.js"></script>
+    <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
@@ -56,7 +56,6 @@
 
 
     /* For Ticket 1*/
-
     #classSelect{
         foreach: tickets;
         selectedData:selected;
@@ -66,7 +65,7 @@
         text:*>{return value.name+"("+value.price+")";}
     }
 
-    /* For Ticket 1*/
+    /* For Ticket 2*/
     #classSelect2{
         options[displayMember:(name & price)>@{return value[0] + "("+value[1]+")";}]:tickets;
         selectedData:selected;
