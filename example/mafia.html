@@ -50,6 +50,7 @@
             <ul id="systemTree">
             </ul>
         </div>
+
         <div id="editArea">
             <div>
                 <h3>Editor</h3>
@@ -78,6 +79,7 @@
                 <button onclick="newEntity()" >Add</button>
             </div>
         </div>
+
         <div id="freeEntities"  class="dropTarget">
             <h3>Not assigned</h3>
             <div id="freeEntityList">
@@ -86,6 +88,7 @@
         </div>
     </div>
 
+    <!-- item template for tree items, it uses "content" binding to show the actual content  -->
     <li class="treeNode" knot-template-id="treeNode">
         <div>
             <i class="expander iconButton fa fa-plus-circle"></i>
@@ -95,6 +98,7 @@
         </ul>
     </li>
 
+    <!-- templates for gangs, one for presentation and one for editing -->
     <div knot-template-id="gangTemplate" class="gangTemplate contentPanel">
         <div class="title"></div>
         <div class="attributeTable">
@@ -109,9 +113,18 @@
             </div>
             <div class="clearFloat"></div>
         </div>
-
     </div>
 
+    <div knot-template-id="gangEditorTemplate" class="gangEditor editorPanel">
+        <h3>Gang <span class="new">(new)</span> </h3>
+        <div class="title" >
+            <div class="label">Title</span></div>
+            <input type="text">
+            <div><span class="errorMessage"></span></div>
+        </div>
+    </div>
+
+    <!-- templates for white business, one for presentation and one for editing -->
     <div knot-template-id="whiteBusinessTemplate" class="whiteBusinessTemplate contentPanel">
         <div class="title"></div>
         <div class="attributeTable">
@@ -126,54 +139,6 @@
                 No leader. Drop someone here to assign
             </div>
             <div class="clearFloat"></div>
-        </div>
-    </div>
-
-    <div knot-template-id="blackBusinessTemplate" class="blackBusinessTemplate contentPanel">
-        <div class="title"></div>
-        <div class="attributeTable">
-            <div class="attributeItem" title="Income"><i class="fa fa-money"></i> <span class="income">5</span></div>
-            <div class="attributeItem" title="Case number"><i class="fa fa-fire"></i> <span class="caseNumber"></span></div>
-            <div class="attributeItem" title="Exposure level"><i class="fa fa-lightbulb-o"></i> <span class="exposureLevel"></span></div>
-        </div>
-        <div class="people">
-            <i class="fa fa-user-secret"></i>
-            <div></div>
-            <div class="dropTarget">
-                No leader. Drop someone here to assign
-            </div>
-            <div class="clearFloat"></div>
-        </div>
-    </div>
-
-
-    <div knot-template-id="manTemplate" class="manTemplate contentPanel">
-        <div class="title"></div>
-        <div class="attributeTable">
-            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i><span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Strength"><i class="fa fa-gavel"></i> <span class="strength"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-        </div>
-    </div>
-
-    <div knot-template-id="womanTemplate" class="womanTemplate contentPanel">
-        <div class="title"></div>
-        <div class="attributeTable">
-            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i> <span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-            <div class="attributeItem" title="Attraction"><i class="fa fa-bolt"></i><span class="attraction"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
-        </div>
-    </div>
-
-
-    <div knot-template-id="gangEditorTemplate" class="gangEditor editorPanel">
-        <h3>Gang <span class="new">(new)</span> </h3>
-        <div class="title" >
-            <div class="label">Title</span></div>
-            <input type="text">
-            <div><span class="errorMessage"></span></div>
         </div>
     </div>
 
@@ -193,6 +158,24 @@
             <div class="label">Landed Money</div>
             <input type="text">
             <div><span class="errorMessage"></span></div>
+        </div>
+    </div>
+
+    <!-- templates for black business, one for presentation and one for editing -->
+    <div knot-template-id="blackBusinessTemplate" class="blackBusinessTemplate contentPanel">
+        <div class="title"></div>
+        <div class="attributeTable">
+            <div class="attributeItem" title="Income"><i class="fa fa-money"></i> <span class="income">5</span></div>
+            <div class="attributeItem" title="Case number"><i class="fa fa-fire"></i> <span class="caseNumber"></span></div>
+            <div class="attributeItem" title="Exposure level"><i class="fa fa-lightbulb-o"></i> <span class="exposureLevel"></span></div>
+        </div>
+        <div class="people">
+            <i class="fa fa-user-secret"></i>
+            <div></div>
+            <div class="dropTarget">
+                No leader. Drop someone here to assign
+            </div>
+            <div class="clearFloat"></div>
         </div>
     </div>
 
@@ -223,6 +206,17 @@
         </div>
     </div>
 
+    <!-- templates for man , one for presentation and one for editing -->
+    <div knot-template-id="manTemplate" class="manTemplate contentPanel">
+        <div class="title"></div>
+        <div class="attributeTable">
+            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i><span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Strength"><i class="fa fa-gavel"></i> <span class="strength"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+        </div>
+    </div>
+
     <div knot-template-id="manEditorTemplate" class="manEditor editorPanel">
         <h3>Man<span class="new">(new)</span></h3>
         <div class="name">
@@ -249,6 +243,17 @@
         </div>
     </div>
 
+
+    <!-- templates for woman, one for presentation and one for editing -->
+    <div knot-template-id="womanTemplate" class="womanTemplate contentPanel">
+        <div class="title"></div>
+        <div class="attributeTable">
+            <div class="attributeItem" title="Intelligence"><i class="fa fa-graduation-cap"></i> <span class="intelligence"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Criminal skill"><i class="fa fa-unlock-alt"></i> <span class="skill"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Loyalty"><i class="fa fa-bomb"></i> <span class="loyalty"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+            <div class="attributeItem" title="Attraction"><i class="fa fa-bolt"></i><span class="attraction"><i class="levelInStar fa fa-fw fa-star"></i></span></div>
+        </div>
+    </div>
 
     <div knot-template-id="womanEditorTemplate" class="womanEditor editorPanel">
         <h3>Woman<span class="new">(new)</span></h3>

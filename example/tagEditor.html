@@ -49,13 +49,15 @@
     <script type="text/javascript" src="js/tagEditor.js" class="exampleJS" title="Editor Javascript"></script>
 
     <script type="text/cbs"  class="exampleCBS" title="In-page CBS">
+    /* knot-example-tagEditor is the Access Point name for tagEditor component in this example  */
+
     #editor1{
         knot-example-tagEditor:/tags;
     }
     #editor2{
         knot-example-tagEditor[color:#228822]:/tags;
     }
-    #latestTags{
+    #currentTags{
         text:/tags
     }
     </script>
@@ -70,7 +72,7 @@
 
     <div class="curValue">
         <p>
-        Current tags:<b id="latestTags"></b>
+        Current tags:<b id="currentTags"></b>
         </p>
     </div>
 

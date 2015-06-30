@@ -37,35 +37,41 @@
         dataContext:/model;
     }
 
+    /*
+        These options set the selected result area and the "clear" button for both of the examples
+    */
+
     .clearButton{
         disabled:selected>{return value?false:true;};
         @click:{this.selected = null;}
     }
 
-
     .selectionResult{
+        /*set the selected as the data context */
          dataContext:selected;
+
+         => >b{
+            innerText:name
+         };
+         => >span{
+            innerText:price
+         };
     }
 
-    .selectionResult>b{
-        innerText:name
-    }
-    .selectionResult>span{
-        innerText:price
-    }
 
-
-    /* For Ticket 1*/
+    /* For Example 1. Use template to create the options in select*/
     #classSelect{
         foreach: tickets;
         selectedData:selected;
+
+        /* this is the template for the options in select */
+        => option{
+            text:*>{return value.name+"("+value.price+")";}
+        }
     }
 
-    #classSelect option{
-        text:*>{return value.name+"("+value.price+")";}
-    }
 
-    /* For Ticket 2*/
+    /* For Example 2. Use Access Point "options" to create the options in select*/
     #classSelect2{
         options[displayMember:(name & price)>@{return value[0] + "("+value[1]+")";}]:tickets;
         selectedData:selected;
@@ -105,7 +111,7 @@
 <div class="knot_example">
     <h2>Knot.js example- Ticket 2</h2>
     <p class="comment">
-        this example uses special access point "options" of "select" element.
+        this example uses access point "options" of "select" element.
     </p>
     <p>
         Choose a ticket class: <select id="classSelect2"></select>

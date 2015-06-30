@@ -1,4 +1,4 @@
-
+//search node in tree, returns the node,it's parent and the relation description (isLeader)
 function findInTree(entity, nodes, parent) {
     var res = null;
     travelTree(nodes, parent, function (node, parent, isLeader) {
@@ -12,28 +12,30 @@ function findInTree(entity, nodes, parent) {
     return res;
 }
 
-function travelTree(nodes, parent, callback) {
+//travel the tree with the visitor
+function travelTree(nodes, parent, visitorCallback) {
     if(!nodes) {
         return false;
     }
 
     for(var i=0; i<nodes.length; i++) {
-        if(callback(nodes[i], parent, false)) {
+        if(visitorCallback(nodes[i], parent, false)) {
             return true;
         }
 
         if(nodes[i].leader) {
-            if (callback(nodes[i].leader, nodes[i], true)) {
+            if (visitorCallback(nodes[i].leader, nodes[i], true)) {
                 return true;
             }
         }
 
-        if(travelTree(nodes[i].children, nodes[i], callback)) {
+        if(travelTree(nodes[i].children, nodes[i], visitorCallback)) {
             return true;
         }
     }
 }
 
+//add drag and drop source support for the node
 function addDNDSrcSupport(node, data, startCallback, doneCallback, cancelCallback){
     node.className += " dragSource";
     node.dragSourceListener = {
@@ -68,6 +70,7 @@ function addDNDSrcSupport(node, data, startCallback, doneCallback, cancelCallbac
     };
 }
 
+//add drag and drop target support for the node
 function addDNDTargetSupport(node, dragTestCallback, dropCallback){
     if(node.className.indexOf("dropTarget") < 0){
         node.className += " dropTarget";
@@ -78,6 +81,7 @@ function addDNDTargetSupport(node, dragTestCallback, dropCallback){
     };
 }
 
+//update the statistic information on gangs
 function updateGangsInfo(){
     for(var i=0; i< mafiaSystem.gangs.length; i++){
         var businessCount = 0;
@@ -99,19 +103,59 @@ function updateGangsInfo(){
 }
 
 
+//show the animation for adding new entity
 function animateNewEntity(data, target) {
     window.mafiaSystem.inAnimation = data;
     $(target).css("opacity", 0);
     $("#animationVisual")
+        .css("opacity", 0)
         .css("top", $("#editArea").offset().top + 100 - $("body").scrollTop())
         .css("left", $("#editArea").offset().left - $("body").scrollLeft())
         .css("width", $(target).width()).css("height", $(target).height())
-        .animate({left: $(target).offset().left, top: $(target).offset().top}, 600, function () {
+        .animate({opacity:1, left: $(target).offset().left, top: $(target).offset().top}, 600, function () {
             $(target).css("opacity", 1);
             window.mafiaSystem.inAnimation = null;
             data.isNew = false;
         });
 }
+
+//create new entity
+function newEntity(){
+    var type = $("#newEntityType").val();
+    if(type === "male" || type==="female"){
+        window.mafiaSystem.selected = {sex:type, isNew:true};
+    }
+    else{
+        window.mafiaSystem.selected = {type:type, isNew:true};
+    }
+}
+
+//commit the new entity
+function commitNewEntity(){
+    var r = Knot.getErrorStatusInformation($("#editArea")[0]);
+    if(r.length > 0){
+        alert("Please fix the error first.");
+        $(r[0].node).focus();
+        return;
+    }
+
+    var e = window.mafiaSystem.selected;
+    window.mafiaSystem.inAnimation = e;
+    if(e.type==="gang"){
+        window.mafiaSystem.gangs.push(e);
+    }
+    else{
+        window.mafiaSystem.freeEntities.push(e);
+    }
+
+    window.mafiaSystem.selected = null;
+}
+
+function cancelNew(){
+    window.mafiaSystem.selected = null;
+}
+
+//the view model of the example
 window.mafiaSystem = {
     gangs:null,
 
@@ -119,10 +163,13 @@ window.mafiaSystem = {
 
     selected:null,
 
+    //this hold the reference of the object that in dragging
     inDragging: null,
 
+    //this hold the reference of the object that in animating
     inAnimation: null,
 
+    //template selector for presentation
     nodeContentTemplateSelector: function (data) {
         var template;
         if(data.sex === "male") {
@@ -143,6 +190,7 @@ window.mafiaSystem = {
         return window.Knot.Advanced.createFromTemplate(template, data, this);
     },
 
+    //template selector for editing
     editorTemplateSelector: function (data) {
         var template;
         if(data.sex === "male") {
@@ -163,6 +211,7 @@ window.mafiaSystem = {
         return window.Knot.Advanced.createFromTemplate(template, data, this);
     },
 
+    //select the topic and deselect the others
     onSelectClicked: function () {
         if(window.mafiaSystem.selected){
             var r = Knot.getErrorStatusInformation($("#editArea")[0]);
@@ -186,11 +235,9 @@ window.mafiaSystem = {
         window.mafiaSystem.selected = this;
     },
 
-    onRemoveSelectedLeader:function(organization){
-
-    },
-
+    //setup the drag&drop target/source
     onTreeChildAdded: function(node, data){
+        //only organization need D&D target support
         if(!data.sex){
             addDNDTargetSupport($(node).find(".people .dropTarget")[0], function(droppedData){
                     if(!droppedData.sex){
@@ -221,6 +268,7 @@ window.mafiaSystem = {
                 });
         }
 
+        //Gang is not draggable
         if(data.type !== "gang"){
             var index, parent, isLeader;
             addDNDSrcSupport(node, data, function(){
@@ -263,6 +311,7 @@ window.mafiaSystem = {
         updateGangsInfo();
     },
 
+    //add D&D source support for the entities in free entity list
     onFreeEntityAdded:function(node, data){
         var index;
         addDNDSrcSupport(node, data,
@@ -367,37 +416,3 @@ $(document).ready(function(){
             window.mafiaSystem.freeEntities.push(data);
         });
 });
-
-function newEntity(){
-    var type = $("#newEntityType").val();
-    if(type === "male" || type==="female"){
-        window.mafiaSystem.selected = {sex:type, isNew:true};
-    }
-    else{
-        window.mafiaSystem.selected = {type:type, isNew:true};
-    }
-}
-
-function commitNewEntity(){
-    var r = Knot.getErrorStatusInformation($("#editArea")[0]);
-    if(r.length > 0){
-        alert("Please fix the error first.");
-        $(r[0].node).focus();
-        return;
-    }
-
-    var e = window.mafiaSystem.selected;
-    window.mafiaSystem.inAnimation = e;
-    if(e.type==="gang"){
-        window.mafiaSystem.gangs.push(e);
-    }
-    else{
-        window.mafiaSystem.freeEntities.push(e);
-    }
-
-    window.mafiaSystem.selected = null;
-}
-
-function cancelNew(){
-    window.mafiaSystem.selected = null;
-}

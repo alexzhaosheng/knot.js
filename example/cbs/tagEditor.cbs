@@ -1,4 +1,7 @@
+/*Use $private to make sure the CBS options only effect in this file */
 $private
+
+/* Embedded HTML must be template and can only be accessed as template */
 <<{{
     <div class="knot-example-tagEditor" knot-template-id="knot-example-tagEditor">
         <div>
@@ -8,7 +11,7 @@ $private
             </div>
         </div>
         <i class="knot-example-tagEditor-add fa fa-plus-circle"></i>
-        <input class="newTags" type="text">
+        <input class="newTags" type="text" placeHolder="Input new tags here">
     </div>
 }}>>
 
@@ -16,11 +19,13 @@ $private
     foreach[@added: @onTagEditorItemAdded]:tags
 }
 
-.knot-example-tagEditor-tags>span{
-    text:name
-}
-.knot-example-tagEditor-tags>i{
-    @click:@onDelete;
+.knot-example-tagEditor-tags{
+    => >span{
+        text:name
+    };
+    => >i{
+        @click:@onDelete;
+    };
 }
 
 .knot-example-tagEditor-add{

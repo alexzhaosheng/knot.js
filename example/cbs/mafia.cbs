@@ -23,6 +23,7 @@ body{
     };
 }
 
+// bind the visibility status to "collapsed" status, so that UI is to be updated when "collapsed" is changed
 .treeNode .childrenList, .gangTemplate .people, .whiteBusinessTemplate .people,  .blackBusinessTemplate .people{
     style.display: collapsed>{return value?"none":"block";}
 }
