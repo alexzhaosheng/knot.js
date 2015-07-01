@@ -14,8 +14,17 @@
     htmlEventInfo["input.value"] = "change";
     htmlEventInfo["textarea.value"] = "change";
     htmlEventInfo["input.checked"] = "change";
-    htmlEventInfo["select.selectedindex"] = "change";
+    htmlEventInfo["select.selectedIndex"] = "change";
     htmlEventInfo["select.value"] = "change";
+    htmlEventInfo["*.clientWith"] = "resize";
+    htmlEventInfo["*.clientHeight"] = "resize";
+    htmlEventInfo["*.scrollTop"] = "scroll";
+    htmlEventInfo["*.scrollLeft"] = "scroll";
+
+    function getEvent(target, apName){
+        var eventKey = target.tagName.toLowerCase() + "." +apName;
+        return (htmlEventInfo[eventKey] || htmlEventInfo["*." + apName]);
+    }
 
     //provide some helper functions for the HTML elements
     __private.HTMLAPHelper = {
@@ -297,8 +306,8 @@
             if(!target) {
                 return false;
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-            return (htmlEventInfo[eventKey]);
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
+            return (htmlEventInfo[eventKey] || htmlEventInfo["*." + apName]);
         },
 
         monitor: function (target, apName, callback, options) {
@@ -307,7 +316,7 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
             var events = htmlEventInfo[eventKey].split(",");
             for(var i=0; i<events.length; i++) {
                 target.addEventListener(events[i], callback);
@@ -325,7 +334,7 @@
                 target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
             var events = htmlEventInfo[eventKey].split(",");
             for(var i=0; i<events.length; i++) {
                 target.removeEventListener(events[i], callback);

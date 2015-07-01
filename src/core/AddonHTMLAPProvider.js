@@ -260,10 +260,11 @@
         },
         doesSupportMonitoring: function (target, apName) {
             if(apName[0] === "#") {
+                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
-            return target.tagName.toLowerCase() ==="select" && (apName === "selectedData" || apName === "value");
+            return target && target.tagName.toLowerCase() ==="select" && (apName === "selectedData" || apName === "value");
         },
         monitor: function (target, apName, callback) {
             if(apName[0] === "#") {

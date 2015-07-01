@@ -8,7 +8,7 @@ window.sourceTab = {
 $(document).ready(function () {
     if($(".knot_example").length > 0) {
         var text = "";
-        for(var i=0; i<$("body>.knot_example").length; i++) {
+        for(var i=0; i<$("body .knot_example").length; i++) {
             if(text) {
                 text += "\r\n\r\n\r\n\r\n";
             }
