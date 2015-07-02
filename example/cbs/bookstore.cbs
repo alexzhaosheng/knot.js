@@ -1,0 +1,57 @@
+
+/bookStoreModel{
+    selectedCategory: (window.hash.category & /bookStoreModel.categories) > { return }
+}
+
+
+body{
+    dataContext: /bookStoreModel;
+}
+#navMenu>ul{
+    foreach: categories;
+
+    => >li{
+        text: name;
+        @click: @{window.bookStoreModel.selectedCategory = this;};
+        class: (/bookStoreModel.selectedCategory && *LEFT)>{return value[0]===value[1]?"+selected":"-selected";}
+    }
+}
+
+#booksList{
+    foreach: items;
+
+    => >li{
+        @click:@{window.bookStoreModel.selectedBook = this;};
+
+        => img{
+            src: cover
+        };
+        => div{
+            text: name
+        };
+    }
+}
+
+#bookDetails{
+    => h2{
+        text: name
+    };
+
+    => img{
+        src: cover
+    };
+
+    => p{
+        innerHTML: intro
+    };
+
+    => button{
+        @click: @{window.bookStoreModel.selectedBook = null;}
+    }
+}
+
+
+#contentContainer{
+    content[template: @/window.bookStoreModel.contentTemplateSelector]:
+        (selectedCategory & selectedBook)> { return value;}
+}

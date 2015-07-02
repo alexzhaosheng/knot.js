@@ -31,7 +31,7 @@
 
 
 
-    global.QUnit.test( "private.AccessPointerManager", function ( assert ) {
+    global.QUnit.test( "private.KnotManager", function ( assert ) {
         var target1={}, target2={}, target3={};
 
         var apProvider = new TestAccessPointerProvider();
@@ -272,7 +272,7 @@
         assert.equal(target1.content, target2, "Tie to *");
     });
 
-    global.QUnit.test( "private.AccessPointerManager.knotEvent", function ( assert ) {
+    global.QUnit.test( "private.KnotManager.knotEvent", function ( assert ) {
         var target1, target2;
         var  latestChangedKnot, latestValue,  latestTarget;
 
@@ -323,7 +323,7 @@
         assert.equal(latestValue, "laozi", "ap event @change works");
     });
 
-    global.QUnit.test( "private.AccessPointerManager.target modifier", function ( assert ) {
+    global.QUnit.test( "private.KnotManager.target modifier", function ( assert ) {
         var target1, target2;
 
         var knot = scope.OptionParser.parse("valueCopy:*LEFT.value>{return value+', copy';}")[0];
@@ -357,4 +357,49 @@
         assert.equal(target1.value,"knot.js, copy", "use target modifier to bind to itself won't cause any problem");
     });
 
+    global.QUnit.test( "private.KnotManager.readonly option", function ( assert ) {
+        var target1, target2;
+
+        var knot = scope.OptionParser.parse("value => name")[0];
+        target1 = {value: "knot.js"};
+        target2 = {name: "alex"};
+        scope.KnotManager.tieKnot(target1, target2,  knot);
+        assert.equal(target1.value, "knot.js", "test readonly option");
+        assert.equal(target2.name, "knot.js", "test readonly option");
+        target2.name = "tom";
+        assert.equal(target1.value, "knot.js", "test readonly option");
+        assert.equal(target2.name, "tom", "test readonly option");
+
+        target1.value = "site";
+        assert.equal(target1.value, "site", "test readonly option");
+        assert.equal(target2.name, "site", "test readonly option");
+
+        knot = scope.OptionParser.parse("name <= value")[0];
+        target1 = {value: "knot.js"};
+        target2 = {name: "alex"};
+        scope.KnotManager.tieKnot(target2, target1,  knot);
+        assert.equal(target1.value, "knot.js", "test readonly option");
+        assert.equal(target2.name, "knot.js", "test readonly option");
+        target2.name = "tom";
+        assert.equal(target1.value, "knot.js", "test readonly option");
+        assert.equal(target2.name, "tom", "test readonly option");
+
+        target1.value = "site";
+        assert.equal(target1.value, "site", "test readonly option");
+        assert.equal(target2.name, "site", "test readonly option");
+
+        knot = scope.OptionParser.parse("value = name")[0];
+        target1 = {value: "knot.js"};
+        target2 = {name: "alex"};
+        scope.KnotManager.tieKnot(target1, target2,  knot);
+        assert.equal(target1.value, "alex", "test readonly option");
+        assert.equal(target2.name, "alex", "test readonly option");
+        target2.name = "xxx";
+        assert.equal(target1.value, "alex", "test readonly option");
+        assert.equal(target2.name, "xxx", "test readonly option");
+
+        target1.value = "yyy";
+        assert.equal(target1.value, "yyy", "test readonly option");
+        assert.equal(target2.name, "xxx", "test readonly option");
+    });
     })(window);

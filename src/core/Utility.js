@@ -62,6 +62,10 @@
                     data= global;
                     path = path.substr(1);
                 }
+                else if(path[0] === "$"){
+                    data = __private.KnotVariants;
+                    path = path.substr(1);
+                }
                 while (path.indexOf(".") >= 0 && data) {
                     var p = __private.Utility.trim(path.substr(0, path.indexOf(".")));
                     if(p !== "*") {
@@ -97,6 +101,10 @@
             }
             if(path && path[0] === "/") {
                 data = global;
+                path = path.substr(1);
+            }
+            else if(path[0] === "$"){
+                data = __private.KnotVariants;
                 path = path.substr(1);
             }
 
@@ -169,7 +177,7 @@
             var res = [];
 
             var blockStack = [];
-
+            var splitterLength = splitter.length;
             while(pos < str.length) {
                 if(_blockStartMarks[str[pos]]){
                     blockStack.push(str[pos]);
@@ -181,9 +189,10 @@
                         blockStack.push(b);
                     }
                 }
-                else if(str[pos] === splitter && blockStack.length === 0){
+                else if(blockStack.length === 0 &&
+                       str[pos] === splitter[0] && str.substr(pos, splitterLength) === splitter){
                     res.push(str.substr(prev, pos-prev));
-                    prev = pos+1;
+                    prev = pos+splitterLength;
                 }
                 pos++;
             }

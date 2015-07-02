@@ -176,6 +176,7 @@
     //apply CBS to node. parse the CBS options as well as the in-html options and store the result
     //on node.__knot.options
     function applyCBSForNode(node) {
+
         var cbsOptions = null;
         if(node.__knot && node.__knot.cbsOptions) {
             cbsOptions = node.__knot.cbsOptions;
@@ -209,15 +210,30 @@
                 }
             }
         }
-
-        for(var i=0; i< node.children.length; i++) {
-            applyCBSForNode(node.children[i]);
+        if(node.children){
+            for(var i=0; i< node.children.length; i++) {
+                applyCBSForNode(node.children[i]);
+            }
         }
     }
 
     //use select to attach the CBS to the relevant nodes. the CBS is attached to node.__knot.cbsOption for further reference
+
+    function processCBSForGlobalObject(selector, cbs) {
+        if (!knotsOptionsForGlobalObjects[selector]) {
+            knotsOptionsForGlobalObjects[selector] = {options:[]};
+        }
+        for (var i = 0; i < cbs[selector].length; i++) {
+            knotsOptionsForGlobalObjects[selector].options = knotsOptionsForGlobalObjects[selector].options.concat(__private.OptionParser.parse(cbs[selector][i]));
+        }
+    }
+
     function attachCBS(scope, cbs) {
+        var i;
         for(var selector in cbs) {
+            if(__private.Utility.startsWith(selector, "/")){
+                processCBSForGlobalObject(selector, cbs);
+            }
             var elements;
             try
             {
@@ -230,7 +246,7 @@
             if(elements.length === 0) {
                 __private.Log.warning("There is no element selected with selector:" + selector);
             }
-            for(var i=0; i<elements.length; i++) {
+            for(i=0; i<elements.length; i++) {
                 var cbsOptions = cbs[selector].slice(0);
                 if(!elements[i].__knot) {
                     elements[i].__knot = {options: []};
@@ -273,7 +289,7 @@
                 __private.Log.warning("More than one child is found within '" + __private.HTMLAPHelper.getNodeDescription(node) + '", only the first will be taken as template and the reset will be removed.');
             }
             if(!templateNode) {
-                __private.Log.error("Can't find template within'" + __private.HTMLAPHelper.getNodeDescription(node) + "'");
+                __private.Log.error("Can't find template within '" + __private.HTMLAPHelper.getNodeDescription(node) + "'");
                 return;
             }
         }
@@ -297,6 +313,50 @@
             ap.options = {};
         }
         ap.options.template = templateNode.__knot_template_id;
+    }
+
+    var knotsOptionsForGlobalObjects = {};
+    function setupGlobalObjectKnots(){
+        var i;
+        for(var selector in knotsOptionsForGlobalObjects){
+            (function(){
+                var mySelector = selector;
+                knotsOptionsForGlobalObjects[mySelector].objectObserveCallback = function(path, oldData, newData){
+                    var options = knotsOptionsForGlobalObjects[mySelector].options;
+                    if(oldData){
+                        for(i=0; i<options.length; i++){
+                            __private.KnotManager.untieKnot(oldData, null, options[i]);
+                        }
+                    }
+                    for(i=0; i<options.length; i++){
+                        __private.KnotManager.tieKnot(newData, null, options[i]);
+                    }
+                };
+                __private.DataObserver.monitor(global, selector.substr(1), knotsOptionsForGlobalObjects[mySelector].objectObserveCallback);
+            })();
+            var v = __private.Utility.getValueOnPath(null, selector);
+            if(v){
+                var options = knotsOptionsForGlobalObjects[selector].options;
+                for(i=0; i<options.length; i++){
+                    __private.KnotManager.tieKnot(v, null, options[i]);
+                }
+            }
+        }
+    }
+    function clearGlobalObjectKnots(){
+        var i;
+        for(var selector in knotsOptionsForGlobalObjects){
+            if(knotsOptionsForGlobalObjects[selector].objectObserveCallback){
+                __private.DataObserver.stopMonitoring(global, selector.substr(1),  knotsOptionsForGlobalObjects[selector].objectObserveCallback);
+            }
+            var v = __private.Utility.getValueOnPath(null, selector);
+            if(v){
+                var options = knotsOptionsForGlobalObjects[selector].options;
+                for(i=0; i<options.length; i++){
+                    __private.KnotManager.untieKnot(v, null, options[i]);
+                }
+            }
+        }
     }
 
     //////////////////////////////////////////////////
@@ -468,9 +528,6 @@
                 }
                 if(typeof (templateFunction) === "function") {
                     newNode = templateFunction.apply(owner, [data]);
-                    if(!newNode) {
-                        __private.Log.error( "Template function must return a HTML element. template:"+template);
-                    }
                 }
                 else{
                     __private.Log.error( "Unknown template:"+template);
@@ -611,10 +668,12 @@
 
         //binding to body
         bind: function () {
+            setupGlobalObjectKnots();
             this.updateDataContext(document.body, null);
         },
 
         clear: function () {
+            clearGlobalObjectKnots();
             this.clearBinding(document.body);
         },
 

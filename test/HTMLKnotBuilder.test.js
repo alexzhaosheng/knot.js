@@ -317,7 +317,7 @@
         var templateDiv = global.KnotTestUtility.parseHTML('<div id="userTemplate" knot-template-id="userTemplateId"><span></span>.<span></span></div>');
         testDiv.appendChild(templateDiv);
 
-        var template2 = global.KnotTestUtility.parseHTML('<selec id="templateTest2"><option knot-template/></div>');
+        var template2 = global.KnotTestUtility.parseHTML('<select id="templateTest2"><option knot-template/></select>');
         testDiv.appendChild(template2);
 
         testDiv.appendChild(global.KnotTestUtility.parseHTML('<div><div id="selectedUser"></div><div id="userList"></div></div>'));
@@ -332,6 +332,7 @@
             '#templateTest2 option{value:name;text:name}'+
             '</script>');
         headNode.appendChild(scriptBlock);
+
 
         try{
             scope.HTMLKnotBuilder.parseCBS();
@@ -409,6 +410,7 @@
 
             global.templateTestData.selectedUser =null;
             assert.equal(selected.childNodes.length, 0, "change data binding by content");
+
 
             global.templateTestData.optionsList = [{name:"einstein"}, {name:"satoshi"}, {name:"laozi"}];
             assert.equal(template2.children.length, 3, "embedded template works");
@@ -647,6 +649,62 @@
     });
 
 
+    global.QUnit.test("private.HTMLKnotBuilder.Global Object Knots", function (assert) {
+        var testDiv =  global.KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
+            '/knotTestData{ name:/knotTestData2.value}'+
+            '#div1{dataContext:/knotTestData;} \r\n'+
+            '#userNameInput{value:name;} \r\n'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        var node =  global.KnotTestUtility.parseHTML(
+            '<div id="div1">' +
+                '<input type="text" id="userNameInput" />'+
+            '</div>');
+        testDiv.appendChild(node);
+
+        scope.HTMLKnotBuilder.parseCBS();
+        scope.HTMLKnotBuilder.applyCBS();
+        scope.HTMLKnotBuilder.processTemplateNodes();
+        scope.HTMLKnotBuilder.bind();
+
+        var input = node.querySelector("input");
+
+        global.knotTestData = {name:"alex"};
+        global.knotTestData2 = {value:"xyz"};
+        try{
+            assert.equal(global.knotTestData.name, "xyz", "Test bind to global object");
+            assert.equal(input.value, "xyz", "Test bind to global object");
+            input.value = "zzz";
+            KnotTestUtility.raiseDOMEvent(input, "change");
+            assert.equal(global.knotTestData.name, "zzz", "Test bind to global object");
+            assert.equal(input.value, "zzz", "Test bind to global object");
+            assert.equal(global.knotTestData2.value, "zzz", "Test bind to global object");
+
+            global.knotTestData2.value = "aaa";
+            assert.equal(global.knotTestData.name, "aaa", "Test bind to global object");
+            assert.equal(input.value, "aaa", "Test bind to global object");
+            assert.equal(global.knotTestData2.value, "aaa", "Test bind to global object");
+
+            scope.HTMLKnotBuilder.clear();
+            global.knotTestData2.value = "123";
+            assert.equal(global.knotTestData.name, "aaa", "Test clear binding on global object");
+            assert.equal(input.value, "aaa", "Test clear binding on global object");
+            assert.equal(global.knotTestData2.value, "123", "Test clear binding on global object");
+        }
+        finally{
+            scope.HTMLKnotBuilder.clear();
+            headNode.removeChild(scriptBlock);
+            bodyNode.removeChild(testDiv);
+            scope.HTMLKnotBuilder.publicCBS = {};
+            global.KnotTestUtility.clearAllKnotInfo(document.body);
+        }
+    });
+
+
     global.QUnit.asyncTest("private.HTMLKnotBuilder.Apply Private CBS From File", function (assert) {
         expect(4);
 
@@ -680,4 +738,6 @@
                 global.QUnit.start();
             });
     });
+
+
 })(window);

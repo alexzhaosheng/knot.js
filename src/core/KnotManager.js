@@ -114,6 +114,14 @@
         };
     }
 
+    function isReadOnly(ap){
+        if(ap.options && ap.options.readonly){
+            var v = ap.options.readonly.toLowerCase();
+            return (v === "1" || v === "true");
+        }
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // KnotManager
     ////////////////////////////////////////////////////////////////////////////
@@ -271,7 +279,7 @@
         //stop monitoring the change. It used to stop the data observation that started by "monitor"
         stopMonitoring: function (target, ap) {
             this.checkProvider(target, ap);
-            if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback) {
+            if(ap.changedCallback && ap.provider.doesSupportMonitoring(target, ap.description)) {
                 ap.provider.stopMonitoring(target, ap.description, ap.changedCallback, ap.options);
                 delete  ap.changedCallback;
             }
@@ -347,16 +355,34 @@
                 this.checkProvider(leftTarget,  leftAP);
                 this.checkProvider(rightTarget,  rightAP);
 
-                //set initial value, always use the left side value as initial value
-                var v = this.getValueThroughPipe(rightTarget,  rightAP);
-                if(v === this.objectToIndicateError) {
-                    return;
-                }
-                this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
-                this.safeSetValue(leftTarget, leftAP, v);
+                //set initial value
+                //if both sides are readonly, or leftSide is not read only, set left from right
+                //otherwise set right from left;
 
-                this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
-                this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
+                var v;
+                if(!isReadOnly(leftAP) || (isReadOnly(leftAP) && isReadOnly(rightAP))){
+                    //set initial value, always use the left side value as initial value
+                    v = this.getValueThroughPipe(rightTarget,  rightAP);
+                    if(v !== this.objectToIndicateError) {
+                        this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
+                        this.safeSetValue(leftTarget, leftAP, v);
+                    }
+                }
+                else{
+                    //set initial value, always use the left side value as initial value
+                    v = this.getValueThroughPipe(leftTarget,  leftAP);
+                    if(v !== this.objectToIndicateError) {
+                        this.notifyKnotChanged(rightTarget, leftTarget, knotInfo, v, false);
+                        this.safeSetValue(rightTarget, rightAP, v);
+                    }
+                }
+
+                if(!isReadOnly(rightAP)){
+                    this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
+                }
+                if(!isReadOnly(leftAP)){
+                    this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
+                }
             }
             __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },

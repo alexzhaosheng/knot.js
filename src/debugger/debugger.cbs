@@ -10,7 +10,7 @@ body{
         @click:@{this.showLogViewer = true;}
     };
     =>.page-headerArea>.header:last-child>span{
-        className:highestLogLevel
+        className: highestLogLevel
     };
 
     =>.page-headerArea>.header:first-child, .pageContent:first-child{
@@ -32,8 +32,8 @@ body{
     };
 
     =>.nodeTitle{
-        text: description;
-        class:noKnotSetting>{return value?"+emptyNode":"";}
+        text = description;
+        class: noKnotSetting>{return value?"+emptyNode":"";}
     };
 
     =>.highlightMark{
@@ -67,8 +67,8 @@ body{
 
 .knotList>li{
     =>.knotOption{
-        text:description;
-        title:description
+        text= description;
+        title= description
     };
 
     =>.knotValueDirection, .knotValue, .knotValueDetail{
@@ -90,7 +90,7 @@ body{
 
     =>.errorStatusIndicator{
         style.display:errorStatus>{return value?"inline-block":"none";};
-        title:errorStatus>{return value?"Error message: "+ value.message:"";};
+        title: errorStatus>{return value?"Error message: "+ value.message:"";};
     };
 }
 
@@ -100,25 +100,25 @@ body{
     foreach: knotChangeLog;
 
     =>.id{
-        text: id
+        text = id
     };
     =>.nodeTitle{
-        text: nodeDescription;
-        title: nodeDescription
+        text = nodeDescription;
+        title = nodeDescription
     };
     => .knotOption{
-        text: knotOption.description;
-        title: knotOption.description;
+        text = knotOption.description;
+        title = knotOption.description;
     };
     =>  .knotValueDirection{
-        class:isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
+        class = isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
     };
     => .knotValue{
-        text: value>{return JSON.stringify(value);};
-        title: value>{return JSON.stringify(value);};
+        text = value>{return JSON.stringify(value);};
+        title = value>{return JSON.stringify(value);};
     };
     => .knotValueDetail{
-        @click:@/debuggerModel.onShowKnotValueLogDetail
+        @click: @/debuggerModel.onShowKnotValueLogDetail
     };
 }
 
@@ -151,7 +151,7 @@ body{
 }
 
 .logTemplate{
-    style.backgroundColor: level>{
+    style.backgroundColor = level>{
         switch(value){
             case "Info":
                 return "transparent";
@@ -163,21 +163,21 @@ body{
     };
 
     => .level{
-        text:level
+        text = level
     };
 
     => .time{
-        text:time>{
+        text = time>{
             return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
                     " " + value.getMilliseconds();
         }
     };
 
     => .message{
-        text: message
+        text = message
     };
 
     => .exception{
-        text: exception>{return value.toString();}
+        text = exception>{return value.toString();}
     };
 }

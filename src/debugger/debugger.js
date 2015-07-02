@@ -271,6 +271,10 @@ Knot.js debugger
         if(node.hasAttribute("knot-debugger-ignore")) {
             return;
         }
+        //when node is svg, there's no children. we don't support bind to svg at current stage
+        if(!node.children){
+            return;
+        }
         var nodeInfo = {
             isExpanded:true,
             childrenInfo: []
@@ -284,7 +288,7 @@ Knot.js debugger
             }
         }
 
-        if(!node.__knot && nodeInfo.childrenInfo.length == 0) {
+        if(!node.__knot && nodeInfo.childrenInfo.length === 0) {
             return null;
         }
 

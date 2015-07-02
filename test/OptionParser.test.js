@@ -73,7 +73,6 @@
 
 
 
-
         //parse ap with options
         knot = scope.OptionParser.parse('value[@set:@global.onSet; @change: @global.onChange]:name')[0];
         assert.equal(knot.leftAP.description, "value", "parse ap with options");
@@ -86,5 +85,26 @@
         knot = scope.OptionParser.parse('value:#(.nameInputSection> input).value')[0];
         assert.equal(knot.leftAP.description, "value", "parse ap with css selector");
         assert.equal(knot.rightAP.description, "#(.nameInputSection> input).value", "parse ap with css selector");
+
+
+        knot = scope.OptionParser.parse('value => name')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options.readonly, "1", "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options, null, "parse ap with value direction");
+
+        knot = scope.OptionParser.parse('value <= name>@{return value+1;}')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options, null, "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options.readonly, 1, "parse ap with value direction");
+        assert.equal(knot.rightAP.pipes.length, 1, "parse ap with value direction");
+
+        knot = scope.OptionParser.parse('value = name>@{return value+1;}')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options.readonly, "1", "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options.readonly, 1, "parse ap with value direction");
+        assert.equal(knot.rightAP.pipes.length, 1, "parse ap with value direction");
     });
 })(window);
