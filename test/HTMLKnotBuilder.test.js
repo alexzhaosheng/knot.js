@@ -481,11 +481,11 @@
             assert.equal(list.childNodes.length, 4, "check the nodes created by template selector by foreach binding");
             assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by template selector. should be created from westernUserTemplate");
             assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by template selector. should be created from westernUserTemplate");
-            assert.equal(list.childNodes[0].childNodes[3].innerText, "west", "check the nodes created by template selector. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[0].childNodes[3].textContent, "west", "check the nodes created by template selector. should be created from westernUserTemplate");
 
             assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.firstName, "check the nodes created by template selector. should be created from easternUserTemplate");
             assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.lastName, "check the nodes created by template selector. should be created from easternUserTemplate");
-            assert.equal(list.childNodes[1].childNodes[3].innerText, "east asia", "check the nodes created by template selector. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[1].childNodes[3].textContent, "east asia", "check the nodes created by template selector. should be created from westernUserTemplate");
 
             assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.firstName,"check the nodes created by template selector. should be created from easternUserTemplate");
             assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.lastName, "check the nodes created by template selector. should be created from easternUserTemplate");
@@ -495,12 +495,12 @@
 
             assert.equal(selected.childNodes[0].childNodes[0].innerText, newton.firstName, "check the node created by template selector with content binding. should be created from westernUserTemplate");
             assert.equal(selected.childNodes[0].childNodes[2].innerText, newton.lastName, "check the node created by template selector with content binding.should be created from westernUserTemplate");
-            assert.equal(selected.childNodes[0].childNodes[3].innerText,"west", "check the node created by template selector with content binding.should be created from westernUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].textContent,"west", "check the node created by template selector with content binding.should be created from westernUserTemplate");
 
             global.templateTestData.selectedUser = laoZi;
             assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.firstName, "check the node created by template selector with content binding. should be created from easternUserTemplate");
             assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.lastName, "check the node created by template selector with content binding.should be created from easternUserTemplate");
-            assert.equal(selected.childNodes[0].childNodes[3].innerText, "east asia", "check the node created by template selector with content binding.should be created from easternUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].textContent, "east asia", "check the node created by template selector with content binding.should be created from easternUserTemplate");
 
 
             assert.equal(latestThisPointer, selected, "check this pointer in template selector");

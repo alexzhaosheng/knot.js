@@ -1,6 +1,9 @@
 
 /bookStoreModel{
-    selectedCategory: (window.hash.category & /bookStoreModel.categories) > { return }
+    selectedCategory
+        <= ($hash.category & /bookStoreModel.categories) > @/bookStoreModel.getCategory;
+    selectedBook
+        <= ($hash.book & /bookStoreModel.categories) > @/bookStoreModel.getBook;
 }
 
 
@@ -12,7 +15,10 @@ body{
 
     => >li{
         text: name;
-        @click: @{window.bookStoreModel.selectedCategory = this;};
+        @click: @{
+                Knot.setKnotVariant("$hash.category", this.id);
+                Knot.setKnotVariant("$hash.book", null);
+            };
         class: (/bookStoreModel.selectedCategory && *LEFT)>{return value[0]===value[1]?"+selected":"-selected";}
     }
 }
@@ -21,7 +27,7 @@ body{
     foreach: items;
 
     => >li{
-        @click:@{window.bookStoreModel.selectedBook = this;};
+        @click: @{Knot.setKnotVariant("$hash.book", this.id);};
 
         => img{
             src: cover
@@ -46,7 +52,7 @@ body{
     };
 
     => button{
-        @click: @{window.bookStoreModel.selectedBook = null;}
+        @click: @{Knot.setKnotVariant("$hash.book", null);};
     }
 }
 

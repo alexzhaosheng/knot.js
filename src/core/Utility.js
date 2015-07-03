@@ -185,7 +185,7 @@
                 else if(_blockEndMarks[str[pos]]){
                     var b = blockStack.pop();
                     if(_blockPairs[b] !== str[pos]){
-                        __private.log.warning("Unclosed block is detected.\r" + str);
+                        __private.Log.warning("Unclosed block is detected.\r" + str);
                         blockStack.push(b);
                     }
                 }
@@ -198,7 +198,7 @@
             }
 
             if(blockStack.length > 0){
-                __private.log.warning("Unclosed block is detected.\r" + str);
+                __private.Log.warning("Unclosed block is detected.\r" + str);
             }
 
             if(pos >= prev){

@@ -12,6 +12,17 @@
     min-width: 150px;
     cursor: pointer;
 }
+#navMenu li:last-child{
+    border-right: none;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#navMenu li:first-child{
+    border-right: none;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
 #navMenu li:hover{
     background-color: #e0e0ff;
 }
@@ -22,9 +33,6 @@
 }
 #navMenu .selected:hover{
     background-color: #0371ee;
-}
-#navMenu li:last-child{
-    border-right: none;
 }
 
 #booksList{
