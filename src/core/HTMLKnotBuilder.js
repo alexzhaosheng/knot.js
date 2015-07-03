@@ -233,6 +233,7 @@
         for(var selector in cbs) {
             if(__private.Utility.startsWith(selector, "/")){
                 processCBSForGlobalObject(selector, cbs);
+                continue;
             }
             var elements;
             try
@@ -511,13 +512,13 @@
 
 
         // static template is defined in HTML and must has existed in this.tempaltes
-        isDynamicTemplate: function (templateId) {
-            return !this.templates[templateId];
+        isDynamicTemplate: function (template) {
+            return (typeof(template) === "function") || !this.templates[template];
         },
 
         //create a node from template. Note it only create the HTML node, it may not bind the data to the node
         createFromTemplate: function (template, data, owner) {
-            if((typeof(template) === "function") || !this.templates[template]) {
+            if(this.isDynamicTemplate(template)) {
                 var newNode;
                 var templateFunction;
                 if(typeof(template) === "function") {

@@ -1,3 +1,8 @@
+/*
+     This provides the ability of binding to window.location.hash
+     It store the status of hash into a knot global variant named "$hash". First it stores the original hash into $hash.originalHash,
+     then if there's hash format specified by user, it the status according to the hash format
+* */
 (function (window) {
     "use strict";
     var __private = window.Knot.getPrivateScope();
@@ -36,7 +41,7 @@
                     value = values.join(_fieldSplitter);
                 }
                 window.location.hash = "#" + value;
-                __private.Utility.setValueOnPath(null, "$hash.hash", value);
+                __private.Utility.setValueOnPath(null, "$hash.originalHash", value);
             }
         }
         finally{
@@ -45,7 +50,7 @@
     }
 
 
-    function updateHashVariant(){
+    function updateHashStatus(){
         if(_isInUpdateHash){
             return;
         }
@@ -57,11 +62,8 @@
                 for(var i=0; i<_hashFields.length; i++){
                     __private.Utility.setValueOnPath(null, "$hash."+_hashFields[i], fields[i]);
                 }
-                __private.Utility.setValueOnPath(null, "$hash.hash", hash);
             }
-            else{
-                __private.Utility.setValueOnPath(null, "$hash.hash", hash);
-            }
+            __private.Utility.setValueOnPath(null, "$hash.originalHash", hash);
         }
         finally{
             _isInUpdateHash = false;
@@ -71,9 +73,12 @@
     __private.Utility.setValueOnPath(null, "$hash", {});
     var _hashObj = __private.Utility.getValueOnPath(null, "$hash");
 
-    updateHashVariant();
+    updateHashStatus();
 
     __private.WindowHashStatus = {
+        //set the hash format. it'll parse the hash into different status according to the hash format
+        //fields: array of the names of the statuses in hash
+        //splitter: the splitter to divide the statuses in hash
         setHashFormat: function(fields, splitter){
             if(!(fields instanceof  Array)){
                 throw new Error("Hash fields must be an array.");
@@ -85,6 +90,7 @@
                 throw new Error("Please specify the splitter.");
             }
             var i;
+            //remove the monitoring to the old statuses
             if(_hashFields){
                 for(i=0; i< _hashFields.length; i++){
                     __private.DataObserver.stopMonitoring(_hashObj, _hashFields[i], updateHash);
@@ -93,22 +99,23 @@
             _hashFields = fields;
             _fieldSplitter = splitter;
 
+            //monitoring to the statuses
             if(_hashFields){
                 for(i=0; i< _hashFields.length; i++){
                     __private.DataObserver.monitor(_hashObj, _hashFields[i], updateHash);
                 }
             }
-            updateHashVariant();
+            updateHashStatus();
         }
     };
 
-    __private.DataObserver.monitor(_hashObj, "hash", function(){
+    __private.DataObserver.monitor(_hashObj, "originalHash", function(){
         updateHash();
-        updateHashVariant();
+        updateHashStatus();
     });
 
     window.addEventListener("hashchange", function(){
-        updateHashVariant();
+        updateHashStatus();
     });
 
 })(window);

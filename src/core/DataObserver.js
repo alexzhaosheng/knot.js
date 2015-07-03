@@ -156,6 +156,10 @@
             attached.dataHookInfo.data[property] = object[property];
             attached.dataHookInfo.hookRefCount[property] = 1;
 
+            //ignore array.length. it isn't over-writable and it's change event will be fired by the hooked array methods
+            if((object instanceof  Array) && property === "length"){
+                return;
+            }
             //define a new property to overwrite the current one
             try{
                 Object.defineProperty(object, property, {

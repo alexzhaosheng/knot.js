@@ -112,13 +112,20 @@
         }
     };
 
+    //set the hash format. it'll parse the hash into different status according to the hash format
+    //statuses: array of the names of the statuses in hash
+    //splitter: the splitter to divide the statuses in hash
+    global.Knot.setHashFormat = function(statuses, splitter){
+        __private.WindowHashStatus.setHashFormat(statuses, splitter);
+    };
+
     //////////////////////////////////////////////
     //automatically initialize when loading
     //////////////////////////////////////////////
-    var _onReadyCallback;
+    var _onReadyCallbacks = [];
     var _initError;
     global.Knot.ready = function (callback) {
-        _onReadyCallback = callback;
+        _onReadyCallbacks.push(callback);
 
         if(global.Knot.isReady || _initError) {
             notifyInitOver();
@@ -126,15 +133,22 @@
     };
 
     function notifyInitOver() {
-        if(!_onReadyCallback) {
-            return;
+        var i;
+
+        for(i=0; i< _onReadyCallbacks.length; i++){
+            try{
+                if(_initError) {
+                    _onReadyCallbacks[i](false, _initError);
+                }
+                else{
+                    _onReadyCallbacks[i](true);
+                }
+            }
+            catch (e){
+                __private.Log.warning("Execute on ready callback failed.", e);
+            }
         }
-        if(_initError) {
-            _onReadyCallback(false, _initError);
-        }
-        else if(global.Knot.isReady) {
-            _onReadyCallback(true);
-        }
+        _onReadyCallbacks.length = 0;
     }
 
     global.Knot.isReady = false;

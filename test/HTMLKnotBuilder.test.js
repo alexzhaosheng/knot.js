@@ -689,10 +689,16 @@
             assert.equal(input.value, "aaa", "Test bind to global object");
             assert.equal(global.knotTestData2.value, "aaa", "Test bind to global object");
 
+
+            global.knotTestData2 = {value : "xxx"};
+            assert.equal(global.knotTestData.name, "xxx", "Test bind to global object");
+            assert.equal(input.value, "xxx", "Test bind to global object");
+            assert.equal(global.knotTestData2.value, "xxx", "Test bind to global object");
+
             scope.HTMLKnotBuilder.clear();
             global.knotTestData2.value = "123";
-            assert.equal(global.knotTestData.name, "aaa", "Test clear binding on global object");
-            assert.equal(input.value, "aaa", "Test clear binding on global object");
+            assert.equal(global.knotTestData.name, "xxx", "Test clear binding on global object");
+            assert.equal(input.value, "xxx", "Test clear binding on global object");
             assert.equal(global.knotTestData2.value, "123", "Test clear binding on global object");
         }
         finally{
