@@ -181,7 +181,8 @@
         }
     }
 
-
+    //it create the the elements from template and add them to node's children collection
+    //and synchronize the elements in node's children and array
     function syncItems(node, values, template, onItemCreated, onItemRemoved) {
         //take null values as empty array.
         if (!values) {
@@ -218,58 +219,60 @@
         }
     }
 
-    //it create the the elements from template and add them to node's children collection
-    //and synchronize the elements in node's children and array
-    function syncItemsx(node, values, template, onItemCreated, onItemRemoved) {
-        //take null values as empty array.
-        if (!values) {
-            values = [];
-        }
-        var removedChildren = Array.prototype.slice.apply(node.children, [0]);
-        var newChildren = [];
-        var i;
 
-        for(i=0; i<values.length; i++){
-            newChildren[i] = findChildByDataContext(node, values[i], i);
-            if (newChildren[i]) {
-                removedChildren.splice(removedChildren.indexOf(newChildren[i]), 1);
-            }
-        }
-        for(i=0; i<removedChildren.length; i++){
-            removeNodeCreatedFromTemplate(removedChildren[i]);
-            if(onItemRemoved) {
-                onItemRemoved.apply(node, [removedChildren[i]]);
-            }
-        }
-
-        for(i=0; i<values.length; i++){
-            if(newChildren[i]){
-                if(Array.prototype.indexOf.call(node.children, newChildren[i]) !== i){
-                    node.removeChild(newChildren[i]);
-                    addChildTo(node, newChildren[i], i);
-                }
-            }
-            else{
-                var newNode;
-                if(removedChildren.length > 0 && !__private.HTMLKnotBuilder.isDynamicTemplate(template)){
-                    newNode = removedChildren.pop();
-                }
-                else{
-                    newNode = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
-                }
-                if(newNode){
-                    addChildTo(node, newNode, i);
-                    if(!__private.HTMLKnotBuilder.hasDataContext(newNode)) {
-                        __private.HTMLKnotBuilder.setDataContext(newNode, values[i]);
-                    }
-                    __private.Debugger.nodeAdded(newNode);
-                    if(onItemCreated) {
-                        onItemCreated.apply(node, [newNode, values[i]]);
-                    }
-                }
-            }
-        }
-    }
+//      this is a failed attempt to improve the performance of foreach binding. It tries to reuse the
+//      HTMLElement to improve performance. The result is slower.I think might because of too much "indexOf"?
+//
+//    function syncItemsx(node, values, template, onItemCreated, onItemRemoved) {
+//        //take null values as empty array.
+//        if (!values) {
+//            values = [];
+//        }
+//        var removedChildren = Array.prototype.slice.apply(node.children, [0]);
+//        var newChildren = [];
+//        var i;
+//
+//        for(i=0; i<values.length; i++){
+//            newChildren[i] = findChildByDataContext(node, values[i], i);
+//            if (newChildren[i]) {
+//                removedChildren.splice(removedChildren.indexOf(newChildren[i]), 1);
+//            }
+//        }
+//        for(i=0; i<removedChildren.length; i++){
+//            removeNodeCreatedFromTemplate(removedChildren[i]);
+//            if(onItemRemoved) {
+//                onItemRemoved.apply(node, [removedChildren[i]]);
+//            }
+//        }
+//
+//        for(i=0; i<values.length; i++){
+//            if(newChildren[i]){
+//                if(Array.prototype.indexOf.call(node.children, newChildren[i]) !== i){
+//                    node.removeChild(newChildren[i]);
+//                    addChildTo(node, newChildren[i], i);
+//                }
+//            }
+//            else{
+//                var newNode;
+//                if(removedChildren.length > 0 && !__private.HTMLKnotBuilder.isDynamicTemplate(template)){
+//                    newNode = removedChildren.pop();
+//                }
+//                else{
+//                    newNode = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
+//                }
+//                if(newNode){
+//                    addChildTo(node, newNode, i);
+//                    if(!__private.HTMLKnotBuilder.hasDataContext(newNode)) {
+//                        __private.HTMLKnotBuilder.setDataContext(newNode, values[i]);
+//                    }
+//                    __private.Debugger.nodeAdded(newNode);
+//                    if(onItemCreated) {
+//                        onItemCreated.apply(node, [newNode, values[i]]);
+//                    }
+//                }
+//            }
+//        }
+//    }
 
     //set "foreach" Access Point for the html node
     function setForeach(node, values, options) {

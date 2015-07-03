@@ -1,0 +1,150 @@
+<!doctype html>
+<html>
+<head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+
+
+
+    <script src="../../src/core/PrivateScope.js"></script>
+    <script src="../../src/core/Utility.js"></script>
+    <script src="../../src/core/Deferred.js"></script>
+    <script src="../../src/core/AttachedData.js"></script>
+    <script src="../../src/core/DataObserver.js"></script>
+    <script src="../../src/core/ArrayMonitor.js"></script>
+    <script src="../../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../../src/core/OptionParser.js"></script>
+    <script src="../../src/core/KnotManager.js"></script>
+    <script src="../../src/core/HTMLAPProvider.js"></script>
+    <script src="../../src/core/HTMLKnotBuilder.js"></script>
+    <script src="../../src/core/AddonHTMLAPProvider.js"></script>
+    <script src="../../src/core/WindowHashStatus.js"></script>
+    <script src="../../src/core/KnotInterface.js"></script>
+
+    <!--<script src="../../src/debugger/knot.debug.js"></script>-->
+
+
+
+    <script type="text/cbs">
+        #times{
+            value: $hash.times>{return value?Number(value):1000;}
+        }
+        button{
+            style.display: $hash.action > {return value?"none":"inline-block";}
+        }
+
+        #runningMessage{
+            style.display: $hash.action>{return value?"inline-block":"none";}
+        }
+
+        #knotList{
+            foreach: /knotModel.dataList;
+
+            => span:first-child{
+                text = id;
+            };
+            => span:last-child{
+                text = value;
+            };
+        }
+    </script>
+
+    <script>
+        //refresh page before executing test to get better result.
+        //use hash to keep the status.
+
+        var _initialAction;
+        Knot.setHashFormat(["times", "action"], "/");
+
+        window.knotModel={};
+
+        function generateData(){
+            var res=  [];
+            for(var i=0; i<$("#times").val(); i++){
+                res.push({id:i, value: Math.floor(Math.random()*10000)});
+            }
+            return res;
+        }
+
+        function clear(){
+            window.knotModel.dataList = null;
+            $("#jqueryList").empty();
+        }
+
+        function run(runKnot){
+            $("#runningMessage").text("");
+            Knot.setKnotVariant("$hash.action", runKnot?"test_knotjs":"test_jquery");
+            window.location.reload();
+        }
+
+        function changeValue(){
+            var start = window.performance.now();
+            if(_initialAction == "test_knotjs"){
+                var arr = window.knotModel.dataList;
+                for(var i=0; i<arr.length; i++){
+                    arr[i].value = Math.floor(Math.random()*10000);
+                }
+            }
+            else{
+                $("#jqueryList").children()
+                        .each(function(i, t){
+                            $(t).children().eq(1).text(Math.floor(Math.random()*10000));
+                        });
+            }
+
+            $("#timeCosts").text("Time costs:" + (window.performance.now()-start));
+        }
+
+        Knot.ready(function(){
+            _initialAction = Knot.getKnotVariant("$hash.action");
+            if(_initialAction){
+                $("#runningMessage").text("wait...");
+                var v = generateData();
+                setTimeout(function(){
+                    $("#runningMessage").text("running...");
+                    var start = window.performance.now();
+
+                    if(_initialAction == "test_knotjs"){
+                        window.knotModel.dataList = v;
+                    }
+                    else{
+                        for(var i=0; i< v.length; i++){
+                            var n = $('<div><span></span>: <span></span></div>').appendTo("#jqueryList");
+                            n.children().eq(0).text(v[i].id);
+                            n.children().eq(1).text(v[i].value);
+                        }
+                    }
+
+                    $("#changeValueButton").text(_initialAction==="test_knotjs"?"test set value with knot.js": "test set value with jquery" );
+                    $("#timeCosts").text("Time costs:" + (window.performance.now()-start));
+                    Knot.setKnotVariant("$hash.action", null);
+                }, 1000);
+            }
+            else{
+                $("#changeValueButton").hide();
+            }
+        });
+    </script>
+</head>
+<body>
+
+<div>
+    <label>The number of list item:</label> <input id="times" type="number" value="1000">
+    <p>
+        <button onclick="run(true)">Run knot.js</button>
+        <button  onclick="run(false)">Run jquery</button>
+        <p>
+        <span id="runningMessage">Running test ...</span> <span id="timeCosts"></span>
+        </p>
+        <p>
+            <button id="changeValueButton" onclick="changeValue();">change value</button>
+        </p>
+    </p>
+</div>
+
+<div class="list" id="knotList">
+    <div knot-template><span></span>: <span></span></div>
+</div>
+<div class="list" id="jqueryList"></div>
+</body>
+</html>

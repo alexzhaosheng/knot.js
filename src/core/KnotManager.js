@@ -461,6 +461,10 @@
                 target = global;
                 apName = apName.substr(1);
             }
+            if(apName && apName[0] === "$") {
+                target = __private.KnotVariants;
+                apName = apName.substr(1);
+            }
             if(target) {
                 __private.DataObserver.monitor(target, apName, callback);
             }
@@ -468,6 +472,10 @@
         stopMonitoring: function (target, apName, callback, options) {
             if(apName && apName[0] === "/") {
                 target = global;
+                apName = apName.substr(1);
+            }
+            if(apName && apName[0] === "$") {
+                target = __private.KnotVariants;
                 apName = apName.substr(1);
             }
             if(target) {

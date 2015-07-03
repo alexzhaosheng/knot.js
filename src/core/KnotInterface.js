@@ -119,6 +119,13 @@
         __private.WindowHashStatus.setHashFormat(statuses, splitter);
     };
 
+    global.Knot.getKnotVariant = function(name){
+        return __private.Utility.getValueOnPath(null, name);
+    };
+    global.Knot.setKnotVariant = function(name, value){
+        return __private.Utility.setValueOnPath(null, name, value);
+    };
+
     //////////////////////////////////////////////
     //automatically initialize when loading
     //////////////////////////////////////////////
