@@ -161,11 +161,8 @@
     global.Knot.isReady = false;
 
     global.addEventListener("load", function () {
-        var deferred =__private.HTMLKnotBuilder.parseCBS();
-
+        var deferred =__private.CBSLoader.loadGlobalScope();
         deferred.done(function () {
-            __private.HTMLKnotBuilder.applyCBS();
-            __private.HTMLKnotBuilder.processTemplateNodes();
             __private.HTMLKnotBuilder.bind();
             global.Knot.isReady = true;
             _initError = null;

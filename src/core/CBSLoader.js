@@ -365,7 +365,9 @@
     //CBS file handling
     /////////////////////////////////
 
+    var _loadedCBSFiles = [];
     function loadFile(file){
+        _loadedCBSFiles.push(file);
         var deferred = new __private.Deferred();
         var hr = __private.Utility.getXHRS();
         hr.onreadystatechange = function () {
@@ -390,26 +392,34 @@
         var cbsTexts = [];
         var numberOfScriptToLoad = 0;
 
+        var checkIsDone = function(){
+            if(numberOfScriptToLoad === 0) {
+                try{
+                    deferred.resolve(cbsTexts);
+                }
+                catch (err) {
+                    __private.Log.error( "Initialize failed.  message:" + err.message, err);
+                }
+            }
+        };
         for(var i =0; i< blocks.length; i++) {
             if(blocks[i].src) {
+                //only load CBS file once
+                if(_loadedCBSFiles.indexOf(blocks[i].src) >= 0){
+                    continue;
+                }
                 numberOfScriptToLoad ++;
                 (function(){
                     var file = blocks[i].src;
                     loadFile(file).done(function(text){
                             cbsTexts.push(text);
                             numberOfScriptToLoad--;
-                            if(numberOfScriptToLoad === 0) {
-                                try{
-                                    deferred.resolve(cbsTexts);
-                                }
-                                catch (err) {
-                                    __private.Log.error( "Initialize failed.  message:" + err.message, err);
-                                }
-                            }
+                            checkIsDone();
                         },
                         function(err){
                             numberOfScriptToLoad--;
                             __private.Log.error( "Load CBS script error. url:" + file , err);
+                            checkIsDone(err);
                         });
                 })();
             }
@@ -424,25 +434,59 @@
     }
 
     __private.CBSLoader = {
-         loadGlobalScope: function(){
-             var deferred = new __private.Deferred();
-             parseCBSInDocument()
-                 .done(function(texts){
-                     try{
+        //parse all of the CBS in document
+        loadGlobalScope: function(){
+            var deferred = new __private.Deferred();
+            parseCBSInDocument()
+                .done(function(texts){
+                    try{
                         var scopes = getScopes(texts, false);
-                         applyCBS(scopes);
-                         processTemplateNodes(scopes);
-                     }
-                     catch (err){
-                         __private.Log.error( "Initialize failed.  message:" + err.message, err);
-                         deferred.reject(err);
-                     }
-                 },
-                 function(err){
+                        applyCBS(scopes);
+                        processTemplateNodes(scopes);
+                        deferred.resolve();
+                    }
+                    catch (err){
+                        __private.Log.error( "Initialize failed.  message:" + err.message, err);
+                        deferred.reject(err);
+                    }
+                },
+                function(err){
                     deferred.reject(err);
-                 });
-             return deferred;
-         }
+                });
+            return deferred;
+        },
+
+        loadCBSPackage: function(packageFile){
+            var deferred = new __private.Deferred();
+            if(_loadedCBSFiles.indexOf(packageFile) >= 0){
+                deferred.resolve();
+            }
+            else{
+                loadFile(packageFile).done(function(texts){
+                        try{
+                            var scopes = getScopes([texts], true);
+                            applyCBS(scopes);
+                            processTemplateNodes(scopes);
+                        }
+                        catch (err){
+                            __private.Log.error( "Parse CBS package failed. package file:" + packageFile, err);
+                            deferred.reject(err);
+                        }
+
+                        deferred.resolve();
+                },
+                function(err){deferred.reject(err);});
+            }
+            return deferred;
+        },
+
+        //this is for unit test. just expose some internal functions
+        test:{
+            parseCBSInDocument: parseCBSInDocument,
+            getScopes: getScopes,
+            applyCBS: applyCBS,
+            processTemplateNodes: processTemplateNodes
+        }
     };
 
 })(window);
