@@ -180,7 +180,7 @@
             catch (err) {
                 attached.dataHookInfo.hookFailed = true;
                 //when trying to hook the global variable from "window" object, it just fail
-                __private.Log.warning( "Hook property failed.", err);
+                __private.Log.warning( "Hook property failed. property:" + property , err);
             }
         },
 

@@ -3,6 +3,9 @@ Knot.js debugger
  */
 (function (global) {
     "use strict";
+
+    var MAX_KNOT_LOG_NUMBER = 100;
+
     var _isFilterEnabled = false;
 
     //this is the red rectangle to indicate the element in opener window
@@ -341,8 +344,8 @@ Knot.js debugger
                 global.debuggerModel.highestLogLevel = log.level;
             }
             global.debuggerModel.logs.unshift(log);
-            //only keep the latest 200 logs
-            if(global.debuggerModel.logs.length > 200){
+
+            if(global.debuggerModel.logs.length > MAX_KNOT_LOG_NUMBER){
                 global.debuggerModel.logs.pop();
             }
         },
@@ -378,7 +381,7 @@ Knot.js debugger
                             value:latestValue,
                             isFromLeftToRight:isFromLeftToRight
                         });
-                        if(global.debuggerModel.knotChangeLog.length > 200) {
+                        if(global.debuggerModel.knotChangeLog.length > MAX_KNOT_LOG_NUMBER) {
                             global.debuggerModel.knotChangeLog.pop();
                         }
                         return;
