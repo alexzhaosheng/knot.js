@@ -24,5 +24,4 @@ $private
 }
 .knot-example-tabPage .page-contentArea>div{
     style.display: isSelected>{return value?"block":"none"};
-    content[template:@__knot_global.createKnotExampleTabPageContent]: data;
 }

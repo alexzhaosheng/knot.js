@@ -169,13 +169,14 @@
         },
         //set data context for the node and it's offspring
         setDataContext: function (node, data) {
-            this.updateDataContext(node, data);
+            this.updateDataContext(node, data, true);
             if(!node.__knot) {
                 node.__knot = {dataContext: data};
             }
             else {
                 node.__knot.dataContext = data;
             }
+            node.__knot.isFixedDataContext = true;
         },
 
         //untie all knots for the node
@@ -205,7 +206,7 @@
         },
 
         //update the data context of the node and all of it's offspring
-        updateDataContext: function (node, data) {
+        updateDataContext: function (node, data, forceUpdate) {
             if(!(node instanceof HTMLElement || node instanceof  HTMLBodyElement)){
                 return;
             }
@@ -215,6 +216,9 @@
             }
 
             if(node.__knot) {
+                if(!forceUpdate && node.__knot.isFixedDataContext){
+                    return;
+                }
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 var contextData = data;
 
@@ -293,6 +297,9 @@
                 delete node.__knot.dataContext;
             }
             if(node.__knot_component){
+                if(node.__knot_component.dispose){
+                    node.__knot_component.dispose();
+                }
                 delete node.__knot_component;
             }
             for(var i=0; i<node.childNodes.length; i++) {
@@ -306,9 +313,11 @@
             this.updateDataContext(document.body, null);
         },
 
-        clear: function () {
-            clearGlobalObjectKnots();
-            this.clearBinding(document.body);
+        clear: function (node) {
+            if(!node){
+                clearGlobalObjectKnots();
+            }
+            this.clearBinding(node || document.body);
         },
 
         //set the data context on node without updating anything

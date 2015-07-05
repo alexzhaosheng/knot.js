@@ -46,6 +46,11 @@
                 return rootData;
             }
 
+            //if path is quoted, it is const value. simply remove the quote and return  the content
+            if(path[0] === "\"" && path[path.length-1] === "\""){
+                return path.substr(1, path.length-2);
+            }
+
             var isFunction = false;
             if(path[0] === "@") {
                 isFunction = true;

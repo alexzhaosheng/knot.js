@@ -353,12 +353,12 @@ Knot.js debugger
             helper:{
                 setIsTiedUp: function (leftTarget,  knotOption, isTiedUp) {
                     var info = getNodeInfo(leftTarget);
-                    if(!info) {
+                    if(!info || !info.options) {
                         return;
                     }
 
                     for(var i=0; i<info.options.length; i++) {
-                        if(info.options[i].knotOption == knotOption) {
+                        if(info.options[i].knotOption === knotOption) {
                             this.options[i].isTiedUp = isTiedUp;
                             return;
                         }
@@ -368,7 +368,7 @@ Knot.js debugger
 
             knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
                 var info = getNodeInfo(leftTarget);
-                if(!info) {
+                if(!info || !info.options) {
                     return;
                 }
                 for(var i=0; i<info.options.length; i++) {

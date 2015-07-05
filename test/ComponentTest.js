@@ -30,6 +30,14 @@
     p.stopMonitoring = function (apDescription, callback, options) {
         this.callbacks[apDescription].splice( this.callbacks[apDescription].indexOf(callback), 1);
     };
+    p.dispose = function(){
+        this.data = null;
+    };
+    p.notifyChanged = function(property){
+        for(var i=0; i< this.callbacks[property].length; i++){
+            this.callbacks[property][i]();
+        }
+    };
 
     global.QUnit.test( "private.Components", function ( assert ) {
         var testDiv =  global.KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
@@ -62,6 +70,16 @@
             assert.equal(latestComponentName, "TestComponent", "Component is initialized.");
             assert.notEqual(cpObj, null, "Component is initialized.");
             assert.equal(cpObj.data.tags, "knotjs,javascript", "Component is initialized.");
+
+            window.testModel.tags += ",xyz";
+            assert.equal(cpObj.data.tags, "knotjs,javascript,xyz", "Component is updated by binding.");
+
+            cpObj.data.tags =  "knotjs,xyz";
+            cpObj.notifyChanged("tags");
+            assert.equal(window.testModel.tags, "knotjs,xyz", "Component update binding correctly");
+
+            scope.HTMLKnotBuilder.clear();
+            assert.equal(cpObj.data, null, "dispose component");
         }
         finally {
             scope.HTMLKnotBuilder.clear();

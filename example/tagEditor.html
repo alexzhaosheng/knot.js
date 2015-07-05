@@ -11,7 +11,7 @@
     <script src="js/highlight.pack"></script>
 
     <link rel="stylesheet" href="styles/tabpage.css">
-    <script type="text/cbs" src="cbs/tabpage.cbs"></script>
+    <script type="text/cbs" src="cbs/tabpage.pkg.cbs"></script>
     <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
 
     <script src="../src/core/PrivateScope.js"></script>
@@ -27,6 +27,7 @@
     <script src="../src/core/HTMLAPProvider.js"></script>
     <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/ComponentAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
 
     <!--<script src="../release/knot.all.min.js"></script>-->
@@ -53,10 +54,12 @@
     /* knot-example-tagEditor is the Access Point name for tagEditor component in this example  */
 
     #editor1{
-        knot-example-tagEditor:/tags;
+        tags:/tags;
     }
+
     #editor2{
-        knot-example-tagEditor[color:#228822]:/tags;
+        tagColor:"darkblue";
+        tags:/tags;
     }
     #currentTags{
         text:/tags
@@ -78,9 +81,9 @@
     </div>
 
 
-    <div id="editor1"></div>
+    <div id="editor1" knot-component="TagEditor"></div>
 
-    <div id="editor2"></div>
+    <div id="editor2" knot-component="TagEditor"></div>
 
 </div>
 

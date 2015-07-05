@@ -169,7 +169,7 @@
                     }
                 }
                 else{
-                    __private.HTMLKnotBuilder.updateDataContext(currentContent, value);
+                    __private.HTMLKnotBuilder.setDataContext(currentContent, value);
                 }
                 if(currentContent) {
                     if(!currentContent.__knot) {

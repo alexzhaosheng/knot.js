@@ -54,7 +54,11 @@
         },
 
         registerComponent: function(name, factory){
-            return __private.KnotManager.registerComponent(name, factory);
+            return __private.HTMLKnotBuilder.registerComponent(name, factory);
+        },
+
+        getComponentObject: function(node){
+            return __private.HTMLKnotBuilder.getComponentObject(node);
         }
     };
 
@@ -97,8 +101,8 @@
 
 
     //clear all of the knots
-    global.Knot.clear = function () {
-        __private.HTMLKnotBuilder.clear();
+    global.Knot.clear = function (node) {
+        __private.HTMLKnotBuilder.clear(node);
     };
 
     //get the current data context of the element

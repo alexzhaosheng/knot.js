@@ -1,0 +1,94 @@
+<!doctype html>
+<html>
+<head>
+    <link rel="stylesheet" href="styles/example.css">
+
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="./styles/github.css">
+    <script src="js/highlight.pack"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css">
+    <script type="text/cbs" src="cbs/tabpage.pkg.cbs" class="exampleCBS"></script>
+    <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
+
+    <script src="../src/core/PrivateScope.js"></script>
+    <script src="../src/core/Utility.js"></script>
+    <script src="../src/core/Deferred.js"></script>
+    <script src="../src/core/AttachedData.js"></script>
+    <script src="../src/core/DataObserver.js"></script>
+    <script src="../src/core/ArrayMonitor.js"></script>
+    <script src="../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../src/core/OptionParser.js"></script>
+    <script src="../src/core/KnotManager.js"></script>
+    <script src="../src/core/CBSLoader.js"></script>
+    <script src="../src/core/HTMLAPProvider.js"></script>
+    <script src="../src/core/HTMLKnotBuilder.js"></script>
+    <script src="../src/core/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/ComponentAPProvider.js"></script>
+    <script src="../src/core/KnotInterface.js"></script>
+
+    <script src="../src/debugger/knot.debug.js"></script>
+
+    <style>
+        .pageContent{
+            width: 300px;
+            height: 200px;
+        }
+        #red{
+            background-color: red;
+        }
+        #yellow{
+            background-color: yellow;
+        }
+        #blue{
+            background-color: blue;
+        }
+
+        .example {
+            margin: 3px 10px;
+            display:  inline-block;
+        }
+    </style>
+
+    <script type="text/cbs">
+        #tabpage2{
+            pages[template:page2Content; header:title]: /colorPages
+        }
+        #page2ContentTemplate{
+            style.backgroundColor:color
+        }
+    </script>
+    <script>
+        window.colorPages = [{title:"Brown", color:"brown"}, {title:"Green", color:"green"}, {title:"Gold", color:"gold"}]
+    </script>
+</head>
+<body>
+
+<div class="knot_example">
+    <h2>Knot.js example - tab page</h2>
+
+    <div class="example">
+        <p>This is created from html:</p>
+        <div knot-component="TabPage" id="tabpage">
+            <div id="red" class="pageContent" pageTitle="Red">
+            </div>
+            <div id="yellow" class="pageContent" pageTitle="Yellow">
+            </div>
+            <div id="blue" class="pageContent" pageTitle="Blue">
+            </div>
+        </div>
+    </div>
+
+    <div class="example">
+        <p>This is created from data:</p>
+        <div knot-component="TabPage" id="tabpage2"></div>
+        <div id="page2ContentTemplate" knot-template-id="page2Content" class="pageContent"></div>
+    </div>
+</div>
+
+<script src="js/tabpage.js"></script>
+<script type="text/javascript" src="js/sourceTab.js"></script>
+
+</body>
+</html>
