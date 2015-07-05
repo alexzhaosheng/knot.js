@@ -31,6 +31,8 @@
     var _APProviders = [];
     //This array holds the reference to the registered Access Pointer Provider for error status.
     var _errorAPProvider = [];
+    //The provider that must stay on top
+    var _topAPProviders = [];
 
     //raise an Access Point event. the Access Point Events are used to get notification when Access Point's status is changed
     //it is raised by using "target" object as "this" pointer
@@ -153,7 +155,7 @@
 
             return null;
         },
-        registerAPProvider: function (apProvider, isErrorAP) {
+        registerAPProvider: function (apProvider, isErrorAP, staysTop) {
             if(isErrorAP) {
                 if(_errorAPProvider.indexOf(apProvider) < 0) {
                     _errorAPProvider.push(apProvider);
@@ -162,6 +164,13 @@
             else{
                 if(_APProviders.indexOf(apProvider) < 0) {
                     _APProviders.push(apProvider);
+                }
+                if(staysTop){
+                    _topAPProviders.push(apProvider);
+                }
+                for(var i=0; i<_topAPProviders.length;i++){
+                    _APProviders.splice(_APProviders.indexOf(_topAPProviders[i]), 1);
+                    _APProviders.push(_topAPProviders[i]);
                 }
             }
         },
@@ -174,6 +183,9 @@
             else{
                 if(_APProviders.indexOf(apProvider) >=0) {
                     _APProviders.splice(_APProviders.indexOf(apProvider), 1);
+                }
+                if(_topAPProviders.indexOf(apProvider)){
+                    _topAPProviders.splice(_topAPProviders.indexOf(apProvider), 1);
                 }
             }
         },

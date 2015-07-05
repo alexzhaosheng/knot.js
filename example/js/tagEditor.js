@@ -7,6 +7,43 @@
 * */
 (function (global) {
     "use strict";
+    global.Knot.Advanced.registerComponent("TagEditor", function(node, component){
+        return new TagEditor(node);
+    });
+
+    var TagEditor = function(owner){
+        this.owner = owner;
+        this.model = new TagEditorModel();
+        var ele = global.Knot.Advanced.createFromTemplate("knot-example-tagEditor", this, owner);
+        global.Knot.Advanced.setDataContext(ele, this);
+        $(owner).append(ele);
+        ele.children[0].onTagEditorItemAdded = function (n) {
+
+        };
+    };
+
+    var p =TagEditor.prototype;
+    p.setValue = function(apDescription, value, options) {
+        this.data[apDescription] = value;
+    };
+    p.getValue = function(apDescription, options) {
+        return this.data[apDescription];
+    };
+    p.doesSupportMonitoring = function (apDescription) {
+        return true;
+    };
+    p.monitor = function(apDescription, callback, options){
+        if(!this.callbacks[apDescription]){
+            this.callbacks[apDescription] = [];
+        }
+        this.callbacks[apDescription].push(callback);
+    };
+    p.stopMonitoring = function (apDescription, callback, options) {
+        this.callbacks[apDescription].splice( this.callbacks[apDescription].indexOf(callback), 1);
+    };
+
+
+
     //tagEditor need to create a special APProvider to support access point for "knot-example-tagEditor"
     var APProvider = {
         //only support "knot-example-tagEditor" on DIV tag
@@ -74,7 +111,7 @@
     }
 
     //this is the proxy object as well as the view model of tagEditor
-    //it is bound to UI by the CBS defined in tagEditor.cbs
+    //it is bound to UI by the CBS defined in tagEditor.pkg.cbs
     var TagEditorModel = function () {
         this.tags = [];
         this._editor = null;

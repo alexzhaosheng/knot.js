@@ -51,6 +51,10 @@
         //register a global symbol with name
         registerNamedGlobalSymbol: function (name, value) {
             return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
+        },
+
+        registerComponent: function(name, factory){
+            return __private.KnotManager.registerComponent(name, factory);
         }
     };
 

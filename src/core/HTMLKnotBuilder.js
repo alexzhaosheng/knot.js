@@ -107,6 +107,16 @@
 
 
 
+    var _components = {};
+
+    function initComponent(element, component){
+        if(!_components[component]){
+            __private.Log.error("Component '" + component + "' is not registered.");
+            return;
+        }
+
+        element.__knot_component = _components[component](element, component);
+    }
 
     //////////////////////////////////////////////////
     // HTMLKnotBuilder
@@ -196,7 +206,14 @@
 
         //update the data context of the node and all of it's offspring
         updateDataContext: function (node, data) {
+            if(!(node instanceof HTMLElement || node instanceof  HTMLBodyElement)){
+                return;
+            }
             var i;
+            if(node.getAttribute("knot-component")){
+                initComponent(node, node.getAttribute("knot-component"));
+            }
+
             if(node.__knot) {
                 var dataContextOption = getDataContextKnotOption(node.__knot.options);
                 var contextData = data;
@@ -275,6 +292,9 @@
                 this.removeKnots(node);
                 delete node.__knot.dataContext;
             }
+            if(node.__knot_component){
+                delete node.__knot_component;
+            }
             for(var i=0; i<node.childNodes.length; i++) {
                 this.clearBinding(node.childNodes[i]);
             }
@@ -323,6 +343,18 @@
             for(i=0; i< node.children.length; i++) {
                 this.forceUpdateValues(node.children[i]);
             }
+        },
+
+
+        registerComponent: function(name, factory){
+            if(_components[name]){
+                throw new Error("Component '" + name + "' has been registered!");
+            }
+            _components[name] = factory;
+        },
+
+        getComponentObject: function(element){
+            return element.__knot_component;
         }
     };
 })(window);

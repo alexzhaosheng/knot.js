@@ -513,6 +513,9 @@
             assert.equal(global.knotTestData.name, "xxx", "Test clear binding on global object");
             assert.equal(input.value, "xxx", "Test clear binding on global object");
             assert.equal(global.knotTestData2.value, "123", "Test clear binding on global object");
+
+
+            //todo: add global object knots in private scope test
         }
         finally{
             scope.HTMLKnotBuilder.clear();
@@ -521,5 +524,4 @@
             global.KnotTestUtility.clearAllKnotInfo(document.body);
         }
     });
-
 })(window);
