@@ -21,7 +21,7 @@
         this.tabPageNode.querySelector(".page-contentArea") .onKnotExampleTabPageAdded = function (node, data) {
             node.appendChild(data.element);
             if(that.pageAdded) {
-                that.pageAdded.apply(that, [node]);
+                that.pageAdded.apply(that, [node, data]);
             }
         };
 
@@ -50,7 +50,7 @@
                 this.pages[0].isSelected = true;
             }
         }
-        if(apDescription === "pageAdded"){
+        if(apDescription === "@pageAdded"){
             this.pageAdded = value;
         }
     };

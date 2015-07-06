@@ -110,6 +110,10 @@
     var _components = {};
 
     function initComponent(element, component){
+        if(element.__knot_component){
+            return;
+        }
+
         if(!_components[component]){
             __private.Log.error("Component '" + component + "' is not registered.");
             return;

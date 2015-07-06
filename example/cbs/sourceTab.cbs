@@ -1,14 +1,19 @@
- #sourceTab{
-    knot-example-tab[
-        template:codePageTemplate;
-        header:title;
+$private
 
-        //in "@/sourceTab.onPageAdded", call highlightBlock to highlight the code
-        @pageAdded:@/sourceTab.onPageAdded]: /sourceTab.sourceInformation
+<<{{
+<div id="sourceTab" knot-template-id="sourceTab" knot-component="TabPage">
+    <div id="codePageTemplate" knot-template-id="codePageTemplate">
+        <pre><code></code></pre>
+    </div>
+</div>
+}}>>
+ #sourceTab{
+    @pageAdded: @onPageAdded;
+    pages[template:codePageTemplate; header:title]: sourcePages;
 }
 
 #sourceTab code{
     text:content;
-    class:name>{if(value=="CBS") return "css";  return value.toLowerCase();}
+    class:type>{ return (value=="CBS")? "css": value.toLowerCase();}
 }
 

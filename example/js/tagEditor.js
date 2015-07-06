@@ -1,9 +1,9 @@
 /*
-   tagEditor put the editor HTML and relevant CBS options in tagEditor.cbs, which is marked as private.
+   tagEditor put the editor HTML and relevant CBS options in tagEditor.pkg.cbs, which is marked as private.
    The HTML in private CBS is referenced as a template
-   tagEditor creates the UI and adds it to it's owner, then bind the UI to a proxy object which is "TagEditorModel"
-   TagEditorModel receives the tags string from AP Provider, parse it into separated tags so that UI can present them correctly.
-   And when UI changes the tags, TagEditorModel notify system and generate the new tags string
+   TagEditor creates the UI and adds it to it's owner, then bind the UI to it self. It works like a "proxy"
+   It receives the tags string, parse it into separated tags so that UI can present them correctly.
+   And when UI changes the tags, TagEditor notify system and generate the new tags string
 * */
 (function (global) {
     "use strict";
@@ -54,7 +54,6 @@
     p.stopMonitoring = function (apDescription, callback, options) {
         this.callbacks.splice( this.callbacks.indexOf(callback), 1);
     };
-
 
     p.raiseChangedEvent = function(){
         if(this.callbacks){

@@ -26,7 +26,14 @@
     <script src="../src/core/HTMLAPProvider.js"></script>
     <script src="../src/core/HTMLKnotBuilder.js"></script>
     <script src="../src/core/AddonHTMLAPProvider.js"></script>
+    <script src="../src/core/ComponentAPProvider.js"></script>
     <script src="../src/core/KnotInterface.js"></script>
+
+    <link rel="stylesheet" href="styles/tabpage.css" id="tabpageCSS">
+    <script type="text/cbs" src="cbs/tabpage.pkg.cbs" id="tabpageCBS"></script>
+    <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
+    <script src="js/tabpage.js" id="tabPageSource"></script>
+    <script type="text/javascript" src="js/sourceTab.js"></script>
 
     <script src="../src/debugger/knot.debug.js"></script>
 
@@ -56,9 +63,24 @@
 </section>
 
 
-<script src="js/tabpage.js"></script>
-<script type="text/javascript" src="js/sourceTab.js"></script>
-</body>
+<div id="sourceTab" knot-debugger-ignore  knot-component="SourceTabPage">
 </div>
+<script type="text/cbs">
+        #sourceTab{
+            sourceInfo:/sourceCodeInfo.codes
+        }
+    </script>
+<script>
+    //collect source codes before knot changes the HTML
+    window.sourceCodeInfo = {codes:null};
+
+    window.SourceCodeHelper.collectSourceCodes(
+            [{selector:".knot_example",title:"HTML", type:"html"},
+                {selector:".exampleJS",title:"Javascript", type:"javascript"},
+                {selector:".exampleCBS",title:"CBS", type:"cbs"}],
+            function(res){
+                window.sourceCodeInfo.codes = res;
+            });
+</script>
 </body>
 </html>
