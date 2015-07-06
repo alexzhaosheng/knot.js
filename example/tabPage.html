@@ -28,7 +28,7 @@
 
     <link rel="stylesheet" href="styles/tabpage.css" id="tabpageCSS">
     <script type="text/cbs" src="cbs/tabpage.pkg.cbs" id="tabpageCBS"></script>
-    <script type="text/cbs" src="cbs/sourceTab.cbs"></script>
+    <script type="text/cbs" src="cbs/sourceTab.pkg.cbs"></script>
     <script src="js/tabpage.js" id="tabPageSource"></script>
     <script type="text/javascript" src="js/sourceTab.js"></script>
 
@@ -92,6 +92,12 @@
         <div knot-component="TabPage" id="tabpage2"></div>
         <div id="page2ContentTemplate" knot-template-id="page2Content" class="pageContent"></div>
     </div>
+
+    <div knot-component="TabPage">
+        <div class="pageContent" pageTitle="SinglePage">
+            this is a single page
+        </div>
+    </div>
 </div>
 
 <div id="sourceTab" knot-debugger-ignore  knot-component="SourceTabPage">
@@ -100,7 +106,7 @@
         #sourceTab{
             sourceInfo:/sourceCodeInfo.codes
         }
-    </script>
+</script>
 <script>
     //collect source codes before knot changes the HTML
     window.sourceCodeInfo = {codes:null};

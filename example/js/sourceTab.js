@@ -6,9 +6,10 @@
     });
 
     function removeIndent(text){
+        text = text.trim();
         var lines = text.split("\n");
         var indent = 999999;
-        for(var i=0; i<lines.length; i++){
+        for(var i=1; i<lines.length; i++){
             if(!lines[i].trim()){
                 continue;
             }
@@ -20,7 +21,14 @@
             return text;
         }
         else{
-            return lines.map(function(t){return t.substr(indent);}).join("\n");
+            return lines.map(function(t,index){
+                if(index === 0){
+                    return t;
+                }
+                else{
+                    return t.substr(indent);
+                }
+            }).join("\n");
         }
     }
 
@@ -68,8 +76,13 @@
             if(value instanceof  String){
                 info = JSON.parse(value);
             }
-            for(var j=0; j< info.length; j++){
-                this.sourcePages.push({type:info[j].type, content:info[j].content, title:info[j].title});
+            if(!info){
+                this.sourcePages = [];
+            }
+            else{
+                for(var j=0; j< info.length; j++){
+                    this.sourcePages.push({type:info[j].type, content:info[j].content, title:info[j].title});
+                }
             }
         }
     };

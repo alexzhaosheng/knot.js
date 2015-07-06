@@ -85,7 +85,7 @@
     function showDebugWindow() {
         var url = getBaseDir() + "debugger.html";
         var name =  window.location.href + window.location.pathname;
-        _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=600,resizable=yes,scrollbars=yes");
+        _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=700,resizable=yes,scrollbars=yes");
 
     }
     function startDebugger() {

@@ -12,7 +12,8 @@ $private
 }}>>
 
 .knot-example-tabPage .page-headerArea{
-    foreach: pages
+    foreach: pages;
+    style.display: pages>{return (value && value.length>1)?"block":"none"; }
 }
 .knot-example-tabPage .page-headerArea .pageHeader{
     text: title;

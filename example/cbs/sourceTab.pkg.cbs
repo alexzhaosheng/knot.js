@@ -1,18 +1,18 @@
 $private
 
 <<{{
-<div id="sourceTab" knot-template-id="sourceTab" knot-component="TabPage">
-    <div id="codePageTemplate" knot-template-id="codePageTemplate">
+<div class="sourceTab" knot-template-id="sourceTab" knot-component="TabPage">
+    <div class="codePageTemplate" knot-template-id="codePageTemplate">
         <pre><code></code></pre>
     </div>
 </div>
 }}>>
- #sourceTab{
+ .sourceTab{
     @pageAdded: @onPageAdded;
     pages[template:codePageTemplate; header:title]: sourcePages;
 }
 
-#sourceTab code{
+.sourceTab code{
     text:content;
     class:type>{ return (value=="CBS")? "css": value.toLowerCase();}
 }
