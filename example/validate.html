@@ -51,8 +51,8 @@
     <script type="text/cbs"  class="exampleCBS">
 
     /*
-    this bind the style of the input to the error status of it's value for all of the inputs in the form
-    by this knot, the input will get red glow when it's value is invalid
+    this bind the style of the input to the error status of it's value for all of the
+    inputs in the form by this knot, the input will get red glow when it's value is invalid
      */
     form input[type=text]{
         class: !*LEFT.value>@{return value?"+errorInput":"-errorInput";}
@@ -84,7 +84,7 @@
     #ageSection{
         /*add empty check, number format check and number range check to the "age" text box*/
         ->input{
-            value> @/validator.notEmpty> @/validator.checkAndConvertToNumber> @validator.checkAgeRange : *NULL;
+            value> @/validator.notEmpty> @/validator.checkAndConvertToNumber> @/validator.checkAgeRange : *NULL;
         };
 
         -> .errMessage{

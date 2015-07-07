@@ -137,7 +137,7 @@
             }
         };
 
-        knots = scope.OptionParser.parse("strValue>converter.strToInt:intValue>converter.intToString");
+        knots = scope.OptionParser.parse("strValue>/converter.strToInt:intValue>/converter.intToString");
         target2 = {intValue: 1};
         target1 = {strValue: ""};
         scope.KnotManager.tieKnot(target1, target2, knots[0], "test pipes from global scope");
@@ -155,8 +155,8 @@
 
         //test multiple knots tied up to the same AP
 
-        var knot1 = scope.OptionParser.parse("strValue>converter.strToInt:intValue>converter.intToString")[0];
-        var knot2 = scope.OptionParser.parse("dotValue>converter.dotsToInt:intValue>converter.intToDots")[0];
+        var knot1 = scope.OptionParser.parse("strValue>/converter.strToInt:intValue>/converter.intToString")[0];
+        var knot2 = scope.OptionParser.parse("dotValue>/converter.dotsToInt:intValue>/converter.intToDots")[0];
         target2.intValue = 2;
         target1.strValue = "one";
         target3.dotValue = ".";
@@ -205,7 +205,7 @@
         };
 
         //test composite AP
-        var knot = scope.OptionParser.parse("boolValue:(strValue>converter.strToInt & dotValue>converter.dotsToInt)> areTheySame")[0];
+        var knot = scope.OptionParser.parse("boolValue:(strValue>/converter.strToInt & dotValue>/converter.dotsToInt)> areTheySame")[0];
         target1 = {strValue:"one", dotValue:".."};
         target2 = {boolValue:true};
         scope.KnotManager.tieKnot(target2, target1, knot);

@@ -201,7 +201,7 @@
             try{
                 if(ap.pipes) {
                     for(var i=0; i< ap.pipes.length; i++) {
-                        var p = __private.Utility.getValueOnPath(global, ap.pipes[i]);
+                        var p = __private.Utility.getValueOnPath(target, ap.pipes[i]);
                         if(typeof(p) !== "function") {
                             __private.Log.error( "Pipe must be a function. pipe name:" + ap.pipes[i]);
                         }
@@ -330,7 +330,7 @@
                     values.push(v);
                 }
 
-                var p = __private.Utility.getValueOnPath(global, compositeAP.nToOnePipe);
+                var p = __private.Utility.getValueOnPath(compositeAPTarget, compositeAP.nToOnePipe);
                 if (typeof(p) !== "function") {
                     __private.Log.error("Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
                 }
