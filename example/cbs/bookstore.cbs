@@ -13,7 +13,7 @@ body{
 #navMenu>ul{
     foreach: categories;
 
-    => >li{
+    -> >li{
         text: name;
         @click: @{
                 Knot.setKnotVariant("$hash.category", this.id);
@@ -26,32 +26,32 @@ body{
 #booksList{
     foreach: items;
 
-    => >li{
+    -> >li{
         @click: @{Knot.setKnotVariant("$hash.book", this.id);};
 
-        => img{
+        -> img{
             src: cover
         };
-        => div{
+        -> div{
             text: name
         };
     }
 }
 
 #bookDetails{
-    => h2{
+    -> h2{
         text: name
     };
 
-    => img{
+    -> img{
         src: cover
     };
 
-    => p{
+    -> p{
         innerHTML: intro
     };
 
-    => button{
+    -> button{
         @click: @{Knot.setKnotVariant("$hash.book", null);};
     }
 }

@@ -20,10 +20,10 @@ $private
 }
 
 .knot-example-tagEditor-tags{
-    => >span{
+    -> >span{
         text:name
     };
-    => >i{
+    -> >i{
         @click:@onDelete;
     };
 }

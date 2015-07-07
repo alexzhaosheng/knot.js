@@ -56,10 +56,10 @@
         /*set the selected as the data context */
          dataContext:selected;
 
-         => >b{
+         -> >b{
             innerText:name
          };
-         => >span{
+         -> >span{
             innerText:price
          };
     }
@@ -71,7 +71,7 @@
         selectedData:selected;
 
         /* this is the template for the options in select */
-        => option{
+        -> option{
             text:*>{return value.name+"("+value.price+")";}
         }
     }

@@ -95,7 +95,7 @@
                 if(!option) {
                     continue;
                 }
-                if(option.indexOf("=>") === 0){
+                if(option.indexOf("->") === 0){
                     normalizeCBS(res, option.substr(2), selector);
                 }
                 else{

@@ -68,16 +68,16 @@
         scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cbsContainer{' +
                 'style.display:test;'+
-                    '=>input{value:name};'+
-                    '=>.details{'+
-                    '=>.ageInput{value:age};'+
-                    '=>.addressInput{value:address}'+
+                    '->input{value:name};'+
+                    '->.details{'+
+                    '->.ageInput{value:age};'+
+                    '->.addressInput{value:address}'+
                     '};'+
-                    '=>.col1, col2, col3{' +
+                    '->.col1, col2, col3{' +
                     "text:title"+
                     '};'+
-                    '=>p1, p2{' +
-                    "=>c1, c2{" +
+                    '->p1, p2{' +
+                    "->c1, c2{" +
                     "value:data"+
                     "};" +
                 '};'+

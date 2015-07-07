@@ -41,10 +41,10 @@
         #knotList{
             foreach: /knotModel.dataList;
 
-            => span:first-child{
+            -> span:first-child{
                 text = id;
             };
-            => span:last-child{
+            -> span:last-child{
                 text : value;
             };
         }

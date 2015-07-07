@@ -64,7 +64,7 @@
         add empty check and length check to the "name" text box
         bind to *NULL so that we don't need to create a data model for it.
         */
-        => input{
+        -> input{
             value> @/validator.notEmpty> {
                     /* you can use either  */
                     if(value.length < 3)
@@ -76,25 +76,25 @@
         };
 
         /* bind the text to the "message" of error status of the value of the "name" input box.  */
-        => .errMessage{
+        -> .errMessage{
             text:!#(#nameSection input).value>{return value?value.message:"";}
         };
     }
 
     #ageSection{
         /*add empty check, number format check and number range check to the "age" text box*/
-        =>input{
+        ->input{
             value> @/validator.notEmpty> @/validator.checkAndConvertToNumber> @validator.checkAgeRange : *NULL;
         };
 
-        => .errMessage{
+        -> .errMessage{
             text:!#(#ageSection input).value>{return value?value.message:"";}
         }
      }
 
     #emailSection{
         /*add empty check, email format check to the "email" text box*/
-         =>input{
+         ->input{
             value>@/validator.notEmpty> {
                 if(!/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/.test(value))
                     throw new Error("Invalid email!");
@@ -102,7 +102,7 @@
             }:*NULL;
         };
 
-        =>.errMessage{
+        ->.errMessage{
             text:!#(#emailSection input).value>{return value?value.message:"";}
         }
     }

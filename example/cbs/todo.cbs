@@ -6,13 +6,13 @@ body{
     /* the list of the to do checkboxes. it uses anonymous template(the template is defined as the child of the element) */
     foreach:todoList;
 
-    => >li{
-        => input{
+    -> >li{
+        -> input{
             /*call "updateRemaining" function in global space when "isDone" is set*/
             checked: isDone[@set:@/updateRemaining]
         };
 
-        => span{
+        -> span{
             class:isDone>{return value?"+done-true":"-done-true";};
             text:title
         };

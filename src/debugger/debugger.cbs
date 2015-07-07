@@ -3,20 +3,20 @@ body{
 }
 
 #tabPage{
-    =>.page-headerArea>.header:first-child{
+    ->.page-headerArea>.header:first-child{
         @click:@{this.showLogViewer = false;}
     };
-    =>.page-headerArea>.header:last-child{
+    ->.page-headerArea>.header:last-child{
         @click:@{this.showLogViewer = true;}
     };
-    =>.page-headerArea>.header:last-child>span{
+    ->.page-headerArea>.header:last-child>span{
         className: highestLogLevel
     };
 
-    =>.page-headerArea>.header:first-child, .pageContent:first-child{
+    ->.page-headerArea>.header:first-child, .pageContent:first-child{
         class:showLogViewer>{return value?"-selected":"+selected";}
     };
-    =>.page-headerArea>.header:last-child, .page-contentArea>.pageContent:last-child{
+    ->.page-headerArea>.header:last-child, .page-contentArea>.pageContent:last-child{
         class:showLogViewer>{return !value?"-selected":"+selected";}
     };
 }
@@ -26,69 +26,69 @@ body{
 }
 
 #domTree>li {
-    =>.expander>i{
+    ->.expander>i{
         @click:@{this.isExpanded = !this.isExpanded;};
         class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
     };
 
-    =>.nodeTitle{
+    ->.nodeTitle{
         text = description;
         class: noKnotSetting>{return value?"+emptyNode":"";}
     };
 
-    =>.highlightMark{
+    ->.highlightMark{
         style.display:isHighlighted>{return value?"inline-block":"none";}
     };
 
-    =>.locateElementButton{
+    ->.locateElementButton{
         @click:@/debuggerModel.onLocateElement
     };
 
-    =>.checkDataContextButton{
+    ->.checkDataContextButton{
         style.display:dataContext>{return value?"inline-block":"none"};
         @click:@/debuggerModel.onShowDataContext
     };
 
-    =>.knotList{
+    ->.knotList{
         foreach :options;
         style.display:options>{return (value&&value.length>0)?"block":"none";}
     };
 
-    =>.nodeChildren{
+    ->.nodeChildren{
         foreach[template:domTreeItem]: childrenInfo;
         style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
     };
 
-    =>.collapsibleContent{
+    ->.collapsibleContent{
         style.display : isExpanded>{return value?"block":"none";}
     };
 }
 
 
 .knotList>li{
-    =>.knotOption{
+    ->.knotOption{
         text= description;
         title= description
     };
 
-    =>.knotValueDirection, .knotValue, .knotValueDetail{
+    ->.knotValueDirection, .knotValue, .knotValueDetail{
         style.display:latestValueInfo>{return value?"inline-block":"none";};
     };
 
-    =>.knotValueDirection{
+    ->.knotValueDirection{
         class:latestValueInfo.isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
     };
 
-    =>.knotValue{
+    ->.knotValue{
         text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
         title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
     };
 
-    =>.knotValueDetail{
+    ->.knotValueDetail{
         @click:@/debuggerModel.onShowKnotDetail
     };
 
-    =>.errorStatusIndicator{
+    ->.errorStatusIndicator{
         style.display:errorStatus>{return value?"inline-block":"none";};
         title: errorStatus>{return value?"Error message: "+ value.message:"";};
     };
@@ -99,25 +99,25 @@ body{
 .knotChangeLog{
     foreach: knotChangeLog;
 
-    =>.id{
+    ->.id{
         text = id
     };
-    =>.nodeTitle{
+    ->.nodeTitle{
         text = nodeDescription;
         title = nodeDescription
     };
-    => .knotOption{
+    -> .knotOption{
         text = knotOption.description;
         title = knotOption.description;
     };
-    =>  .knotValueDirection{
+    ->  .knotValueDirection{
         class = isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
     };
-    => .knotValue{
+    -> .knotValue{
         text = value>{return JSON.stringify(value);};
         title = value>{return JSON.stringify(value);};
     };
-    => .knotValueDetail{
+    -> .knotValueDetail{
         @click: @/debuggerModel.onShowKnotValueLogDetail
     };
 }
@@ -129,14 +129,14 @@ body{
 #knotChangeLogExpander{
     class: isKnotLogExpanded>{return value?"-expander-bottom-collapsed +expander-bottom-expanded":"+expander-bottom-collapsed -expander-bottom-expanded";};
 
-    =>.expanderButton>i{
+    ->.expanderButton>i{
         class: isKnotLogExpanded>{return value?"+fa-chevron-circle-down -fa-chevron-circle-up":"-fa-chevron-circle-down +fa-chevron-circle-up";}
     };
-    =>.expanderButton{
+    ->.expanderButton{
         @click: @{this.isKnotLogExpanded = !this.isKnotLogExpanded;};
     };
 
-    =>.clearLogButton{
+    ->.clearLogButton{
         @click: @/debuggerModel.onClearLogs;
     }
 }
@@ -162,22 +162,22 @@ body{
         }
     };
 
-    => .level{
+    -> .level{
         text = level
     };
 
-    => .time{
+    -> .time{
         text = time>{
             return value.getHours() + ":" + value.getMinutes() + ":" + value.getSeconds() +
                     " " + value.getMilliseconds();
         }
     };
 
-    => .message{
+    -> .message{
         text = message
     };
 
-    => .exception{
+    -> .exception{
         text = exception>{return value.toString();}
     };
 }
