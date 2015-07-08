@@ -286,7 +286,7 @@
     //process template options on node. if the option is anonymous template, it'll set the automatically generated name to the option
     function processTemplateOption(node, ap) {
         var templateNode;
-        if(!ap.options || !ap.options.template) {
+        if(!ap.options || (!ap.options.template && !ap.options.templateSelector)) {
             templateNode = node.children[0];
             if(node.children.length > 1) {
                 __private.Log.warning("More than one child is found within '" + __private.HTMLAPHelper.getNodeDescription(node) +
@@ -298,6 +298,9 @@
             }
         }
         else{
+            if(ap.options.templateSelector){
+                return;
+            }
             var template = ap.options.template;
             //if template is a dynamic template, do nothing
             if(template[0] === "@") {

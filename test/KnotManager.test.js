@@ -205,7 +205,7 @@
         };
 
         //test composite AP
-        var knot = scope.OptionParser.parse("boolValue:(strValue>/converter.strToInt & dotValue>/converter.dotsToInt)> areTheySame")[0];
+        var knot = scope.OptionParser.parse("boolValue:(strValue>/converter.strToInt & dotValue>/converter.dotsToInt)> /areTheySame")[0];
         target1 = {strValue:"one", dotValue:".."};
         target2 = {boolValue:true};
         scope.KnotManager.tieKnot(target2, target1, knot);

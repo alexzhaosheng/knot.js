@@ -112,10 +112,29 @@
         }
     }
 
+    function getTemplateFromSelector(selector, node, value){
+        try{
+            var selectorFunc = __private.Utility.getValueOnPath(value, selector);
+            if(!selectorFunc){
+                __private.Log.error("Can't find template selector:" + selector);
+                return null;
+            }
+            var template =  selectorFunc.apply(node, [value, node]);
+            if(!template){
+                __private.Log.error("The template selector returns NULL. template selector:" + selector);
+            }
+            return template;
+        }
+        catch(err){
+            __private.Log.error("Call template selector failed. template selector:" + selector, err);
+            return null;
+        }
+    }
+
     //set "content" Access Point for the target
     //it create a new element from template and set the item as the only child of the target element
     function setContent(target, value, options) {
-        if(!options || !options.template) {
+        if(!options || (!options.template && !options.templateSelector)) {
             __private.Log.error("No valid template is specified for 'content' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(target));
             return;
         }
@@ -132,12 +151,21 @@
             }
         };
 
+        var template = options.template;
+        var isTemplateSelector = false;
+        if(options.templateSelector){
+            if(!(value === null || typeof(value) === "undefined")){
+                template = getTemplateFromSelector(options.templateSelector, target, value);
+            }
+            isTemplateSelector = true;
+        }
+
         var currentContent =  target.childNodes[0];
         if(!currentContent) {
             if(value === null || typeof(value) === "undefined") {
                 return;
             }
-            var n  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
+            var n  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
             if(n) {
                 target.appendChild(n);
                 if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
@@ -156,9 +184,12 @@
                 raiseEvt(currentContent, "@removed");
             }
             else{
-                if( __private.HTMLKnotBuilder.isDynamicTemplate(options.template)) {
+                if(isTemplateSelector || __private.HTMLKnotBuilder.isDynamicTemplate(template)) {
                     removeNodeCreatedFromTemplate(currentContent);
-                    currentContent  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
+                    currentContent = null;
+                    if(template){
+                        currentContent  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
+                    }
                     if(currentContent) {
                         target.appendChild(currentContent);
                         if(!__private.HTMLKnotBuilder.hasDataContext(currentContent)) {
@@ -183,7 +214,7 @@
 
     //it create the the elements from template and add them to node's children collection
     //and synchronize the elements in node's children and array
-    function syncItems(node, values, template, onItemCreated, onItemRemoved) {
+    function syncItems(node, values, template, templateSelector, onItemCreated, onItemRemoved) {
         //take null values as empty array.
         if (!values) {
             values = [];
@@ -197,6 +228,12 @@
                 }
             }
             else {
+                if(templateSelector){
+                    template = getTemplateFromSelector(templateSelector, node, values[i]);
+                    if(!template){
+                        continue;
+                    }
+                }
                 var n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
                 if (n) {
                     addChildTo(node, n, i);
@@ -276,11 +313,11 @@
 
     //set "foreach" Access Point for the html node
     function setForeach(node, values, options) {
-        if(!options || !options.template) {
+        if(!options || (!options.template && !options.templateSelector)){
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
             return;
         }
-        syncItems(node, values, options.template, __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
+        syncItems(node, values, options.template, options.templateSelector,  __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
     }
 
 

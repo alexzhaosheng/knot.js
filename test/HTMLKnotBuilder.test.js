@@ -253,7 +253,8 @@
         }
     });
 
-    global.QUnit.test("private.HTMLKnotBuilder.templateSelector", function (assert) {
+
+    global.QUnit.test("private.HTMLKnotBuilder.template selector", function (assert) {
         var testDiv =  global.KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
         bodyNode.appendChild(testDiv);
 
@@ -271,8 +272,8 @@
             '#westernUserTemplate>span:last-of-type{innerText:lastName}'+
             '#easternUserTemplate>span:first-child{innerText:lastName}'+
             '#easternUserTemplate>span:last-of-type{innerText:firstName}'+
-            '#selectedUser{content[template:@/testTemplateSelector]:selectedUser}'+
-            '#userList{foreach[template:@/testTemplateSelector]:userList}'+
+            '#selectedUser{content[templateSelector:@/testTemplateSelector]:selectedUser}'+
+            '#userList{foreach[templateSelector:@/testTemplateSelector]:userList}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 
@@ -280,16 +281,15 @@
         global.testTemplateSelector = function (value) {
             latestThisPointer = this;
             if(value.isEastAsianName) {
-                return scope.HTMLKnotBuilder.createFromTemplate("easternUserTemplate", value);
+               return "easternUserTemplate";
             }
             else {
-                return scope.HTMLKnotBuilder.createFromTemplate("westernUserTemplate", value);
+                return "westernUserTemplate";
             }
         };
 
         scope.CBSLoader.loadGlobalScope();
         scope.HTMLKnotBuilder.bind();
-
         try{
             var list =document.querySelector("#userList");
             var selected =document.querySelector("#selectedUser");
@@ -326,6 +326,91 @@
 
 
             assert.equal(latestThisPointer, selected, "check this pointer in template selector");
+        }
+        finally{
+        delete global.templateTestData;
+
+        scope.HTMLKnotBuilder.clear();
+        headNode.removeChild(scriptBlock);
+        bodyNode.removeChild(testDiv);
+
+        global.KnotTestUtility.clearAllKnotInfo(document.body);
+    }
+    });
+
+    global.QUnit.test("private.HTMLKnotBuilder.dynamic template", function (assert) {
+        var testDiv =  global.KnotTestUtility.parseHTML('<div style="opacity: 0"></div>');
+        bodyNode.appendChild(testDiv);
+
+        var templateDiv = global.KnotTestUtility.parseHTML('<div>' +
+            '<div id="westernUserTemplate" knot-template-id="westernUserTemplate" ><span></span> <span></span><p>west</p></div>' +
+            '<div id="easternUserTemplate" knot-template-id="easternUserTemplate" ><span></span> <span></span><p>east asia</p></div>' +
+            '</div>');
+        testDiv.appendChild(templateDiv);
+
+        testDiv.appendChild(global.KnotTestUtility.parseHTML('<div><div id="selectedUser"></div><div id="userList"></div></div>'));
+
+        var scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">' +
+            'body {dataContext:/templateTestData;}'+
+            '#westernUserTemplate>span:first-child{innerText:firstName}'+
+            '#westernUserTemplate>span:last-of-type{innerText:lastName}'+
+            '#easternUserTemplate>span:first-child{innerText:lastName}'+
+            '#easternUserTemplate>span:last-of-type{innerText:firstName}'+
+            '#selectedUser{content[template:@/testTemplateMethod]:selectedUser}'+
+            '#userList{foreach[template:@/testTemplateMethod]:userList}'+
+            '</script>');
+        headNode.appendChild(scriptBlock);
+
+        var latestThisPointer;
+        global.testTemplateMethod = function (value) {
+            latestThisPointer = this;
+            if(value.isEastAsianName) {
+                return scope.HTMLKnotBuilder.createFromTemplate("easternUserTemplate", value);
+            }
+            else {
+                return scope.HTMLKnotBuilder.createFromTemplate("westernUserTemplate", value);
+            }
+        };
+
+        scope.CBSLoader.loadGlobalScope();
+        scope.HTMLKnotBuilder.bind();
+
+        try{
+            var list =document.querySelector("#userList");
+            var selected =document.querySelector("#selectedUser");
+
+            var einstein = {firstName:"albert", lastName:"einstein"};
+            var satoshi = {firstName:"satoshi", lastName:"nakamoto", isEastAsianName:true};
+            var laoZi={firstName:"dan", lastName:"li", isEastAsianName:true};
+            var newton={firstName:"issac", lastName:"newton"};
+            global.templateTestData = {userList:[einstein, satoshi, laoZi, newton], selectedUser:newton};
+
+            assert.equal(list.childNodes.length, 4, "check the nodes created by dynamic template by foreach binding");
+            assert.equal(list.childNodes[0].childNodes[0].innerText, einstein.firstName, "check the nodes created by dynamic template. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[0].childNodes[2].innerText, einstein.lastName, "check the nodes created by dynamic template. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[0].childNodes[3].textContent, "west", "check the nodes created by dynamic template. should be created from westernUserTemplate");
+
+            assert.equal(list.childNodes[1].childNodes[2].innerText, satoshi.firstName, "check the nodes created by dynamic template. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[1].childNodes[0].innerText, satoshi.lastName, "check the nodes created by dynamic template. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[1].childNodes[3].textContent, "east asia", "check the nodes created by dynamic template. should be created from westernUserTemplate");
+
+            assert.equal(list.childNodes[2].childNodes[2].innerText, laoZi.firstName,"check the nodes created by dynamic template. should be created from easternUserTemplate");
+            assert.equal(list.childNodes[2].childNodes[0].innerText, laoZi.lastName, "check the nodes created by dynamic template. should be created from easternUserTemplate");
+
+            assert.equal(list.childNodes[3].childNodes[0].innerText, newton.firstName, "check the nodes created by dynamic template. should be created from westernUserTemplate");
+            assert.equal(list.childNodes[3].childNodes[2].innerText, newton.lastName, "check the nodes created by dynamic template. should be created from westernUserTemplate");
+
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, newton.firstName, "check the node created by dynamic template with content binding. should be created from westernUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, newton.lastName, "check the node created by dynamic template with content binding.should be created from westernUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].textContent,"west", "check the node created by dynamic template with content binding.should be created from westernUserTemplate");
+
+            global.templateTestData.selectedUser = laoZi;
+            assert.equal(selected.childNodes[0].childNodes[2].innerText, laoZi.firstName, "check the node created by dynamic template with content binding. should be created from easternUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[0].innerText, laoZi.lastName, "check the node created by dynamic template with content binding.should be created from easternUserTemplate");
+            assert.equal(selected.childNodes[0].childNodes[3].textContent, "east asia", "check the node created by dynamic template with content binding.should be created from easternUserTemplate");
+
+
+            assert.equal(latestThisPointer, selected, "check this pointer in dynamic template");
         }
         finally{
             delete global.templateTestData;
