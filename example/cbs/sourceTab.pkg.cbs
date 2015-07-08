@@ -3,17 +3,20 @@ $private
 <<{{
 <div class="sourceTab" knot-template-id="sourceTab" knot-component="TabPage">
     <div class="codePageTemplate" knot-template-id="codePageTemplate">
-        <pre class="prettyprint linenumber"><code></code></pre>
+        <pre class="prettyprint linenumber">
+            <code></code>
+        </pre>
     </div>
 </div>
 }}>>
+
  .sourceTab{
     @pageAdded: @onPageAdded;
     pages[template:codePageTemplate; header:title]: sourcePages;
+    height: height;
 }
 
 .sourceTab code{
     text:content;
     class:type>{ return (value=="CBS")? "css": value.toLowerCase();}
 }
-

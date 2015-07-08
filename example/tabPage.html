@@ -65,6 +65,10 @@
         #page2ContentTemplate{
             style.backgroundColor:color
         }
+
+        #sizeTest{
+            height: '300px';
+        }
     </script>
     <script>
         window.colorPages = [{title:"Brown", color:"brown"}, {title:"Green", color:"green"}, {title:"Gold", color:"gold"}]
@@ -98,10 +102,15 @@
             this is a single page
         </div>
     </div>
+
+    <div knot-component="TabPage" id="sizeTest">
+        <div pageTitle="900" style="height: 900px; background-color: lightblue"></div>
+        <div pageTitle="1200" style="height: 1200px; background-color: lightgoldenrodyellow"></div>
+    </div>
 </div>
 
-<div id="sourceTab" knot-debugger-ignore  knot-component="SourceTabPage">
-</div>
+<div id="sourceTab" knot-debugger-ignore  knot-component="SourceTabPage"></div>
+
 <script type="text/cbs">
         #sourceTab{
             sourceInfo:/sourceCodeInfo.codes

@@ -8,6 +8,7 @@
     var TabPage = function(owner){
         this.pages = [];
         this.pageAdded = null;
+        this.height = "";
 
         while(owner.children.length > 0){
             this.pages.push({element:owner.children[0], title:owner.children[0].getAttribute("pageTitle")});
@@ -49,6 +50,9 @@
             if(this.pages.length > 0){
                 this.pages[0].isSelected = true;
             }
+        }
+        if(apDescription === "height"){
+            this.height =  value;
         }
         if(apDescription === "@pageAdded"){
             this.pageAdded = value;

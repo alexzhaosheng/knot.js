@@ -21,7 +21,8 @@ $private
     @click: @__knot_global.onPageHeaderClicked
 }
 .knot-example-tabPage .page-contentArea{
-    foreach[@added:@onKnotExampleTabPageAdded]: pages
+    foreach[@added:@onKnotExampleTabPageAdded]: pages;
+    style.height: height
 }
 .knot-example-tabPage .page-contentArea>div{
     style.display: isSelected>{return value?"block":"none"};

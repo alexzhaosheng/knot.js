@@ -59,6 +59,7 @@
     }
 
     var SourceTabPage = function(owner){
+        this.height = "";
         this.sourcePages = [];
         this.pageNode = Knot.Advanced.createFromTemplate("sourceTab", this);
         $(this.pageNode).appendTo(owner);
@@ -84,6 +85,10 @@
                     this.sourcePages.push({type:info[j].type, content:info[j].content, title:info[j].title});
                 }
             }
+        }
+
+        if(apDescription === "height"){
+            this.height = value;
         }
     };
     p.getValue = function(apDescription, options) {
