@@ -187,7 +187,7 @@ window.mafiaSystem = {
         else if(data.type === "gang") {
             template = "gangTemplate";
         }
-        return window.Knot.Advanced.createFromTemplate(template, data, this);
+        return template;
     },
 
     //template selector for editing

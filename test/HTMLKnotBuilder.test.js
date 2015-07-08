@@ -106,14 +106,23 @@
         var scriptBlock = global.KnotTestUtility.parseHTML('<script type="text/cbs">\r\n' +
             '#cssSelectorInput{' +
             'value:#(.cssSelectorTest>input:last-child).value>{return "Hello "+ value;}} \r\n'+
+            '#testSelectorSpan{' +
+                'textContent:#(#testSelectorDiv>input).value;'+
+            '}'+
             '</script>');
         headNode.appendChild(scriptBlock);
 
         var node =  global.KnotTestUtility.parseHTML(
-            '<div class="cssSelectorTest">' +
-                '<input id="cssSelectorInput" type="text">' +
-                '<input type="text">' +
-                '</div>'
+            '<div>' +
+                '<div class="cssSelectorTest">' +
+                    '<input id="cssSelectorInput" type="text">' +
+                    '<input type="text">' +
+                '</div>'+
+                '<span id="testSelectorSpan"></span>'+
+                '<div id="testSelectorDiv">' +
+                    '<input type="text">' +
+                '</div>'+
+            '</div>'
             );
         testDiv.appendChild(node);
 
@@ -129,6 +138,12 @@
         cssInput2.value = "satoshi";
         global.KnotTestUtility.raiseDOMEvent(cssInput2, "change");
         assert.equal(cssInput1.value, "Hello satoshi", "test complex css selector");
+
+        var span = document.querySelector("#testSelectorSpan");
+        var t2Input = document.querySelector("#testSelectorDiv>input");
+        t2Input.value = "laozi";
+        global.KnotTestUtility.raiseDOMEvent(t2Input, "change");
+        assert.equal(span.textContent, "laozi", "test complex CSS selector");
 
 
         headNode.removeChild(scriptBlock);

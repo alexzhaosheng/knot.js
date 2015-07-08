@@ -12,7 +12,7 @@ body{
 
 .treeNode{
     -> >div>.content{
-        content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
+        content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: *
     };
     -> .expander{
         class: collapsed>{return value?"+fa-plus-circle -fa-minus-circle":"-fa-plus-circle +fa-minus-circle"};
@@ -41,7 +41,7 @@ body{
     text: title;
 }
 .people>div:first-of-type{
-    content[template: @/mafiaSystem.nodeContentTemplateSelector; @added:@/mafiaSystem.onTreeChildAdded]: leader;
+    content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector; @added:@/mafiaSystem.onTreeChildAdded]: leader;
 }
 .people .dropTarget{
     style.display: (leader & isInSystem) > { return value[1]? (value[0]?"none":"block"): "none"; }
@@ -153,7 +153,7 @@ body{
     -> >.leaderArea{
         style.display:selected>{return (!value|| value.isNew || value.sex)?"none":"block";};
         -> .leaderContainer{
-            content[template: @/mafiaSystem.nodeContentTemplateSelector;  @added:@/mafiaSystem.onTreeChildAdded]: selected.leader;
+            content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector;  @added:@/mafiaSystem.onTreeChildAdded]: selected.leader;
         };
     };
 
@@ -181,7 +181,7 @@ body{
 
 .gangEditor .title{
     ->input{
-    value>@mafiaSystem.pipes.checkTitle: title
+    value>@/mafiaSystem.pipes.checkTitle: title
     };
     -> .errorMessage{
         text:!#(.gangEditor .title>input).value
@@ -192,7 +192,7 @@ body{
 .whiteBusinessEditor {
     ->.title{
         ->input{
-            value>@mafiaSystem.pipes.checkTitle: title
+            value>@/mafiaSystem.pipes.checkTitle: title
         };
         ->.errorMessage{
             text:!#(.whiteBusinessEditor .title>input).value>{return value?value.message:"";}
@@ -201,7 +201,7 @@ body{
 
     ->.income{
         ->input{
-            value>@mafiaSystem.pipes.checkNumber: income
+            value>@/mafiaSystem.pipes.checkNumber: income
         };
         ->.errorMessage{
             text:!#(.whiteBusinessEditor .income>input).value>{return value?value.message:"";}
@@ -210,7 +210,7 @@ body{
 
     ->.landedMoney{
             ->input{
-                value>@mafiaSystem.pipes.checkNumber: landedMoney
+                value>@/mafiaSystem.pipes.checkNumber: landedMoney
             };
             ->.errorMessage{
                 text:!#(.whiteBusinessEditor .landedMoney>input).value>{return value?value.message:"";}
@@ -222,7 +222,7 @@ body{
 .blackBusinessEditor {
     ->.title{
         ->input{
-            value>@mafiaSystem.pipes.checkTitle: title
+            value>@/mafiaSystem.pipes.checkTitle: title
         };
         ->.errorMessage{
             text:!#(.blackBusinessEditor .title>input).value>{ return value?value.message:"";}
@@ -231,7 +231,7 @@ body{
 
     ->.income{
         ->input{
-            value>@mafiaSystem.pipes.checkNumber: income
+            value>@/mafiaSystem.pipes.checkNumber: income
         };
         ->.errorMessage{
             text:!#(.blackBusinessEditor .income>input).value>{ return value?value.message:"";}
@@ -240,7 +240,7 @@ body{
 
     ->.caseNumber{
             ->input{
-                value>@mafiaSystem.pipes.checkNumber: caseNumber
+                value>@/mafiaSystem.pipes.checkNumber: caseNumber
             };
             ->.errorMessage{
                 text:!#(.blackBusinessEditor .caseNumber>input).value>{ return value?value.message:"";}
@@ -256,7 +256,7 @@ body{
 .manEditor{
     ->.name{
         ->input{
-            value>@mafiaSystem.pipes.checkName: name
+            value>@/mafiaSystem.pipes.checkName: name
         };
         ->.errorMessage{
             text:!#(.manEditor .name>input).value>{ return value?value.message:"";}
@@ -279,7 +279,7 @@ body{
 .womanEditor{
     ->.name{
         -> input{
-            value>@mafiaSystem.pipes.checkName: name
+            value>@/mafiaSystem.pipes.checkName: name
         };
         ->.errorMessage{
             text:!#(.womanEditor .name>input).value>{ return value?value.message:"";}
@@ -304,7 +304,7 @@ body{
     foreach[ @added:@/mafiaSystem.onFreeEntityAdded ]: freeEntities;
 
     -> .contentContainer{
-        content[template: @/mafiaSystem.nodeContentTemplateSelector]: *;
+        content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: *;
     }
 }
 
@@ -315,13 +315,13 @@ body{
     text: inDragging.message
 }
 #dragDropVisual{
-    content [template: @/mafiaSystem.nodeContentTemplateSelector]: inDragging.data;
+    content [templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: inDragging.data;
     style.left: inDragging.pos.x> { return value + "px";};
     style.top: inDragging.pos.y> { return (value + 30) + "px";};
     style.display: inDragging > { return value? "inline-block":"none";}
 }
 
 #animationVisual{
-    content [template: @/mafiaSystem.nodeContentTemplateSelector]: inAnimation;
+    content [templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: inAnimation;
     style.display: inAnimation > { return value? "inline-block":"none";}
 }
