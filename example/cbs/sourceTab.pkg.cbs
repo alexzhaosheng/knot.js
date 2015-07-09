@@ -18,5 +18,5 @@ $private
 
 .sourceTab code{
     text:content;
-    class:type>{ return (value=="CBS")? "css": value.toLowerCase();}
+    class:type>{ return (value.toLowerCase()=="cbs")? "css": value.toLowerCase();}
 }

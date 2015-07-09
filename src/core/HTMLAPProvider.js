@@ -112,7 +112,7 @@
         }
     }
 
-    function getTemplateFromSelector(selector, node, value){
+    function getTemplateFromSelector(selector, node, value, allowNullResult){
         try{
             var selectorFunc = __private.Utility.getValueOnPath(value, selector);
             if(!selectorFunc){
@@ -120,7 +120,7 @@
                 return null;
             }
             var template =  selectorFunc.apply(node, [value, node]);
-            if(!template){
+            if(!template && !allowNullResult){
                 __private.Log.error("The template selector returns NULL. template selector:" + selector);
             }
             return template;
@@ -155,14 +155,14 @@
         var isTemplateSelector = false;
         if(options.templateSelector){
             if(!(value === null || typeof(value) === "undefined")){
-                template = getTemplateFromSelector(options.templateSelector, target, value);
+                template = getTemplateFromSelector(options.templateSelector, target, value, true);
             }
             isTemplateSelector = true;
         }
 
         var currentContent =  target.childNodes[0];
         if(!currentContent) {
-            if(value === null || typeof(value) === "undefined") {
+            if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
                 return;
             }
             var n  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
@@ -179,7 +179,7 @@
             if(currentContent.__knot && currentContent.__knot.dataContext === value) {
                 return;
             }
-            if(value === null || typeof(value) === "undefined") {
+            if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
                 removeNodeCreatedFromTemplate(currentContent);
                 raiseEvt(currentContent, "@removed");
             }
