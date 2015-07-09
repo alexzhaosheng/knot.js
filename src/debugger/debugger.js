@@ -117,6 +117,16 @@ Knot.js debugger
         onClearLogs: function () {
             global.debuggerModel.knotChangeLog.length = 0;
             global.debuggerModel.knotChangeLog.notifyChanged();
+        },
+
+        getValueDescription: function(value){
+            if(typeof(value) === "object"){
+                return "{object}";
+            }
+            else if(typeof(value) === "array"){
+                return "[array]";
+            }
+            return value;
         }
     };
 
@@ -336,8 +346,40 @@ Knot.js debugger
     ///////////////////////////////////////////////////////
     // log and debugger that called by the opener
     //////////////////////////////////////////////////////
+    function knotValueChanged(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
+        var info = getNodeInfo(leftTarget);
+        if(!info || !info.options) {
+            return;
+        }
+        for(var i=0; i<info.options.length; i++) {
+            if(info.options[i].knotOption === knotOption) {
+                info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
+                global.debuggerModel.knotChangeLog.unshift({
+                    id:info.options[i].latestValueInfo.id,
+                    nodeDescription: info.description,
+                    knotOption: info.options[i],
+                    value:latestValue,
+                    isFromLeftToRight:isFromLeftToRight
+                });
+                if(global.debuggerModel.knotChangeLog.length > MAX_KNOT_LOG_NUMBER) {
+                    global.debuggerModel.knotChangeLog.pop();
+                }
+                return;
+            }
+        }
+    }
+
+
+
     var _debugLogCount = 0;
     var _logLevels =  ["Info", "Warning", "Error"];
+    var _cachedChangedLogs = [];
+    setInterval(function(){
+        for(var i=0; i<_cachedChangedLogs.length; i++){
+            knotValueChanged.apply(null, _cachedChangedLogs[i]);
+        }
+        _cachedChangedLogs.length = 0;
+    }, 200);
     global.calledByOpener = {
         log: function (log) {
             if(_logLevels.indexOf(log.level) > _logLevels.indexOf(global.debuggerModel.highestLogLevel)) {
@@ -366,27 +408,8 @@ Knot.js debugger
                 }
             },
 
-            knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
-                var info = getNodeInfo(leftTarget);
-                if(!info || !info.options) {
-                    return;
-                }
-                for(var i=0; i<info.options.length; i++) {
-                    if(info.options[i].knotOption === knotOption) {
-                        info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
-                        global.debuggerModel.knotChangeLog.unshift({
-                            id:info.options[i].latestValueInfo.id,
-                            nodeDescription: info.description,
-                            knotOption: info.options[i],
-                            value:latestValue,
-                            isFromLeftToRight:isFromLeftToRight
-                        });
-                        if(global.debuggerModel.knotChangeLog.length > MAX_KNOT_LOG_NUMBER) {
-                            global.debuggerModel.knotChangeLog.pop();
-                        }
-                        return;
-                    }
-                }
+            knotChanged:function(){
+                _cachedChangedLogs.push(Array.prototype.slice.apply(arguments, [0]));
             },
 
             knotTied: function (leftTarget, rightTarget, knotOption) {

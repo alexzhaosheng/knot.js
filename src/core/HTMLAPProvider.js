@@ -214,44 +214,86 @@
 
     //it create the the elements from template and add them to node's children collection
     //and synchronize the elements in node's children and array
-    function syncItems(node, values, template, templateSelector, onItemCreated, onItemRemoved) {
+    function syncItems(node, values, template, templateSelector, onItemCreated, onItemRemoved, additionalInfo) {
+        var i, n;
         //take null values as empty array.
         if (!values) {
             values = [];
         }
-        for (var i = 0; i < values.length; i++) {
-            var ele = findChildByDataContext(node, values[i], i);
-            if (ele) {
-                if (Array.prototype.indexOf.call(node.children, ele) !== i) {
-                    node.removeChild(ele);
-                    addChildTo(node, ele, i);
-                }
-            }
-            else {
-                if(templateSelector){
-                    template = getTemplateFromSelector(templateSelector, node, values[i]);
-                    if(!template){
-                        continue;
-                    }
-                }
-                var n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
-                if (n) {
-                    addChildTo(node, n, i);
-                    if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
-                        __private.HTMLKnotBuilder.setDataContext(n, values[i]);
-                    }
-                    __private.Debugger.nodeAdded(n);
-                    if(onItemCreated) {
-                        onItemCreated.apply(node, [n, values[i]]);
-                    }
-                }
-            }
-        }
 
-        for (i = node.children.length - 1; i >= values.length; i--) {
-            removeNodeCreatedFromTemplate(node.children[i]);
-            if(onItemRemoved) {
-                onItemRemoved.apply(node, [node.children[i]]);
+        if(additionalInfo){
+            if(node.__knot_latestForeachArrayVersion === values.__knot_arrayVersion)
+                return;
+            if(additionalInfo.removed){
+                var removed = additionalInfo.removed;
+                for(i=removed.length-1; i >= 0; i--){
+                    n = node.children[removed[i]];
+                    removeNodeCreatedFromTemplate(n);
+                    if(onItemRemoved) {
+                        onItemRemoved.apply(node, [n]);
+                    }
+                }
+            }
+            if(additionalInfo.added){
+                var added = additionalInfo.added;
+                for(i=0; i<added.length; i++){
+                    if(templateSelector){
+                        template = getTemplateFromSelector(templateSelector, node, values[added[i]]);
+                        if(!template){
+                            continue;
+                        }
+                    }
+                    n = __private.HTMLKnotBuilder.createFromTemplate(template, values[added[i]], node);
+                    if (n) {
+                        addChildTo(node, n, added[i]);
+                        if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                            __private.HTMLKnotBuilder.setDataContext(n, values[added[i]]);
+                        }
+                        __private.Debugger.nodeAdded(n);
+                        if(onItemCreated) {
+                            onItemCreated.apply(node, [n, values[added[i]]]);
+                        }
+                    }
+                }
+            }
+            node.__knot_latestForeachArrayVersion = values.__knot_arrayVersion;
+        }
+        else{
+            for (i = 0; i < values.length; i++) {
+                var ele = findChildByDataContext(node, values[i], i);
+                if (ele) {
+                    if (Array.prototype.indexOf.call(node.children, ele) !== i) {
+                        node.removeChild(ele);
+                        addChildTo(node, ele, i);
+                    }
+                }
+                else {
+                    if(templateSelector){
+                        template = getTemplateFromSelector(templateSelector, node, values[i]);
+                        if(!template){
+                            continue;
+                        }
+                    }
+                    n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
+                    if (n) {
+                        addChildTo(node, n, i);
+                        if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                            __private.HTMLKnotBuilder.setDataContext(n, values[i]);
+                        }
+                        __private.Debugger.nodeAdded(n);
+                        if(onItemCreated) {
+                            onItemCreated.apply(node, [n, values[i]]);
+                        }
+                    }
+                }
+            }
+
+            for (i = node.children.length - 1; i >= values.length; i--) {
+                n = node.children[i];
+                removeNodeCreatedFromTemplate(n);
+                if(onItemRemoved) {
+                    onItemRemoved.apply(node, [n]);
+                }
             }
         }
     }
@@ -312,12 +354,14 @@
 //    }
 
     //set "foreach" Access Point for the html node
-    function setForeach(node, values, options) {
+    function setForeach(node, values, options, additionalInfo) {
         if(!options || (!options.template && !options.templateSelector)){
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
             return;
         }
-        syncItems(node, values, options.template, options.templateSelector,  __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
+        syncItems(node, values, options.template, options.templateSelector,
+                 __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]),
+                additionalInfo);
     }
 
 
@@ -353,7 +397,7 @@
             return __private.HTMLAPHelper.getPropertyFromElement(target, apName);
         },
 
-        setValue: function (target, apName, value, options) {
+        setValue: function (target, apName, value, options, additionalInfo) {
             if(apName[0] === "@") {
                 if(typeof(value) !== "function") {
                     __private.Log.error( "Event listener must be a function!");
@@ -378,7 +422,7 @@
                 setContent(target, value, options);
             }
             else if(__private.Utility.startsWith(apName, "foreach")) {
-                setForeach(target, value, options);
+                setForeach(target, value, options, additionalInfo);
             }
             else{
                 if(typeof(value) === "undefined") {

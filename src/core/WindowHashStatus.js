@@ -110,7 +110,7 @@
     };
 
     __private.DataObserver.monitor(_hashObj, "originalHash", function(){
-        updateHash();
+        window.location.hash = "#" + _hashObj.originalHash;
         updateHashStatus();
     });
 

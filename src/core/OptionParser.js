@@ -174,7 +174,8 @@
                 __private.Log.error("Invalid composite option:"+text);
                 return null;
             }
-            return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
+            var pipes = nToOnePiple.split(">").map(function(t){return __private.Utility.trim(t);});
+            return {isComposite:true, childrenAPs:aPs, nToOnePipes:pipes};
         }
     };
 })(window);

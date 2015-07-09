@@ -225,7 +225,8 @@
 
         //set value by using relevant provider. It also prevents code re-enter which may cause infinite
         //set value calls and stack overflow error.
-        safeSetValue: function (target, ap, value) {
+        //additionalInfo is passed by the change notification sender. it contains the details such as array's changed detail
+        safeSetValue: function (target, ap, value, additionalInfo) {
             if(ap.ignoreSettingValue) {
                 return;
             }
@@ -233,7 +234,7 @@
             try{
                 this.checkProvider(target, ap);
 
-                ap.provider.setValue(target, ap.description, value, ap.options);
+                ap.provider.setValue(target, ap.description, value, ap.options, additionalInfo);
                 raiseAPEvent(target, ap.options, "@set", [ap.description, value]);
             }
             finally{
@@ -259,7 +260,7 @@
             this.checkProvider(src, srcAP);
             this.checkProvider(target, targetAP);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)) {
-                srcAP.changedCallback = function () {
+                srcAP.changedCallback = function (p, o, n, additionalInfo) {
                     if(targetAP.ignoreSettingValue) {
                         return;
                     }
@@ -277,7 +278,7 @@
 
                     srcAP.ignoreSettingValue = true;
                     try{
-                        __private.KnotManager.safeSetValue(target, targetAP, v);
+                        __private.KnotManager.safeSetValue(target, targetAP, v, additionalInfo);
                     }
                     finally{
                         delete srcAP.ignoreSettingValue;
@@ -320,7 +321,7 @@
             }
             normalTarget.provider = __private.KnotManager.getProvider(normalTarget, normalAP.description);
 
-            compositeAP.changedCallback = function () {
+            compositeAP.changedCallback = function (p, o, n, additionalInfo) {
                 var values = [];
                 for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
                     var v = __private.KnotManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
@@ -330,14 +331,19 @@
                     values.push(v);
                 }
 
-                var p = __private.Utility.getValueOnPath(compositeAPTarget, compositeAP.nToOnePipe);
-                if (typeof(p) !== "function") {
-                    __private.Log.error("Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
+                var value = values;
+                if(compositeAP.nToOnePipes) {
+                    for(i=0; i< compositeAP.nToOnePipes.length; i++) {
+                        var p = __private.Utility.getValueOnPath(compositeAPTarget, compositeAP.nToOnePipes[i]);
+                        if(typeof(p) !== "function") {
+                            __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipes[i]);
+                        }
+                        value = p.apply(compositeAPTarget, [value]);
+                    }
                 }
-                var latestValue = p.apply(compositeAPTarget, [values]);
 
-                __private.KnotManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget === rightTarget);
-                __private.KnotManager.safeSetValue(normalTarget, normalAP, latestValue);
+                __private.KnotManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, value, normalTarget === rightTarget);
+                __private.KnotManager.safeSetValue(normalTarget, normalAP, value, additionalInfo);
 
                 raiseAPEvent(normalTarget, normalAP, "@change", [leftTarget, rightTarget, knotInfo]);
             };

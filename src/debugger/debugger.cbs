@@ -80,8 +80,8 @@ body{
     };
 
     ->.knotValue{
-        text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >{return JSON.stringify(value);};
-        title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + JSON.stringify(value);}
+        text[@set:@/debuggerModel.onKnotValueChanged]: latestValueInfo.value >@/debuggerModel.getValueDescription;
+        title: latestValueInfo.value >{return "Latest value:("+ (this.latestValueInfo.isFromLeftToRight?"output":"input") +")\n" + debuggerModel.getValueDescription(value);}
     };
 
     ->.knotValueDetail{
@@ -114,8 +114,8 @@ body{
         class = isFromLeftToRight>{return value?"+fa-long-arrow-right -fa-long-arrow-left":"-fa-long-arrow-right +fa-long-arrow-left";}
     };
     -> .knotValue{
-        text = value>{return JSON.stringify(value);};
-        title = value>{return JSON.stringify(value);};
+        text = value>@/debuggerModel.getValueDescription;
+        title = value>@/debuggerModel.getValueDescription;
     };
     -> .knotValueDetail{
         @click: @/debuggerModel.onShowKnotValueLogDetail

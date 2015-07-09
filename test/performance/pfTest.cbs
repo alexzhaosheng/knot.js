@@ -1,0 +1,60 @@
+ #testTimes{
+    value: $hash.times>{return value?Number(value):1000;}
+}
+#testButton{
+    style.display: $hash.action > {return value?"none":"inline-block";}
+}
+
+
+#knotList{
+    foreach: /knotModel.dataList;
+
+    -> >div{
+        className: isCompleted>{return value?"completed":"";}
+    };
+    -> span:first-child{
+        text = text;
+    };
+    -> span:last-child{
+        text: value;
+    }
+}
+
+#knotCreateCost{
+    text: $hash.knotCreate;
+}
+#knotSetValueCost{
+    text: $hash.knotSetValue;
+}
+#knotRemoveCost{
+    text: $hash.knotRemove;
+}
+#knotSum{
+    text: ($hash.knotCreate & $hash.knotSetValue & $hash.knotRemove)>@{ return Number(value[0])+Number(value[1])+Number(value[2]); } > @{ return isNaN(value)? "":value;}
+}
+
+#knotBatchCreateCost{
+    text: $hash.knotBatchCreate;
+}
+#knotBatchSetValueCost{
+    text: $hash.knotBatchSetValue;
+}
+#knotBatchRemoveCost{
+    text: $hash.knotBatchRemove;
+}
+#knotBatchSum{
+    text: ($hash.knotBatchCreate & $hash.knotBatchSetValue & $hash.knotBatchRemove)>@{ return Number(value[0])+Number(value[1])+Number(value[2]); } >@{return isNaN(value)? "":value;}
+}
+
+#jqueryCreateCost{
+    text: $hash.jqueryCreate;
+}
+#jquerySetValueCost{
+    text: $hash.jquerySetValue;
+}
+#jqueryRemoveCost{
+    text: $hash.jqueryRemove;
+}
+#jquerySum{
+    text: ($hash.jqueryCreate & $hash.jquerySetValue & $hash.jqueryRemove)>@{ return Number(value[0])+Number(value[1])+Number(value[2]); } > @{return isNaN(value)? "":value;}
+}

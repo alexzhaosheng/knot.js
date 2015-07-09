@@ -79,8 +79,8 @@
     };
 
     //notify knot system that object is changed.
-    global.Knot.notifyObjectChanged = function (object, path, oldValue, newValue) {
-        __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
+    global.Knot.notifyObjectChanged = function (object, path, oldValue, newValue, additionalInfo) {
+        __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue, additionalInfo);
     };
     //monitor the change of the object
     global.Knot.monitorObject = function (object, path, callback) {
