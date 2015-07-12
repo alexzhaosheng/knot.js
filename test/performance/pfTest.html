@@ -26,69 +26,164 @@
 
 
     <link rel="stylesheet" href="pfTest.css">
-    <script type="text/cbs" src="pfTest.cbs"></script>
+    <script type="text/cbs">
+        #testResult{
+            dataContext: /testModel;
 
-    <script type="text/javascript" src="pfTest.js"></script>
+            -> #jqueryTest{
+                dataContext:jquery;
+            };
+
+            -> #knotjsTest{
+                dataContext: knotjs;
+            };
+
+            -> #knotjsBatchTest{
+                dataContext: knotjsBatch;
+            };
+
+            -> #angularjsTest{
+                dataContext: angularJS;
+            };
+
+            -> .resultRow{
+                class: /testModel.currentTest > {return testModel[value] === this? "+inExecuting" :"-inExecuting";};
+
+                -> td:nth-child(2){
+                    text: create;
+                };
+                -> td:nth-child(3){
+                    text: setValue;
+                };
+                ->td:nth-child(4){
+                    text: remove;
+                };
+                ->td:nth-child(5){
+                    text: * > {return this.create + this.setValue + this.remove;} > {return isNaN(value)?"":value;};
+                }
+            }
+        }
+    </script>
+
+    <script>
+        window.testModel = {
+            knotjs:{},
+            knotjsBatch:{},
+            jquery:{},
+            angularJS:{},
+
+            currentTest:null
+        };
+
+        window.calledByTestTarget = {
+            getItemNumber: function(){
+                return Number($("#testTimes").val());
+            },
+
+            getCurrentTest: function(){
+                return window.testModel.currentTest;
+            },
+
+            getCurrentTestResultObj: function(){
+                return window.testModel[this.getCurrentTest()];
+            },
+
+            notifyTestFinish: function(){
+                doNextText();
+            }
+        };
+
+        var _tests = ["jquery", "knotjs", "knotjsBatch", "angularJS"];
+        var _testFiles = {
+            "jquery": "jquery/jqueryTest.html",
+            "knotjs": "knotjs/knotjsTest.html",
+            "knotjsBatch": "knotjs/knotjsTest.html",
+            "angularJS": "angularjs/angularjsTest.html"
+        };
+
+        function doNextText(){
+            var nextIndex;
+            if(window.testModel.currentTest){
+                nextIndex = _tests.indexOf(window.testModel.currentTest) + 1;
+            }
+            else{
+                nextIndex = 0;
+            }
+            if(nextIndex < _tests.length){
+                window.testModel.currentTest = _tests[nextIndex];
+                window.testModel[_tests[nextIndex]] = {};
+                $("#testFrame").attr("src",  _testFiles[_tests[nextIndex]]);
+            }
+            else{
+                window.testModel.currentTest = null;
+                $("#testFrame").attr("src", "");
+            }
+        }
+
+        Knot.ready(function(){
+            $("#testButton").click(function(){
+                doNextText();
+            });
+        })
+    </script>
 </head>
 <body>
 
 <div>
     <p>
-    <label>The number of todo items:</label> <input id="testTimes" type="number" value="1000"> <button id="testButton">Run Test</button>
+        <label>The number of todo items:</label> <input id="testTimes" type="number" value="1000"> <button id="testButton">Run Test</button>
     </p>
 
-    <h3>Test result:</h3>
+    <b>Test result:</b>
     <table id="testResult">
         <tbody>
-            <tr>
-                <td></td>
-                <td>Create</td>
-                <td>Change * 10</td>
-                <td>Remove</td>
-                <td>Sum</td>
-            </tr>
-            <tr>
-                <td>jQuery.js</td>
-                <td id="jqueryCreateCost"></td>
-                <td id="jquerySetValueCost"></td>
-                <td id="jqueryRemoveCost"></td>
-                <td id="jquerySum"></td>
-            </tr>
-            <tr>
-                <td>knot.js</td>
-                <td id="knotCreateCost"></td>
-                <td id="knotSetValueCost"></td>
-                <td id="knotRemoveCost"></td>
-                <td id="knotSum"></td>
-            </tr>
-            <tr>
-                <td>knot.js (Batch mode)</td>
-                <td id="knotBatchCreateCost"></td>
-                <td id="knotBatchSetValueCost"></td>
-                <td id="knotBatchRemoveCost"></td>
-                <td id="knotBatchSum"></td>
-            </tr>
-
+        <tr>
+            <td>Framework</td>
+            <td>Create</td>
+            <td>Change * 10</td>
+            <td>Remove</td>
+            <td>Sum</td>
+        </tr>
+        <tr class="resultRow" id="jqueryTest">
+            <td>jQuery.js</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow " id="knotjsTest">
+            <td>knot.js</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow" id="knotjsBatchTest">
+            <td>knot.js (Batch mode)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow" id="angularjsTest">
+            <td>Angularjs</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
         </tbody>
     </table>
 
 
-<p>
-    <span id="runningMessage"></span>
-</p>
+    <p>
+        <span id="runningMessage"></span>
+    </p>
 
 </div>
 
-<div class="list" id="knotList">
-    <div knot-template class="toDoItem"><span></span><span></span></div>
-</div>
-<div class="list" id="jqueryList"></div>
-
-<div class="list" ng-controller="TodoCtrl">
-            <div ng-repeat="todo in todos" ng-class="{true:'toDoItem completed', false:'toDoItem'}[todo.isCompleted]">
-            <span>{{todo.text}}</span><span>{{todo.value}}</span>
-        </div>
-</div>
+<iframe id="testFrame">
+</iframe>
 
 </body>
 </html>

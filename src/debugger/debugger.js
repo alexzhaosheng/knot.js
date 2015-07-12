@@ -23,7 +23,7 @@ Knot.js debugger
     function parseHTMLInOpener (html) {
         var div = global.opener.document.createElement('div');
         div.innerHTML = html;
-        return div.childNodes[0];
+        return div.children[0];
     }
 
     function getClosestVisibleElement(element) {
@@ -92,7 +92,7 @@ Knot.js debugger
         },
 
         onShowKnotDetail: function () {
-            var content = JSON.stringify(this.latestValueInfo, null, 3);
+            var content = JSON.stringify(this.latestValueInfo?null:this.latestValueInfo.value, null, 3);
 
             showJson("Current value for knot \"" + this.description + "\"" , content);
         },
@@ -435,7 +435,7 @@ Knot.js debugger
                         return;
                     }
                     var parentInfo = getNodeInfo(n.parentNode);
-                    var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
+                    var index =  Array.prototype.indexOf.call(n.parentNode.children, n);
                     parentInfo.childrenInfo.splice(index, 0, info);
                     info.parent = parentInfo;
                 }

@@ -258,16 +258,16 @@
 
                 __private.KnotManager.notifyKnotChanged(node, data, dataContextOption, contextData, false);
 
-                for(i=0; i<node.childNodes.length; i++) {
-                    this.updateDataContext(node.childNodes[i], contextData);
+                for(i=0; i<node.children.length; i++) {
+                    this.updateDataContext(node.children[i], contextData);
                 }
 
                 node.__knot.dataContext = contextData;
                 this.tieKnots(node);
             }
             else{
-                for(i=0; i<node.childNodes.length; i++) {
-                    this.updateDataContext(node.childNodes[i], data);
+                for(i=0; i<node.children.length; i++) {
+                    this.updateDataContext(node.children[i], data);
                 }
             }
         },
@@ -306,8 +306,8 @@
                 }
                 delete node.__knot_component;
             }
-            for(var i=0; i<node.childNodes.length; i++) {
-                this.clearBinding(node.childNodes[i]);
+            for(var i=0; i<node.children.length; i++) {
+                this.clearBinding(node.children[i]);
             }
         },
 

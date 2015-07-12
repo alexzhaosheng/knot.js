@@ -6,20 +6,6 @@
 }
 
 
-#knotList{
-    foreach: /knotModel.dataList;
-
-    -> >div{
-        className: isCompleted>{return value?"completed":"";}
-    };
-    -> span:first-child{
-        text = text;
-    };
-    -> span:last-child{
-        text: value;
-    }
-}
-
 #knotCreateCost{
     text: $hash.knotCreate;
 }

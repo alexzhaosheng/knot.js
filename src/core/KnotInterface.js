@@ -28,8 +28,8 @@
 
         //it create the the elements from template and add them to node's children collection
         //and synchronize the elements in node's children and array
-        synchronizeItems: function (parentNode, valueArray, template, onCreated, onRemoved) {
-            __private.HTMLAPProvider.syncItems(parentNode, valueArray, template, onCreated, onRemoved);
+        synchronizeItems: function (parentNode, valueArray, template) {
+            __private.HTMLAPProvider.syncItems(parentNode, valueArray, template);
         },
 
         //create a node from template. Note it only create the HTML node, it may not bind the data to the node

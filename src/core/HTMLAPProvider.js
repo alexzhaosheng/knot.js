@@ -139,7 +139,7 @@
             return;
         }
 
-        var raiseEvt = function(childNode, evt){
+        var raiseEvent = function(childNode, evt){
             if(options && options[evt]){
                 var f = __private.Utility.getValueOnPath(value, options[evt]);
                 try{
@@ -160,18 +160,19 @@
             isTemplateSelector = true;
         }
 
-        var currentContent =  target.childNodes[0];
+        var currentContent =  target.children[0]
         if(!currentContent) {
             if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
                 return;
             }
             var n  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
             if(n) {
+                raiseEvent(currentContent, "@adding");
                 target.appendChild(n);
                 if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
                     __private.HTMLKnotBuilder.setDataContext(n, value);
                 }
-                raiseEvt(n, "@added");
+                raiseEvent(n, "@added");
                 __private.Debugger.nodeAdded(n);
             }
         }
@@ -180,8 +181,9 @@
                 return;
             }
             if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
+                raiseEvent(currentContent, "@removing");
                 removeNodeCreatedFromTemplate(currentContent);
-                raiseEvt(currentContent, "@removed");
+                raiseEvent(currentContent, "@removed");
             }
             else{
                 if(isTemplateSelector || __private.HTMLKnotBuilder.isDynamicTemplate(template)) {
@@ -191,12 +193,13 @@
                         currentContent  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
                     }
                     if(currentContent) {
+                        raiseEvent(currentContent, "@adding");
                         target.appendChild(currentContent);
                         if(!__private.HTMLKnotBuilder.hasDataContext(currentContent)) {
                             __private.HTMLKnotBuilder.setDataContext(currentContent, value);
                         }
                         __private.Debugger.nodeAdded(currentContent);
-                        raiseEvt(currentContent, "@added");
+                        raiseEvent(currentContent, "@added");
                     }
                 }
                 else{
@@ -214,12 +217,24 @@
 
     //it create the the elements from template and add them to node's children collection
     //and synchronize the elements in node's children and array
-    function syncItems(node, values, template, templateSelector, onItemCreated, onItemRemoved, additionalInfo) {
+    function syncItems(node, values, template, templateSelector, options, additionalInfo) {
         var i, n;
         //take null values as empty array.
         if (!values) {
             values = [];
         }
+
+        var raiseEvent = function(childNode, value, evt){
+            if(options && options[evt]){
+                var f = __private.Utility.getValueOnPath(value, options[evt]);
+                try{
+                    f.apply(node, [childNode, value]);
+                }
+                catch(err) {
+                    __private.Log.warning("Raise " + evt + " event failed.", err);
+                }
+            }
+        };
 
         if(additionalInfo){
             if(node.__knot_latestForeachArrayVersion === values.__knot_arrayVersion)
@@ -228,10 +243,9 @@
                 var removed = additionalInfo.removed;
                 for(i=removed.length-1; i >= 0; i--){
                     n = node.children[removed[i]];
+                    raiseEvent(n, null, "@removing");
                     removeNodeCreatedFromTemplate(n);
-                    if(onItemRemoved) {
-                        onItemRemoved.apply(node, [n]);
-                    }
+                    raiseEvent(n, null, "@removed");
                 }
             }
             if(additionalInfo.added){
@@ -245,14 +259,13 @@
                     }
                     n = __private.HTMLKnotBuilder.createFromTemplate(template, values[added[i]], node);
                     if (n) {
+                        raiseEvent(n, values[added[i]], "@adding");
                         addChildTo(node, n, added[i]);
                         if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
                             __private.HTMLKnotBuilder.setDataContext(n, values[added[i]]);
                         }
-                        __private.Debugger.nodeAdded(n);
-                        if(onItemCreated) {
-                            onItemCreated.apply(node, [n, values[added[i]]]);
-                        }
+                         __private.Debugger.nodeAdded(n);
+                        raiseEvent(n, values[added[i]], "@added");
                     }
                 }
             }
@@ -276,24 +289,22 @@
                     }
                     n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
                     if (n) {
+                        raiseEvent(n, values[i], "@adding");
                         addChildTo(node, n, i);
                         if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
                             __private.HTMLKnotBuilder.setDataContext(n, values[i]);
                         }
                         __private.Debugger.nodeAdded(n);
-                        if(onItemCreated) {
-                            onItemCreated.apply(node, [n, values[i]]);
-                        }
+                        raiseEvent(n, values[i], "@added");
                     }
                 }
             }
 
             for (i = node.children.length - 1; i >= values.length; i--) {
                 n = node.children[i];
+                raiseEvent(n, null, "@removing");
                 removeNodeCreatedFromTemplate(n);
-                if(onItemRemoved) {
-                    onItemRemoved.apply(node, [n]);
-                }
+                raiseEvent(n, null, "@removed");
             }
         }
     }
@@ -359,9 +370,7 @@
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
             return;
         }
-        syncItems(node, values, options.template, options.templateSelector,
-                 __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]),
-                additionalInfo);
+        syncItems(node, values, options.template, options.templateSelector, options, additionalInfo);
     }
 
 

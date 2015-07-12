@@ -56,7 +56,7 @@
             "input.text":"value",
             "textarea":"value",
             "option":"text",
-            "span":"innerText",
+            "span":"textContent",
             "*":"textContent"
         }
     };

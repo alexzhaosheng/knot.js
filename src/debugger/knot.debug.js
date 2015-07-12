@@ -47,7 +47,7 @@
             }
         }
         else{
-            if(!_debugButton.parentNode) {
+            if(_debugButton && !_debugButton.parentNode) {
                 document.body.appendChild(_debugButton);
             }
         }
@@ -58,7 +58,7 @@
             _debugButton.className = "";
             _debugButton.src = getBaseDir()+"img/debugger.png";
         }
-        else{
+        else if(_debugButton){
             _debugButton.className = "knotjs-debugger-flash";
             if(_currentMaxLevel === 1) {
                 _debugButton.src = getBaseDir()+"img/debugger_warning.png";
@@ -173,7 +173,7 @@
     function parseHTML (html) {
         var div = document.createElement('div');
         div.innerHTML = html;
-        var r =  div.childNodes[0];
+        var r =  div.children[0];
         div.removeChild(r);
         return r;
     }
