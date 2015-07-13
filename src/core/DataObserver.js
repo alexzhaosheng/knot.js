@@ -82,7 +82,7 @@
         },
 
         //notify the data is changed, and call the callbacks registered with this data and path
-        notifyDataChanged: function (data, path, oldValue, newValue) {
+        notifyDataChanged: function (data, path, oldValue, newValue, additionalInfo) {
             var attachedInfo = __private.AttachedData.getAttachedInfo(data);
 
             if(!attachedInfo.changedProperties) {
@@ -98,18 +98,18 @@
                 callbacks = attachedInfo.changedCallbacks[path].slice(0);
                 for (i = 0; i < callbacks.length; i++) {
                     try{
-                        callbacks[i].callback.apply(data, [path, oldValue, newValue]);
+                        callbacks[i].callback.apply(data, [path, oldValue, newValue, additionalInfo]);
                     }
                     catch(error) {
                         __private.Log.warning("Call changed callback failed.", error);
                     }
                 }
             }
-            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF]) {
+            if (attachedInfo.changedCallbacks && attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF] && path !== PATH_FOR_OBJECT_ITSELF) {
                 callbacks = attachedInfo.changedCallbacks[PATH_FOR_OBJECT_ITSELF].slice(0);
                 for (i = 0; i < callbacks.length; i++) {
                     try{
-                        callbacks[i].callback.apply(data, [path, oldValue, newValue]);
+                        callbacks[i].callback.apply(data, [path, oldValue, newValue, additionalInfo]);
                     }
                     catch(error) {
                         __private.Log.warning("Call changed callback failed.", error);
@@ -156,6 +156,10 @@
             attached.dataHookInfo.data[property] = object[property];
             attached.dataHookInfo.hookRefCount[property] = 1;
 
+            //ignore array.length. it isn't over-writable and it's change event will be fired by the hooked array methods
+            if((object instanceof  Array) && property === "length"){
+                return;
+            }
             //define a new property to overwrite the current one
             try{
                 Object.defineProperty(object, property, {
@@ -176,7 +180,7 @@
             catch (err) {
                 attached.dataHookInfo.hookFailed = true;
                 //when trying to hook the global variable from "window" object, it just fail
-                __private.Log.warning( "Hook property failed.", err);
+                __private.Log.warning( "Hook property failed. property:" + property , err);
             }
         },
 
@@ -236,11 +240,11 @@
             __private.DataObserver.on(object, path, callback, attachedData);
 
             if(restPath) {
-                attachedData.childChangedCallback = function (p, oldValue, newValue) {
+                attachedData.childChangedCallback = function (p, oldValue, newValue, additionalInfo) {
                     var path = property +"." + restPath;
-                    __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
+                    __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue, additionalInfo);
                 };
-                attachedData.monitorChildChangedCallback = function (p, oldValue, newValue) {
+                attachedData.monitorChildChangedCallback = function (p, oldValue, newValue, additionalInfo) {
                     if(oldValue) {
                         __private.DataObserver.stopMonitoring(oldValue, restPath, attachedData.childChangedCallback);
                     }
@@ -251,7 +255,7 @@
                     var path = property + "." + restPath;
                     var newChildValue = __private.Utility.getValueOnPath(newValue, restPath);
                     var oldChildValue = __private.Utility.getValueOnPath(oldValue, restPath);
-                    __private.DataObserver.notifyDataChanged(object, path, oldChildValue, newChildValue);
+                    __private.DataObserver.notifyDataChanged(object, path, oldChildValue, newChildValue, additionalInfo);
                 };
                 __private.DataObserver.on(object, property, attachedData.monitorChildChangedCallback);
                 if(object[property]) {
@@ -264,14 +268,14 @@
                 //so if the value on the property is an array, it must be monitored too
                 //and we need to setup a monitoring callback to monitor the change of the property so that we can hook
                 //the array object when it is set with an array object
-                attachedData.changedCallback = function (p, oldValue, newValue) {
+                attachedData.changedCallback = function (p, oldValue, newValue, additionalInfo) {
                     if(oldValue instanceof  Array) {
                         __private.DataObserver.off(oldValue, "*", attachedData.arrayChangedCallback);
                         delete attachedData.arrayChangedCallback;
                     }
                     if(newValue instanceof Array) {
-                        attachedData.arrayChangedCallback = function () {
-                            __private.DataObserver.notifyDataChanged(object, path, newValue, newValue);
+                        attachedData.arrayChangedCallback = function (p, oldValue, newValue, additionalInfo) {
+                            __private.DataObserver.notifyDataChanged(object, path, newValue, newValue, additionalInfo);
                         };
                         __private.DataObserver.on(newValue, "*", attachedData.arrayChangedCallback);
                     }

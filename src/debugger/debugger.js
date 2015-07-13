@@ -3,6 +3,9 @@ Knot.js debugger
  */
 (function (global) {
     "use strict";
+
+    var MAX_KNOT_LOG_NUMBER = 100;
+
     var _isFilterEnabled = false;
 
     //this is the red rectangle to indicate the element in opener window
@@ -20,7 +23,7 @@ Knot.js debugger
     function parseHTMLInOpener (html) {
         var div = global.opener.document.createElement('div');
         div.innerHTML = html;
-        return div.childNodes[0];
+        return div.children[0];
     }
 
     function getClosestVisibleElement(element) {
@@ -89,7 +92,7 @@ Knot.js debugger
         },
 
         onShowKnotDetail: function () {
-            var content = JSON.stringify(this.latestValueInfo, null, 3);
+            var content = JSON.stringify(this.latestValueInfo?null:this.latestValueInfo.value, null, 3);
 
             showJson("Current value for knot \"" + this.description + "\"" , content);
         },
@@ -114,6 +117,16 @@ Knot.js debugger
         onClearLogs: function () {
             global.debuggerModel.knotChangeLog.length = 0;
             global.debuggerModel.knotChangeLog.notifyChanged();
+        },
+
+        getValueDescription: function(value){
+            if(typeof(value) === "object"){
+                return "{object}";
+            }
+            else if(typeof(value) === "array"){
+                return "[array]";
+            }
+            return value;
         }
     };
 
@@ -271,6 +284,10 @@ Knot.js debugger
         if(node.hasAttribute("knot-debugger-ignore")) {
             return;
         }
+        //when node is svg, there's no children. we don't support bind to svg at current stage
+        if(!node.children){
+            return;
+        }
         var nodeInfo = {
             isExpanded:true,
             childrenInfo: []
@@ -284,7 +301,7 @@ Knot.js debugger
             }
         }
 
-        if(!node.__knot && nodeInfo.childrenInfo.length == 0) {
+        if(!node.__knot && nodeInfo.childrenInfo.length === 0) {
             return null;
         }
 
@@ -329,16 +346,48 @@ Knot.js debugger
     ///////////////////////////////////////////////////////
     // log and debugger that called by the opener
     //////////////////////////////////////////////////////
+    function knotValueChanged(leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
+        var info = getNodeInfo(leftTarget);
+        if(!info || !info.options) {
+            return;
+        }
+        for(var i=0; i<info.options.length; i++) {
+            if(info.options[i].knotOption === knotOption) {
+                info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
+                global.debuggerModel.knotChangeLog.unshift({
+                    id:info.options[i].latestValueInfo.id,
+                    nodeDescription: info.description,
+                    knotOption: info.options[i],
+                    value:latestValue,
+                    isFromLeftToRight:isFromLeftToRight
+                });
+                if(global.debuggerModel.knotChangeLog.length > MAX_KNOT_LOG_NUMBER) {
+                    global.debuggerModel.knotChangeLog.pop();
+                }
+                return;
+            }
+        }
+    }
+
+
+
     var _debugLogCount = 0;
     var _logLevels =  ["Info", "Warning", "Error"];
+    var _cachedChangedLogs = [];
+    setInterval(function(){
+        for(var i=0; i<_cachedChangedLogs.length; i++){
+            knotValueChanged.apply(null, _cachedChangedLogs[i]);
+        }
+        _cachedChangedLogs.length = 0;
+    }, 200);
     global.calledByOpener = {
         log: function (log) {
             if(_logLevels.indexOf(log.level) > _logLevels.indexOf(global.debuggerModel.highestLogLevel)) {
                 global.debuggerModel.highestLogLevel = log.level;
             }
             global.debuggerModel.logs.unshift(log);
-            //only keep the latest 200 logs
-            if(global.debuggerModel.logs.length > 200){
+
+            if(global.debuggerModel.logs.length > MAX_KNOT_LOG_NUMBER){
                 global.debuggerModel.logs.pop();
             }
         },
@@ -346,12 +395,12 @@ Knot.js debugger
             helper:{
                 setIsTiedUp: function (leftTarget,  knotOption, isTiedUp) {
                     var info = getNodeInfo(leftTarget);
-                    if(!info) {
+                    if(!info || !info.options) {
                         return;
                     }
 
                     for(var i=0; i<info.options.length; i++) {
-                        if(info.options[i].knotOption == knotOption) {
+                        if(info.options[i].knotOption === knotOption) {
                             this.options[i].isTiedUp = isTiedUp;
                             return;
                         }
@@ -359,27 +408,8 @@ Knot.js debugger
                 }
             },
 
-            knotChanged: function (leftTarget, rightTarget, knotOption, latestValue, isFromLeftToRight) {
-                var info = getNodeInfo(leftTarget);
-                if(!info) {
-                    return;
-                }
-                for(var i=0; i<info.options.length; i++) {
-                    if(info.options[i].knotOption === knotOption) {
-                        info.options[i].latestValueInfo = {id:_debugLogCount++, value:latestValue,isFromLeftToRight:isFromLeftToRight};
-                        global.debuggerModel.knotChangeLog.unshift({
-                            id:info.options[i].latestValueInfo.id,
-                            nodeDescription: info.description,
-                            knotOption: info.options[i],
-                            value:latestValue,
-                            isFromLeftToRight:isFromLeftToRight
-                        });
-                        if(global.debuggerModel.knotChangeLog.length > 200) {
-                            global.debuggerModel.knotChangeLog.pop();
-                        }
-                        return;
-                    }
-                }
+            knotChanged:function(){
+                _cachedChangedLogs.push(Array.prototype.slice.apply(arguments, [0]));
             },
 
             knotTied: function (leftTarget, rightTarget, knotOption) {
@@ -405,7 +435,7 @@ Knot.js debugger
                         return;
                     }
                     var parentInfo = getNodeInfo(n.parentNode);
-                    var index =  Array.prototype.indexOf.call(n.parentNode.childNodes, n);
+                    var index =  Array.prototype.indexOf.call(n.parentNode.children, n);
                     parentInfo.childrenInfo.splice(index, 0, info);
                     info.parent = parentInfo;
                 }

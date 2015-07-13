@@ -1,74 +1,87 @@
 (function (global) {
     "use strict";
-    var provider = {
-        doesSupport: function (target, apName) {
-            return (target && target.tagName &&  target.tagName.toLowerCase() === "div" && apName === "knot-example-tab");
-        },
-        getValue: function (target, apName, options) {
-            return;
-        },
-        setValue: function (target, apName, value, options) {
-            if (!target.knotExampleTabPage) {
-                if (!options || !options.template) {
-                    throw new Error("Access point 'knot-example-tab' must come with 'template' option.");
-                }
-                if (!options || !options.header) {
-                    throw new Error("Access point 'knot-example-tab' must come with 'header' option.");
-                }
-                var model = new TabPageModel(options.header, options.template);
-                var tabPageNode = global.Knot.Advanced.createFromTemplate("knot-example-tabPage", model);
-                global.Knot.Advanced.setDataContext(tabPageNode, model);
-                tabPageNode.knotExampleTabPage = target.knotExampleTabPage = model;
-                $(target).append($(tabPageNode));
-                tabPageNode.querySelector(".page-contentArea") .onKnotExampleTabPageAdded = function (node) {
-                    if(options["@pageAdded"]) {
-                        var onAdded =  global.Knot.Advanced.getValueOnPath(this, options["@pageAdded"]);
-                        if(onAdded) {
-                            onAdded.apply(this, [node]);
-                        }
-                    }
-                };
-            }
-            target.knotExampleTabPage.setValue(value);
-        },
-        doesSupportMonitoring: function (target, apName) {
-            return false;
-        }
-    };
 
-    global.Knot.Advanced.registerNamedGlobalSymbol("createKnotExampleTabPageContent", function (data) {
-        var model = global.Knot.getDataContext(this);
-        var node =  global.Knot.Advanced.createFromTemplate(model.template, data, this);
-        global.Knot.Advanced.setDataContext(node, data);
-        return node;
-    });
-    global.Knot.Advanced.registerNamedGlobalSymbol("onPageHeaderClicked", function (evt, node) {
-        $(node).closest(".knot-example-tabPage")[0].knotExampleTabPage.selectPage(this);
+    global.Knot.Advanced.registerComponent("TabPage", function(node, component){
+        return new TabPage(node);
     });
 
-    var TabPageModel = function (header, template) {
+    var TabPage = function(owner){
         this.pages = [];
-        this.header = header;
-        this.template = template;
-    };
-    var p = TabPageModel.prototype;
-    p.setValue = function (value) {
-        var that =this;
-        if(!value) {
-            this.pages = [];
+        this.pageAdded = null;
+        this.height = "";
+
+        while(owner.children.length > 0){
+            this.pages.push({element:owner.children[0], title:owner.children[0].getAttribute("pageTitle")});
+            $(owner.children[0]).remove();
         }
-        else{
-            this.pages = value.map(function (t) {return {title:t[that.header], data:t, template:that.template};});
-            if(this.pages.length > 0) {
+        if(this.pages.length > 0){
+            this.pages[0].isSelected = true;
+        }
+        this.tabPageNode = global.Knot.Advanced.createFromTemplate("knot-example-tabPage", this);
+        var that =this;
+        this.tabPageNode.querySelector(".page-contentArea") .onKnotExampleTabPageAdded = function (node, data) {
+            node.appendChild(data.element);
+            if(that.pageAdded) {
+                that.pageAdded.apply(that, [node, data]);
+            }
+        };
+
+        $(this.tabPageNode).appendTo(owner);
+        global.Knot.Advanced.setDataContext(this.tabPageNode, this);
+    };
+
+    var p = TabPage.prototype;
+    p.setValue = function(apDescription, value, options) {
+        if(apDescription === "pages") {
+            if(!options || !options.template){
+                throw new Error("No template specified for the tab pages!");
+            }
+            if(!options.header){
+                throw new Error("No header specified for the tab pages!");
+            }
+
+            this.pages.splice(0, this.pages.length);
+            for(var i=0; i<value.length; i++){
+                var page = Knot.Advanced.createFromTemplate(options.template, value[i], this);
+                Knot.Advanced.setDataContext(page, value[i]);
+                this.pages.push({title:value[i][options.header], element:page});
+            }
+
+            if(this.pages.length > 0){
                 this.pages[0].isSelected = true;
             }
         }
+        if(apDescription === "height"){
+            this.height =  value;
+        }
+        if(apDescription === "@pageAdded"){
+            this.pageAdded = value;
+        }
     };
-    p.selectPage = function (page) {
+    p.getValue = function(apDescription, options) {
+
+    };
+    p.doesSupportMonitoring = function (apDescription) {
+        return false;
+    };
+    p.monitor = function(apDescription, callback, options){
+    };
+    p.stopMonitoring = function (apDescription, callback, options) {
+    };
+
+    p.dispose = function(){
+        Knot.clear(this.tabPageNode);
+        $(this.tabPageNode).remove();
+    };
+    p.selectPage = function(page){
         for(var i=0; i<this.pages.length; i++) {
             this.pages[i].isSelected = (this.pages[i] === page);
         }
     };
 
-    global.Knot.Advanced.registerAPProvider(provider);
+    global.Knot.Advanced.registerNamedGlobalSymbol("onPageHeaderClicked", function (evt, node) {
+        Knot.getDataContext($(node).closest(".knot-example-tabPage")[0]).selectPage(this);
+    });
+
+
 })(window);

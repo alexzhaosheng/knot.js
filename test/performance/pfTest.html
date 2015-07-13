@@ -1,0 +1,189 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
+
+
+
+    <script src="../../src/core/PrivateScope.js"></script>
+    <script src="../../src/core/Utility.js"></script>
+    <script src="../../src/core/Deferred.js"></script>
+    <script src="../../src/core/AttachedData.js"></script>
+    <script src="../../src/core/DataObserver.js"></script>
+    <script src="../../src/core/ArrayMonitor.js"></script>
+    <script src="../../src/core/GlobalSymbolHelper.js"></script>
+    <script src="../../src/core/OptionParser.js"></script>
+    <script src="../../src/core/KnotManager.js"></script>
+    <script src="../../src/core/CBSLoader.js"></script>
+    <script src="../../src/core/HTMLAPProvider.js"></script>
+    <script src="../../src/core/HTMLKnotBuilder.js"></script>
+    <script src="../../src/core/AddonHTMLAPProvider.js"></script>
+    <script src="../../src/core/WindowHashStatus.js"></script>
+    <script src="../../src/core/KnotInterface.js"></script>
+
+    <!--<script src="../../src/debugger/knot.debug.js"></script>-->
+
+
+    <link rel="stylesheet" href="pfTest.css">
+    <script type="text/cbs">
+        #testResult{
+            dataContext: /testModel;
+
+            -> #jqueryTest{
+                dataContext:jquery;
+            };
+
+            -> #knotjsTest{
+                dataContext: knotjs;
+            };
+
+            -> #knotjsBatchTest{
+                dataContext: knotjsBatch;
+            };
+
+            -> #angularjsTest{
+                dataContext: angularJS;
+            };
+
+            -> .resultRow{
+                class: /testModel.currentTest > {return testModel[value] === this? "+inExecuting" :"-inExecuting";};
+
+                -> td:nth-child(2){
+                    text: create;
+                };
+                -> td:nth-child(3){
+                    text: setValue;
+                };
+                ->td:nth-child(4){
+                    text: remove;
+                };
+                ->td:nth-child(5){
+                    text: * > {return this.create + this.setValue + this.remove;} > {return isNaN(value)?"":value;};
+                }
+            }
+        }
+    </script>
+
+    <script>
+        window.testModel = {
+            knotjs:{},
+            knotjsBatch:{},
+            jquery:{},
+            angularJS:{},
+
+            currentTest:null
+        };
+
+        window.calledByTestTarget = {
+            getItemNumber: function(){
+                return Number($("#testTimes").val());
+            },
+
+            getCurrentTest: function(){
+                return window.testModel.currentTest;
+            },
+
+            getCurrentTestResultObj: function(){
+                return window.testModel[this.getCurrentTest()];
+            },
+
+            notifyTestFinish: function(){
+                doNextText();
+            }
+        };
+
+        var _tests = ["jquery", "knotjs", "knotjsBatch", "angularJS"];
+        var _testFiles = {
+            "jquery": "jquery/jqueryTest.html",
+            "knotjs": "knotjs/knotjsTest.html",
+            "knotjsBatch": "knotjs/knotjsTest.html",
+            "angularJS": "angularjs/angularjsTest.html"
+        };
+
+        function doNextText(){
+            var nextIndex;
+            if(window.testModel.currentTest){
+                nextIndex = _tests.indexOf(window.testModel.currentTest) + 1;
+            }
+            else{
+                nextIndex = 0;
+            }
+            if(nextIndex < _tests.length){
+                window.testModel.currentTest = _tests[nextIndex];
+                window.testModel[_tests[nextIndex]] = {};
+                $("#testFrame").attr("src",  _testFiles[_tests[nextIndex]]);
+            }
+            else{
+                window.testModel.currentTest = null;
+                $("#testFrame").attr("src", "");
+            }
+        }
+
+        Knot.ready(function(){
+            $("#testButton").click(function(){
+                doNextText();
+            });
+        })
+    </script>
+</head>
+<body>
+
+<div>
+    <p>
+        <label>The number of todo items:</label> <input id="testTimes" type="number" value="1000"> <button id="testButton">Run Test</button>
+    </p>
+
+    <b>Test result:</b>
+    <table id="testResult">
+        <tbody>
+        <tr>
+            <td>Framework</td>
+            <td>Create</td>
+            <td>Change * 10</td>
+            <td>Remove</td>
+            <td>Sum</td>
+        </tr>
+        <tr class="resultRow" id="jqueryTest">
+            <td>jQuery.js</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow " id="knotjsTest">
+            <td>knot.js</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow" id="knotjsBatchTest">
+            <td>knot.js (Batch mode)</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        <tr class="resultRow" id="angularjsTest">
+            <td>Angularjs</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+        </tr>
+        </tbody>
+    </table>
+
+
+    <p>
+        <span id="runningMessage"></span>
+    </p>
+
+</div>
+
+<iframe id="testFrame">
+</iframe>
+
+</body>
+</html>

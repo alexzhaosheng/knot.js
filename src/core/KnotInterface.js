@@ -28,8 +28,8 @@
 
         //it create the the elements from template and add them to node's children collection
         //and synchronize the elements in node's children and array
-        synchronizeItems: function (parentNode, valueArray, template, onCreated, onRemoved) {
-            __private.HTMLAPProvider.syncItems(parentNode, valueArray, template, onCreated, onRemoved);
+        synchronizeItems: function (parentNode, valueArray, template) {
+            __private.HTMLAPProvider.syncItems(parentNode, valueArray, template);
         },
 
         //create a node from template. Note it only create the HTML node, it may not bind the data to the node
@@ -51,6 +51,21 @@
         //register a global symbol with name
         registerNamedGlobalSymbol: function (name, value) {
             return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
+        },
+
+        //register the factory method for a component
+        registerComponent: function(name, factory){
+            return __private.HTMLKnotBuilder.registerComponent(name, factory);
+        },
+
+        //get the component object on the HTML element (if there is)
+        getComponentObject: function(node){
+            return __private.HTMLKnotBuilder.getComponentObject(node);
+        },
+
+        //load the private package. The resource in package is accessed with tempalte
+        loadPrivatePackage: function(url){
+            return __private.CBSLoader.loadCBSPackage(url);
         }
     };
 
@@ -71,8 +86,8 @@
     };
 
     //notify knot system that object is changed.
-    global.Knot.notifyObjectChanged = function (object, path, oldValue, newValue) {
-        __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue);
+    global.Knot.notifyObjectChanged = function (object, path, oldValue, newValue, additionalInfo) {
+        __private.DataObserver.notifyDataChanged(object, path, oldValue, newValue, additionalInfo);
     };
     //monitor the change of the object
     global.Knot.monitorObject = function (object, path, callback) {
@@ -93,8 +108,8 @@
 
 
     //clear all of the knots
-    global.Knot.clear = function () {
-        __private.HTMLKnotBuilder.clear();
+    global.Knot.clear = function (node) {
+        __private.HTMLKnotBuilder.clear(node);
     };
 
     //get the current data context of the element
@@ -112,13 +127,27 @@
         }
     };
 
+    //set the hash format. it'll parse the hash into different status according to the hash format
+    //statuses: array of the names of the statuses in hash
+    //splitter: the splitter to divide the statuses in hash
+    global.Knot.setHashFormat = function(statuses, splitter){
+        __private.WindowHashStatus.setHashFormat(statuses, splitter);
+    };
+
+    global.Knot.getKnotVariant = function(name){
+        return __private.Utility.getValueOnPath(null, name);
+    };
+    global.Knot.setKnotVariant = function(name, value){
+        return __private.Utility.setValueOnPath(null, name, value);
+    };
+
     //////////////////////////////////////////////
     //automatically initialize when loading
     //////////////////////////////////////////////
-    var _onReadyCallback;
+    var _onReadyCallbacks = [];
     var _initError;
     global.Knot.ready = function (callback) {
-        _onReadyCallback = callback;
+        _onReadyCallbacks.push(callback);
 
         if(global.Knot.isReady || _initError) {
             notifyInitOver();
@@ -126,25 +155,29 @@
     };
 
     function notifyInitOver() {
-        if(!_onReadyCallback) {
-            return;
+        var i;
+
+        for(i=0; i< _onReadyCallbacks.length; i++){
+            try{
+                if(_initError) {
+                    _onReadyCallbacks[i](false, _initError);
+                }
+                else{
+                    _onReadyCallbacks[i](true);
+                }
+            }
+            catch (e){
+                __private.Log.warning("Execute on ready callback failed.", e);
+            }
         }
-        if(_initError) {
-            _onReadyCallback(false, _initError);
-        }
-        else if(global.Knot.isReady) {
-            _onReadyCallback(true);
-        }
+        _onReadyCallbacks.length = 0;
     }
 
     global.Knot.isReady = false;
 
     global.addEventListener("load", function () {
-        var deferred =__private.HTMLKnotBuilder.parseCBS();
-
+        var deferred =__private.CBSLoader.loadGlobalScope();
         deferred.done(function () {
-            __private.HTMLKnotBuilder.applyCBS();
-            __private.HTMLKnotBuilder.processTemplateNodes();
             __private.HTMLKnotBuilder.bind();
             global.Knot.isReady = true;
             _initError = null;

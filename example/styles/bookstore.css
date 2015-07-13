@@ -1,0 +1,74 @@
+#navMenu ul{
+    list-style: none;
+    border: lightgray 1px solid;
+    border-radius: 5px;
+    padding: 0;
+}
+#navMenu li{
+    border-right: lightgray 1px solid;
+    display: inline-block;
+    padding: 4px 10px;
+    text-align: center;
+    min-width: 150px;
+    cursor: pointer;
+}
+#navMenu li:last-child{
+    border-right: none;
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+}
+#navMenu li:first-child{
+    border-right: none;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+}
+
+#navMenu li:hover{
+    background-color: #e0e0ff;
+}
+
+#navMenu .selected{
+    background-color: #0381ff;
+    color:white;
+}
+#navMenu .selected:hover{
+    background-color: #0371ee;
+}
+
+#booksList{
+    height:600px;
+    overflow: auto;
+}
+#booksList li{
+    padding: 5px;
+    cursor: pointer;
+}
+#booksList li:hover{
+    background-color: #e0e0ff;
+}
+
+#booksList li>div{
+    display: inline-block;
+    height: 80px;
+    line-height: 80px;
+    vertical-align: middle;
+}
+
+
+#booksList li>img{
+    width: 60px;
+    height: 80px;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+#bookDetails >img{
+    width: 150px;
+    height: 200px;
+}
+#bookDetails{
+    max-width: 500px;
+}
+#bookDetails button{
+    padding: 5px 10px;
+}

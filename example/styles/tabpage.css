@@ -34,6 +34,7 @@
     margin-top: -1px;
     background-color: whitesmoke;
     padding: 3px;
+    overflow: auto;
 }
 
 .knot-example-tabPage .page-contentArea>.pageContent{

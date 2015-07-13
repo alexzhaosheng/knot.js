@@ -12,7 +12,8 @@ $private
 }}>>
 
 .knot-example-tabPage .page-headerArea{
-    foreach: pages
+    foreach: pages;
+    style.display: pages>{return (value && value.length>1)?"block":"none"; }
 }
 .knot-example-tabPage .page-headerArea .pageHeader{
     text: title;
@@ -20,9 +21,9 @@ $private
     @click: @__knot_global.onPageHeaderClicked
 }
 .knot-example-tabPage .page-contentArea{
-    foreach[@added:@onKnotExampleTabPageAdded]: pages
+    foreach[@added:@onKnotExampleTabPageAdded]: pages;
+    style.height: height
 }
 .knot-example-tabPage .page-contentArea>div{
     style.display: isSelected>{return value?"block":"none"};
-    content[template:@__knot_global.createKnotExampleTabPageContent]: data;
 }

@@ -14,8 +14,17 @@
     htmlEventInfo["input.value"] = "change";
     htmlEventInfo["textarea.value"] = "change";
     htmlEventInfo["input.checked"] = "change";
-    htmlEventInfo["select.selectedindex"] = "change";
+    htmlEventInfo["select.selectedIndex"] = "change";
     htmlEventInfo["select.value"] = "change";
+    htmlEventInfo["*.clientWith"] = "resize";
+    htmlEventInfo["*.clientHeight"] = "resize";
+    htmlEventInfo["*.scrollTop"] = "scroll";
+    htmlEventInfo["*.scrollLeft"] = "scroll";
+
+    function getEvent(target, apName){
+        var eventKey = target.tagName.toLowerCase() + "." +apName;
+        return (htmlEventInfo[eventKey] || htmlEventInfo["*." + apName]);
+    }
 
     //provide some helper functions for the HTML elements
     __private.HTMLAPHelper = {
@@ -103,19 +112,38 @@
         }
     }
 
+    function getTemplateFromSelector(selector, node, value, allowNullResult){
+        try{
+            var selectorFunc = __private.Utility.getValueOnPath(value, selector);
+            if(!selectorFunc){
+                __private.Log.error("Can't find template selector:" + selector);
+                return null;
+            }
+            var template =  selectorFunc.apply(node, [value, node]);
+            if(!template && !allowNullResult){
+                __private.Log.error("The template selector returns NULL. template selector:" + selector);
+            }
+            return template;
+        }
+        catch(err){
+            __private.Log.error("Call template selector failed. template selector:" + selector, err);
+            return null;
+        }
+    }
+
     //set "content" Access Point for the target
     //it create a new element from template and set the item as the only child of the target element
     function setContent(target, value, options) {
-        if(!options || !options.template) {
+        if(!options || (!options.template && !options.templateSelector)) {
             __private.Log.error("No valid template is specified for 'content' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(target));
             return;
         }
 
-        var raiseEvt = function(childNode, evt){
+        var raiseEvent = function(childNode, evt){
             if(options && options[evt]){
-                var f = __private.Utility.getValueOnPath(value, options[evt]);
+                var f = __private.Utility.getValueOnPath(target, options[evt]);
                 try{
-                    f.apply(target, [childNode, value]);
+                    f.apply(target, [childNode, __private.HTMLKnotBuilder.getOnNodeDataContext(value)]);
                 }
                 catch(err) {
                     __private.Log.warning("Raise " + evt + " event failed.", err);
@@ -123,18 +151,28 @@
             }
         };
 
-        var currentContent =  target.childNodes[0];
+        var template = options.template;
+        var isTemplateSelector = false;
+        if(options.templateSelector){
+            if(!(value === null || typeof(value) === "undefined")){
+                template = getTemplateFromSelector(options.templateSelector, target, value, true);
+            }
+            isTemplateSelector = true;
+        }
+
+        var currentContent =  target.children[0]
         if(!currentContent) {
-            if(value === null || typeof(value) === "undefined") {
+            if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
                 return;
             }
-            var n  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
+            var n  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
             if(n) {
+                raiseEvent(currentContent, "@adding");
                 target.appendChild(n);
                 if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
                     __private.HTMLKnotBuilder.setDataContext(n, value);
                 }
-                raiseEvt(n, "@added");
+                raiseEvent(n, "@added");
                 __private.Debugger.nodeAdded(n);
             }
         }
@@ -142,25 +180,30 @@
             if(currentContent.__knot && currentContent.__knot.dataContext === value) {
                 return;
             }
-            if(value === null || typeof(value) === "undefined") {
+            if(value === null || typeof(value) === "undefined" || template === null || typeof (template) === "undefined") {
+                raiseEvent(currentContent, "@removing");
                 removeNodeCreatedFromTemplate(currentContent);
-                raiseEvt(currentContent, "@removed");
+                raiseEvent(currentContent, "@removed");
             }
             else{
-                if( __private.HTMLKnotBuilder.isDynamicTemplate(options.template)) {
+                if(isTemplateSelector || __private.HTMLKnotBuilder.isDynamicTemplate(template)) {
                     removeNodeCreatedFromTemplate(currentContent);
-                    currentContent  = __private.HTMLKnotBuilder.createFromTemplate(options.template, value, target);
+                    currentContent = null;
+                    if(template){
+                        currentContent  = __private.HTMLKnotBuilder.createFromTemplate(template, value, target);
+                    }
                     if(currentContent) {
+                        raiseEvent(currentContent, "@adding");
                         target.appendChild(currentContent);
                         if(!__private.HTMLKnotBuilder.hasDataContext(currentContent)) {
                             __private.HTMLKnotBuilder.setDataContext(currentContent, value);
                         }
                         __private.Debugger.nodeAdded(currentContent);
-                        raiseEvt(currentContent, "@added");
+                        raiseEvent(currentContent, "@added");
                     }
                 }
                 else{
-                    __private.HTMLKnotBuilder.updateDataContext(currentContent, value);
+                    __private.HTMLKnotBuilder.setDataContext(currentContent, value);
                 }
                 if(currentContent) {
                     if(!currentContent.__knot) {
@@ -172,53 +215,162 @@
         }
     }
 
-
-
     //it create the the elements from template and add them to node's children collection
     //and synchronize the elements in node's children and array
-    function syncItems(node, values, template, onItemCreated, onItemRemoved) {
+    function syncItems(node, values, template, templateSelector, options, additionalInfo) {
+        var i, n;
         //take null values as empty array.
         if (!values) {
             values = [];
         }
-        for (var i = 0; i < values.length; i++) {
-            var ele = findChildByDataContext(node, values[i], i);
-            if (ele) {
-                if (Array.prototype.indexOf.call(node.children, ele) !== i) {
-                    node.removeChild(ele);
-                    addChildTo(node, ele, i);
-                }
-            }
-            else {
-                var n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
-                if (n) {
-                    addChildTo(node, n, i);
-                    if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
-                        __private.HTMLKnotBuilder.setDataContext(n, values[i]);
-                    }
-                    __private.Debugger.nodeAdded(n);
-                    if(onItemCreated) {
-                        onItemCreated.apply(node, [n, values[i]]);
-                    }
-                }
-            }
-        }
 
-        for (i = node.children.length - 1; i >= values.length; i--) {
-            removeNodeCreatedFromTemplate(node.children[i]);
-            if(onItemRemoved) {
-                onItemRemoved.apply(node, [node.children[i]]);
+        var raiseEvent = function(childNode, value, evt){
+            if(options && options[evt]){
+                var f = __private.Utility.getValueOnPath(node, options[evt]);
+                try{
+                    f.apply(node, [childNode, value]);
+                }
+                catch(err) {
+                    __private.Log.warning("Raise " + evt + " event failed.", err);
+                }
+            }
+        };
+
+        if(additionalInfo){
+            if(node.__knot_latestForeachArrayVersion === values.__knot_arrayVersion)
+                return;
+            if(additionalInfo.removed){
+                var removed = additionalInfo.removed;
+                for(i=removed.length-1; i >= 0; i--){
+                    n = node.children[removed[i]];
+                    raiseEvent(n, __private.HTMLKnotBuilder.getOnNodeDataContext(n), "@removing");
+                    removeNodeCreatedFromTemplate(n);
+                    raiseEvent(n, null, "@removed");
+                }
+            }
+            if(additionalInfo.added){
+                var added = additionalInfo.added;
+                for(i=0; i<added.length; i++){
+                    if(templateSelector){
+                        template = getTemplateFromSelector(templateSelector, node, values[added[i]]);
+                        if(!template){
+                            continue;
+                        }
+                    }
+                    n = __private.HTMLKnotBuilder.createFromTemplate(template, values[added[i]], node);
+                    if (n) {
+                        raiseEvent(n, values[added[i]], "@adding");
+                        addChildTo(node, n, added[i]);
+                        if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                            __private.HTMLKnotBuilder.setDataContext(n, values[added[i]]);
+                        }
+                         __private.Debugger.nodeAdded(n);
+                        raiseEvent(n, values[added[i]], "@added");
+                    }
+                }
+            }
+            node.__knot_latestForeachArrayVersion = values.__knot_arrayVersion;
+        }
+        else{
+            for (i = 0; i < values.length; i++) {
+                var ele = findChildByDataContext(node, values[i], i);
+                if (ele) {
+                    if (Array.prototype.indexOf.call(node.children, ele) !== i) {
+                        node.removeChild(ele);
+                        addChildTo(node, ele, i);
+                    }
+                }
+                else {
+                    if(templateSelector){
+                        template = getTemplateFromSelector(templateSelector, node, values[i]);
+                        if(!template){
+                            continue;
+                        }
+                    }
+                    n = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
+                    if (n) {
+                        raiseEvent(n, values[i], "@adding");
+                        addChildTo(node, n, i);
+                        if(!__private.HTMLKnotBuilder.hasDataContext(n)) {
+                            __private.HTMLKnotBuilder.setDataContext(n, values[i]);
+                        }
+                        __private.Debugger.nodeAdded(n);
+                        raiseEvent(n, values[i], "@added");
+                    }
+                }
+            }
+
+            for (i = node.children.length - 1; i >= values.length; i--) {
+                n = node.children[i];
+                raiseEvent(n, __private.HTMLKnotBuilder.getOnNodeDataContext(n), "@removing");
+                removeNodeCreatedFromTemplate(n);
+                raiseEvent(n, null, "@removed");
             }
         }
     }
 
+
+//      this is a failed attempt to improve the performance of foreach binding. It tries to reuse the
+//      HTMLElement to improve performance. The result is slower.I think might because of too much "indexOf"?
+//
+//    function syncItemsx(node, values, template, onItemCreated, onItemRemoved) {
+//        //take null values as empty array.
+//        if (!values) {
+//            values = [];
+//        }
+//        var removedChildren = Array.prototype.slice.apply(node.children, [0]);
+//        var newChildren = [];
+//        var i;
+//
+//        for(i=0; i<values.length; i++){
+//            newChildren[i] = findChildByDataContext(node, values[i], i);
+//            if (newChildren[i]) {
+//                removedChildren.splice(removedChildren.indexOf(newChildren[i]), 1);
+//            }
+//        }
+//        for(i=0; i<removedChildren.length; i++){
+//            removeNodeCreatedFromTemplate(removedChildren[i]);
+//            if(onItemRemoved) {
+//                onItemRemoved.apply(node, [removedChildren[i]]);
+//            }
+//        }
+//
+//        for(i=0; i<values.length; i++){
+//            if(newChildren[i]){
+//                if(Array.prototype.indexOf.call(node.children, newChildren[i]) !== i){
+//                    node.removeChild(newChildren[i]);
+//                    addChildTo(node, newChildren[i], i);
+//                }
+//            }
+//            else{
+//                var newNode;
+//                if(removedChildren.length > 0 && !__private.HTMLKnotBuilder.isDynamicTemplate(template)){
+//                    newNode = removedChildren.pop();
+//                }
+//                else{
+//                    newNode = __private.HTMLKnotBuilder.createFromTemplate(template, values[i], node);
+//                }
+//                if(newNode){
+//                    addChildTo(node, newNode, i);
+//                    if(!__private.HTMLKnotBuilder.hasDataContext(newNode)) {
+//                        __private.HTMLKnotBuilder.setDataContext(newNode, values[i]);
+//                    }
+//                    __private.Debugger.nodeAdded(newNode);
+//                    if(onItemCreated) {
+//                        onItemCreated.apply(node, [newNode, values[i]]);
+//                    }
+//                }
+//            }
+//        }
+//    }
+
     //set "foreach" Access Point for the html node
-    function setForeach(node, values, options) {
-        if(!options || !options.template) {
+    function setForeach(node, values, options, additionalInfo) {
+        if(!options || (!options.template && !options.templateSelector)){
             __private.Log.error("No valid template is specified for 'foreach' access point. current node:" + __private.HTMLAPHelper.getNodeDescription(node));
             return;
         }
-        syncItems(node, values, options.template, __private.Utility.getValueOnPath(node, options["@added"]), __private.Utility.getValueOnPath(node, options["@removed"]));
+        syncItems(node, values, options.template, options.templateSelector, options, additionalInfo);
     }
 
 
@@ -254,7 +406,7 @@
             return __private.HTMLAPHelper.getPropertyFromElement(target, apName);
         },
 
-        setValue: function (target, apName, value, options) {
+        setValue: function (target, apName, value, options, additionalInfo) {
             if(apName[0] === "@") {
                 if(typeof(value) !== "function") {
                     __private.Log.error( "Event listener must be a function!");
@@ -279,7 +431,7 @@
                 setContent(target, value, options);
             }
             else if(__private.Utility.startsWith(apName, "foreach")) {
-                setForeach(target, value, options);
+                setForeach(target, value, options, additionalInfo);
             }
             else{
                 if(typeof(value) === "undefined") {
@@ -297,8 +449,8 @@
             if(!target) {
                 return false;
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
-            return (htmlEventInfo[eventKey]);
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
+            return (htmlEventInfo[eventKey] || htmlEventInfo["*." + apName]);
         },
 
         monitor: function (target, apName, callback, options) {
@@ -307,7 +459,7 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
             var events = htmlEventInfo[eventKey].split(",");
             for(var i=0; i<events.length; i++) {
                 target.addEventListener(events[i], callback);
@@ -325,7 +477,7 @@
                 target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
-            var eventKey = target.tagName.toLowerCase() + "." +apName.toLowerCase();
+            var eventKey = target.tagName.toLowerCase() + "." +apName;
             var events = htmlEventInfo[eventKey].split(",");
             for(var i=0; i<events.length; i++) {
                 target.removeEventListener(events[i], callback);

@@ -7,8 +7,14 @@
 (function (global) {
     "use strict";
 
-    var __private = global.Knot.getPrivateScope();
+    var _valueDirection = [
+        {splitter:":", left:false, right:false},
+        {splitter:"=>", left:true, right:false},
+        {splitter:"<=", left:false, right:true},
+        {splitter:"=", left:true, right:true}
+    ];
 
+    var __private = global.Knot.getPrivateScope();
 
     //create embedded functions with the text
     //embedded functions are registered to Global Symbol
@@ -63,8 +69,15 @@
                 return null;
             }
 
-            var parts = __private.Utility.splitWithBlockCheck(text, ":");
-            if(parts.length !== 2) {
+            var parts, valueDirection;
+            for(var i=0; i< _valueDirection.length; i++){
+                parts = __private.Utility.splitWithBlockCheck(text, _valueDirection[i].splitter);
+                if(parts.length === 2){
+                    valueDirection = _valueDirection[i];
+                    break;
+                }
+            }
+            if(!valueDirection){
                 __private.Log.error("Invalid option:"+text);
                 return null;
             }
@@ -76,6 +89,18 @@
                 return null;
             }
 
+            if(valueDirection.left){
+                if(!left.options){
+                    left.options = {};
+                }
+                left.options.readonly = "1";
+            }
+            if(valueDirection.right){
+                if(!right.options){
+                    right.options = {};
+                }
+                right.options.readonly = "1";
+            }
             return {leftAP:left, rightAP:right};
         },
 
@@ -149,7 +174,8 @@
                 __private.Log.error("Invalid composite option:"+text);
                 return null;
             }
-            return {isComposite:true, childrenAPs:aPs, nToOnePipe:nToOnePiple};
+            var pipes = nToOnePiple.split(">").map(function(t){return __private.Utility.trim(t);});
+            return {isComposite:true, childrenAPs:aPs, nToOnePipes:pipes};
         }
     };
 })(window);

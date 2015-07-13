@@ -39,7 +39,7 @@
         assert.equal(knots.length, 1, "parse works with option string with n to 1 pipe");
         assert.equal(knots[0].leftAP.description, "isEnabled", "parse works with option string with n to 1 pipe");
         assert.equal(knots[0].rightAP.isComposite, true, "parse works with option string with n to 1 pipe");
-        assert.equal(knots[0].rightAP.nToOnePipe, "trueWhenAllTrue", "parse works with option string with n to 1 pipe");
+        assert.equal(knots[0].rightAP.nToOnePipes[0], "trueWhenAllTrue", "parse works with option string with n to 1 pipe");
         assert.equal(knots[0].rightAP.childrenAPs.length, 2, "parse works with option string with n to 1 pipe");
         assert.equal(knots[0].rightAP.childrenAPs[0].description, "isLogged", "parse works with option string with n to 1 pipe");
         assert.equal(knots[0].rightAP.childrenAPs[0].pipes.length, 0, "parse works with option string with n to 1 pipe");
@@ -73,7 +73,6 @@
 
 
 
-
         //parse ap with options
         knot = scope.OptionParser.parse('value[@set:@global.onSet; @change: @global.onChange]:name')[0];
         assert.equal(knot.leftAP.description, "value", "parse ap with options");
@@ -86,5 +85,31 @@
         knot = scope.OptionParser.parse('value:#(.nameInputSection> input).value')[0];
         assert.equal(knot.leftAP.description, "value", "parse ap with css selector");
         assert.equal(knot.rightAP.description, "#(.nameInputSection> input).value", "parse ap with css selector");
+
+
+        knot = scope.OptionParser.parse('value => name')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options.readonly, "1", "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options, null, "parse ap with value direction");
+
+        knot = scope.OptionParser.parse('value <= name>@{return value+1;}')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options, null, "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options.readonly, 1, "parse ap with value direction");
+        assert.equal(knot.rightAP.pipes.length, 1, "parse ap with value direction");
+
+        knot = scope.OptionParser.parse('value = name>@{return value+1;}')[0];
+        assert.equal(knot.leftAP.description, "value", "parse ap with value direction");
+        assert.equal(knot.leftAP.options.readonly, "1", "parse ap with value direction");
+        assert.equal(knot.rightAP.description, "name", "parse ap with value direction");
+        assert.equal(knot.rightAP.options.readonly, 1, "parse ap with value direction");
+        assert.equal(knot.rightAP.pipes.length, 1, "parse ap with value direction");
+
+        knot = scope.OptionParser.parse('disable: (isLogged & userId>trueWhenNot0 ) > trueWhenAllTrue > pipeA > pipeB ')[0];
+        assert.equal(knot.rightAP.isComposite, true, "N to 1 followed with two pipes");
+        assert.equal(knot.rightAP.nToOnePipes.length, 3, "N to 1 followed with two pipes");
+
     });
 })(window);

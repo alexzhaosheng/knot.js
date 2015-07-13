@@ -31,6 +31,8 @@
     var _APProviders = [];
     //This array holds the reference to the registered Access Pointer Provider for error status.
     var _errorAPProvider = [];
+    //The provider that must stay on top
+    var _topAPProviders = [];
 
     //raise an Access Point event. the Access Point Events are used to get notification when Access Point's status is changed
     //it is raised by using "target" object as "this" pointer
@@ -114,6 +116,14 @@
         };
     }
 
+    function isReadOnly(ap){
+        if(ap.options && ap.options.readonly){
+            var v = ap.options.readonly.toLowerCase();
+            return (v === "1" || v === "true");
+        }
+        return false;
+    }
+
     ////////////////////////////////////////////////////////////////////////////
     // KnotManager
     ////////////////////////////////////////////////////////////////////////////
@@ -145,7 +155,7 @@
 
             return null;
         },
-        registerAPProvider: function (apProvider, isErrorAP) {
+        registerAPProvider: function (apProvider, isErrorAP, staysTop) {
             if(isErrorAP) {
                 if(_errorAPProvider.indexOf(apProvider) < 0) {
                     _errorAPProvider.push(apProvider);
@@ -154,6 +164,13 @@
             else{
                 if(_APProviders.indexOf(apProvider) < 0) {
                     _APProviders.push(apProvider);
+                }
+                if(staysTop){
+                    _topAPProviders.push(apProvider);
+                }
+                for(var i=0; i<_topAPProviders.length;i++){
+                    _APProviders.splice(_APProviders.indexOf(_topAPProviders[i]), 1);
+                    _APProviders.push(_topAPProviders[i]);
                 }
             }
         },
@@ -166,6 +183,9 @@
             else{
                 if(_APProviders.indexOf(apProvider) >=0) {
                     _APProviders.splice(_APProviders.indexOf(apProvider), 1);
+                }
+                if(_topAPProviders.indexOf(apProvider)){
+                    _topAPProviders.splice(_topAPProviders.indexOf(apProvider), 1);
                 }
             }
         },
@@ -181,7 +201,7 @@
             try{
                 if(ap.pipes) {
                     for(var i=0; i< ap.pipes.length; i++) {
-                        var p = __private.Utility.getValueOnPath(global, ap.pipes[i]);
+                        var p = __private.Utility.getValueOnPath(target, ap.pipes[i]);
                         if(typeof(p) !== "function") {
                             __private.Log.error( "Pipe must be a function. pipe name:" + ap.pipes[i]);
                         }
@@ -205,7 +225,8 @@
 
         //set value by using relevant provider. It also prevents code re-enter which may cause infinite
         //set value calls and stack overflow error.
-        safeSetValue: function (target, ap, value) {
+        //additionalInfo is passed by the change notification sender. it contains the details such as array's changed detail
+        safeSetValue: function (target, ap, value, additionalInfo) {
             if(ap.ignoreSettingValue) {
                 return;
             }
@@ -213,7 +234,7 @@
             try{
                 this.checkProvider(target, ap);
 
-                ap.provider.setValue(target, ap.description, value, ap.options);
+                ap.provider.setValue(target, ap.description, value, ap.options, additionalInfo);
                 raiseAPEvent(target, ap.options, "@set", [ap.description, value]);
             }
             finally{
@@ -239,7 +260,7 @@
             this.checkProvider(src, srcAP);
             this.checkProvider(target, targetAP);
             if(srcAP.provider.doesSupportMonitoring(src, srcAP.description)) {
-                srcAP.changedCallback = function () {
+                srcAP.changedCallback = function (p, o, n, additionalInfo) {
                     if(targetAP.ignoreSettingValue) {
                         return;
                     }
@@ -257,7 +278,7 @@
 
                     srcAP.ignoreSettingValue = true;
                     try{
-                        __private.KnotManager.safeSetValue(target, targetAP, v);
+                        __private.KnotManager.safeSetValue(target, targetAP, v, additionalInfo);
                     }
                     finally{
                         delete srcAP.ignoreSettingValue;
@@ -271,7 +292,7 @@
         //stop monitoring the change. It used to stop the data observation that started by "monitor"
         stopMonitoring: function (target, ap) {
             this.checkProvider(target, ap);
-            if(ap.provider.doesSupportMonitoring(target, ap.description) && ap.changedCallback) {
+            if(ap.changedCallback && ap.provider.doesSupportMonitoring(target, ap.description)) {
                 ap.provider.stopMonitoring(target, ap.description, ap.changedCallback, ap.options);
                 delete  ap.changedCallback;
             }
@@ -300,7 +321,7 @@
             }
             normalTarget.provider = __private.KnotManager.getProvider(normalTarget, normalAP.description);
 
-            compositeAP.changedCallback = function () {
+            compositeAP.changedCallback = function (p, o, n, additionalInfo) {
                 var values = [];
                 for (var i = 0; i < compositeAP.childrenAPs.length; i++) {
                     var v = __private.KnotManager.getValueThroughPipe(compositeAPTarget, compositeAP.childrenAPs[i]);
@@ -310,14 +331,19 @@
                     values.push(v);
                 }
 
-                var p = __private.Utility.getValueOnPath(global, compositeAP.nToOnePipe);
-                if (typeof(p) !== "function") {
-                    __private.Log.error("Pipe must be a function. pipe name:" + compositeAP.nToOnePipe);
+                var value = values;
+                if(compositeAP.nToOnePipes) {
+                    for(i=0; i< compositeAP.nToOnePipes.length; i++) {
+                        var p = __private.Utility.getValueOnPath(compositeAPTarget, compositeAP.nToOnePipes[i]);
+                        if(typeof(p) !== "function") {
+                            __private.Log.error( "Pipe must be a function. pipe name:" + compositeAP.nToOnePipes[i]);
+                        }
+                        value = p.apply(compositeAPTarget, [value]);
+                    }
                 }
-                var latestValue = p.apply(compositeAPTarget, [values]);
 
-                __private.KnotManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, latestValue, normalTarget === rightTarget);
-                __private.KnotManager.safeSetValue(normalTarget, normalAP, latestValue);
+                __private.KnotManager.notifyKnotChanged(leftTarget, rightTarget, knotInfo, value, normalTarget === rightTarget);
+                __private.KnotManager.safeSetValue(normalTarget, normalAP, value, additionalInfo);
 
                 raiseAPEvent(normalTarget, normalAP, "@change", [leftTarget, rightTarget, knotInfo]);
             };
@@ -347,16 +373,34 @@
                 this.checkProvider(leftTarget,  leftAP);
                 this.checkProvider(rightTarget,  rightAP);
 
-                //set initial value, always use the left side value as initial value
-                var v = this.getValueThroughPipe(rightTarget,  rightAP);
-                if(v === this.objectToIndicateError) {
-                    return;
-                }
-                this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
-                this.safeSetValue(leftTarget, leftAP, v);
+                //set initial value
+                //if both sides are readonly, or leftSide is not read only, set left from right
+                //otherwise set right from left;
 
-                this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
-                this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
+                var v;
+                if(!isReadOnly(leftAP) || (isReadOnly(leftAP) && isReadOnly(rightAP))){
+                    //set initial value, always use the left side value as initial value
+                    v = this.getValueThroughPipe(rightTarget,  rightAP);
+                    if(v !== this.objectToIndicateError) {
+                        this.notifyKnotChanged(leftTarget, rightTarget, knotInfo, v, false);
+                        this.safeSetValue(leftTarget, leftAP, v);
+                    }
+                }
+                else{
+                    //set initial value, always use the left side value as initial value
+                    v = this.getValueThroughPipe(leftTarget,  leftAP);
+                    if(v !== this.objectToIndicateError) {
+                        this.notifyKnotChanged(rightTarget, leftTarget, knotInfo, v, false);
+                        this.safeSetValue(rightTarget, rightAP, v);
+                    }
+                }
+
+                if(!isReadOnly(rightAP)){
+                    this.monitor(leftTarget, leftAP, rightTarget, rightAP, knotInfo);
+                }
+                if(!isReadOnly(leftAP)){
+                    this.monitor(rightTarget, rightAP, leftTarget, leftAP, knotInfo);
+                }
             }
             __private.Debugger.knotTied(leftTarget, rightTarget, knotInfo);
         },
@@ -435,6 +479,10 @@
                 target = global;
                 apName = apName.substr(1);
             }
+            if(apName && apName[0] === "$") {
+                target = __private.KnotVariants;
+                apName = apName.substr(1);
+            }
             if(target) {
                 __private.DataObserver.monitor(target, apName, callback);
             }
@@ -442,6 +490,10 @@
         stopMonitoring: function (target, apName, callback, options) {
             if(apName && apName[0] === "/") {
                 target = global;
+                apName = apName.substr(1);
+            }
+            if(apName && apName[0] === "$") {
+                target = __private.KnotVariants;
                 apName = apName.substr(1);
             }
             if(target) {

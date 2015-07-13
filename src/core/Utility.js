@@ -46,6 +46,11 @@
                 return rootData;
             }
 
+            //if path is quoted, it is const value. simply remove the quote and return  the content
+            if(path[0] === "'" && path[path.length-1] === "'"){
+                return path.substr(1, path.length-2);
+            }
+
             var isFunction = false;
             if(path[0] === "@") {
                 isFunction = true;
@@ -60,6 +65,10 @@
                 var data = rootData;
                 if(path[0] === "/") {
                     data= global;
+                    path = path.substr(1);
+                }
+                else if(path[0] === "$"){
+                    data = __private.KnotVariants;
                     path = path.substr(1);
                 }
                 while (path.indexOf(".") >= 0 && data) {
@@ -97,6 +106,10 @@
             }
             if(path && path[0] === "/") {
                 data = global;
+                path = path.substr(1);
+            }
+            else if(path[0] === "$"){
+                data = __private.KnotVariants;
                 path = path.substr(1);
             }
 
@@ -169,7 +182,7 @@
             var res = [];
 
             var blockStack = [];
-
+            var splitterLength = splitter.length;
             while(pos < str.length) {
                 if(_blockStartMarks[str[pos]]){
                     blockStack.push(str[pos]);
@@ -177,19 +190,20 @@
                 else if(_blockEndMarks[str[pos]]){
                     var b = blockStack.pop();
                     if(_blockPairs[b] !== str[pos]){
-                        __private.log.warning("Unclosed block is detected.\r" + str);
+                        __private.Log.warning("Unclosed block is detected.\r" + str);
                         blockStack.push(b);
                     }
                 }
-                else if(str[pos] === splitter && blockStack.length === 0){
+                else if(blockStack.length === 0 &&
+                       str[pos] === splitter[0] && str.substr(pos, splitterLength) === splitter){
                     res.push(str.substr(prev, pos-prev));
-                    prev = pos+1;
+                    prev = pos+splitterLength;
                 }
                 pos++;
             }
 
             if(blockStack.length > 0){
-                __private.log.warning("Unclosed block is detected.\r" + str);
+                __private.Log.warning("Unclosed block is detected.\r" + str);
             }
 
             if(pos >= prev){

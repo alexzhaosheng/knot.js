@@ -1,0 +1,52 @@
+#testResult{
+    border-spacing: 0px;
+    border-collapse:collapse;
+    text-align: center;
+}
+
+#testResult td:first-child{
+    text-align: right;
+    background-color: whitesmoke;
+}
+
+#testResult tr:first-child td{
+    background: darkblue;
+    color:white;
+    text-align: center;
+}
+
+#testResult td{
+    padding: 5px 10px;
+    border: 1px lightgray solid;
+    min-width: 80px;
+    font-size:14px;
+}
+
+.inExecuting td{
+    background-color: lightgreen;
+    font-weight: bold;
+}
+
+.list{
+    max-height: 500px;
+    width: 300px;
+    overflow: auto;
+}
+.list>div{
+    border: 1px solid lightgray;
+    background-color: lightgoldenrodyellow;
+    text-align: center;
+    padding: 3px;
+    margin: 2px;
+}
+.completed{
+    text-decoration: line-through;;
+}
+
+
+#testFrame{
+    border: 1px solid lightgray;
+    padding: 10px;
+    width: calc(100% - 22px);
+    height:500px
+}

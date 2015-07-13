@@ -1,0 +1,92 @@
+[
+    {
+        "id":"new",
+        "name":"Newly listed",
+        "items":[
+            {
+                "id":1,
+                "name":"The Three-Body Problem",
+                "cover":"http://ecx.images-amazon.com/images/I/51fGDeB1DWL.jpg",
+                "intro":"The Three-Body Problem is the first chance for English-speaking readers to experience this multiple award winning phenomenon from China's most beloved science fiction author, Liu Cixin.Set against the backdrop of China's Cultural Revolution, a secret military project sends signals into space to establish contact with aliens. An alien civilization on the brink of destruction captures the signal and plans to invade Earth. Meanwhile, on Earth, different camps start forming, planning to either welcome the superior beings and help them take over a world seen as corrupt, or to fight against the invasion. The result is a science fiction masterpiece of enormous scope and vision."
+            },
+
+            {
+                "id":2,
+                "name":"The Dark Forest ",
+                "cover":"http://ecx.images-amazon.com/images/I/91HSIJIkHkL.jpg",
+                "intro":"This near-future trilogy is the first chance for English-speaking readers to experience this multiple-award-winning phenomenon from Cixin Liu, China's most beloved science fiction author. In Dark Forest, Earth is reeling from the revelation of a coming alien invasion-in just four centuries' time. The aliens' human collaborators may have been defeated, but the presence of the sophons, the subatomic particles that allow Trisolaris instant access to all human information, means that Earth's defense plans are totally exposed to the enemy. Only the human mind remains a secret. This is the motivation for the Wallfacer Project, a daring plan that grants four men enormous resources to design secret strategies, hidden through deceit and misdirection from Earth and Trisolaris alike. Three of the Wallfacers are influential statesmen and scientists, but the fourth is a total unknown. Luo Ji, an unambitious Chinese astronomer and sociologist, is baffled by his new status. All he knows is that he's the one Wallfacer that Trisolaris wants dead."
+            },
+
+            {
+                "id":3,
+                "name":"Fifty Shades Trilogy",
+                "cover":"http://ecx.images-amazon.com/images/I/71R1iAO1ltL.jpg",
+                "intro":"FIFTY SHADES OF GREY IS NOW A MAJOR MOTION PICTURE<br>Now available as a three-volume paperback boxed set, E L James’s New York Times #1 bestselling trilogy has been hailed by Entertainment Weekly as being “in a class by itself.” Beginning with the GoodReads Choice Award Romance Finalist Fifty Shades of Grey, the Fifty Shades Trilogy will obsess you, possess you, and stay with you forever.<br>This boxed set includes the following novels<br>"
+            },
+
+            {
+                "id":4,
+                "name":"Go Set a Watchman: A Novel ",
+                "cover":"http://ecx.images-amazon.com/images/I/A1rBZedGc0L.jpg",
+                "intro":"Originally written in the mid-1950s, Go Set a Watchman was the novel Harper Lee first submitted to her publishers before To Kill a Mockingbird. Assumed to have been lost, the manuscript was discovered in late 2014."
+            }
+        ]
+    },
+    {
+        "id":"bestseller",
+        "name":"Best seller",
+        "items":[
+            {
+                "id":5,
+                "name":"First 100 Words ",
+                "cover":"http://ecx.images-amazon.com/images/I/51dxds64%2ByL.jpg",
+                "intro":"Your little one will soon learn some essential first words and pictures with this bright board book. There are 100 color photographs to look at and talk about, and 100 simple first words to read and learn, too. The pages are made from tough board for hours of fun reading, and the cover is softly padded for little hands to hold."
+            },
+
+            {
+                "id":6,
+                "name":"The Girl on the Train ",
+                "cover":"http://ecx.images-amazon.com/images/I/516YNFvZnrL.jpg",
+                "intro":"“The Girl on the Train has more fun with unreliable narration than any chiller since Gone Girl. . . . [It] is liable to draw a large, bedazzled readership.”—The New York Times"
+            },
+
+            {
+                "id":7,
+                "name":"The English Spy",
+                "cover":"http://ecx.images-amazon.com/images/I/51dAriB850L.jpg",
+                "intro":"#1 New York Times bestselling author Daniel Silva delivers another stunning thriller in his latest action-packed tale of high stakes international intrigue featuring the inimitable Gabriel Allon."
+            }
+        ]
+    },
+    {
+        "id":"special",
+        "name":"Special",
+        "items":[
+            {
+                "id":8,
+                "name":"Homeworld (Odyssey One) ",
+                "cover":"http://ecx.images-amazon.com/images/I/51SVZ%2BFqUrL.jpg",
+                "intro":"The consequences of Earth’s exploration of the Galaxy come home to roost when the Drasin track a human ship back to Earth. Mounting a desperate defense, the crew of the NAC spacecraft Odyssey, their allies, and the people of Earth face an overwhelming force of invading alien ships wielding terrible power. Doomed from the start, but with nowhere to retreat, Captain Eric Weston commits his ship to the defense of the human race even as the human outposts in Sol system fall one by one before the unrelenting Drasin onslaught."
+            },
+
+            {
+                "id":9,
+                "name":"The Fire of Home (A Powell Springs Novel)",
+                "cover":"http://ecx.images-amazon.com/images/I/514WiN2ax%2BL.jpg",
+                "intro":"When Amy Layton’s family learned she planned to steal her sister’s fiancé, Amy left home in disgrace. But in 1922, she returns to Powell Springs to escape the violent man she married. Despite the town’s gossip, Amy is determined to rebuild her shattered life with the boardinghouse she inherited…and little else."
+            },
+
+            {
+                "id":10,
+                "name":"Home by Morning (A Powell Springs Novel) ",
+                "cover":"http://ecx.images-amazon.com/images/I/51e03IxwdJL.jpg",
+                "intro":"October 1918: En route from New York to Seattle, Jessica Layton stops for a visit in her hometown of Powell Springs, Oregon, and comes face-to-face with Cole Braddock, her first and only love from years ago. Now Jessica is a highly accomplished clinical physician preparing for an exciting new job in Washington, and Cole is a successful horse breeder who is courting her sister Amy. Both are convinced they have moved beyond their youthful passion and the heartbreak it produced; "
+            }
+        ]
+    },
+    {
+        "id":"all",
+        "name":"All",
+        "items":[]
+    }
+]

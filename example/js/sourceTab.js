@@ -1,63 +1,129 @@
-window.sourceTab = {
-    sourceInformation: [],
+(function(global){
+    "use strict";
 
-    onPageAdded: function (node) {
-        hljs.highlightBlock($(node).find("code")[0]);
-    }
-};
-$(document).ready(function () {
-    if($(".knot_example").length > 0) {
-        var text = "";
-        for(var i=0; i<$("body>.knot_example").length; i++) {
-            if(text) {
-                text += "\r\n\r\n\r\n\r\n";
+    global.Knot.Advanced.registerComponent("SourceTabPage", function(node, component){
+        return new SourceTabPage(node);
+    });
+
+    function removeIndent(text){
+        text = text.trim();
+        var lines = text.split("\n");
+        var indent = 999999;
+        for(var i=1; i<lines.length; i++){
+            if(!lines[i].trim()){
+                continue;
             }
-            text += $(".knot_example").eq(i)[0].outerHTML;
+            var lineIndent= 0;
+            while(lines[i][lineIndent] === " " && lineIndent<indent) lineIndent++;
+            indent = Math.min(indent, lineIndent);
         }
-        window.sourceTab.sourceInformation.push({name:"HTML", content: text, title:"HTML"});
-    }
-
-    function getXHRS() {
-        if (window.XMLHttpRequest) {
-            return new XMLHttpRequest();
+        if(indent === 0){
+            return text;
         }
         else{
-            return new ActiveXObject("Microsoft.XMLHTTP");
+            return lines.map(function(t,index){
+                if(index === 0){
+                    return t;
+                }
+                else{
+                    return t.substr(indent);
+                }
+            }).join("\n");
         }
     }
 
-    function loadScript(tagSelector, typeName) {
-        for(var i=0; i<$(tagSelector).length; i++) {
-            (function () {
-                var script = $(tagSelector).eq(i)[0];
-                var data  ={name:typeName, content: script.innerText, title:typeName};
-                if(script.getAttribute("title")) {
-                    data.title = script.getAttribute("title");
+    function loadScript(info, onFinished){
+        var script = $(info.selector).eq(0)[0];
+        if(!script){
+            onFinished();
+        }
+        else{
+            if(script.src || script.href) {
+                $.ajax({
+                    type:"GET",
+                    dataType:"text",
+                    url:script.src || script.href,
+                }).then(function(ret){
+                        info.content  = ret;
+                        onFinished();
+                    },
+                    function(err){
+                        onFinished();
+                    });
+            }
+            else{
+                info.content = removeIndent(info.type==="html"? script.outerHTML: script.innerHTML);
+                onFinished();
+            }
+        }
+    }
+
+    var SourceTabPage = function(owner){
+        this.height = "";
+        this.sourcePages = [];
+        this.pageNode = Knot.Advanced.createFromTemplate("sourceTab", this);
+        $(this.pageNode).appendTo(owner);
+        Knot.Advanced.setDataContext(this.pageNode, this);
+    };
+
+    var p = SourceTabPage.prototype;
+    p.onPageAdded = function (node) {
+        hljs.highlightBlock($(node).find("code")[0]);
+    };
+
+    p.setValue = function(apDescription, value, options) {
+        if(apDescription === "sourceInfo") {
+            var info = value;
+            if(value instanceof  String){
+                info = JSON.parse(value);
+            }
+            if(!info){
+                this.sourcePages = [];
+            }
+            else{
+                for(var j=0; j< info.length; j++){
+                    this.sourcePages.push({type:info[j].type, content:info[j].content, title:info[j].title});
                 }
-                window.sourceTab.sourceInformation.push(data);
-                if(script.src || script.href) {
-                    var hr = getXHRS();
-                    hr.onreadystatechange = function () {
-                        if(hr.readyState === 4) {
-                            if(hr.status === 200) {
-                                data.content  = hr.responseText;
-                            }
+            }
+        }
+
+        if(apDescription === "height"){
+            this.height = value;
+        }
+    };
+    p.getValue = function(apDescription, options) {
+
+    };
+    p.doesSupportMonitoring = function (apDescription) {
+        return false;
+    };
+    p.monitor = function(apDescription, callback, options){
+    };
+    p.stopMonitoring = function (apDescription, callback, options) {
+    };
+
+    p.dispose = function(){
+        Knot.clear(this.pageNode);
+        $(this.pageNode).remove();
+    };
+
+    global.SourceCodeHelper = {
+        collectSourceCodes:function(codesInfo, onFinished){
+            var res = [];
+            var scriptLoaded = codesInfo.length;
+            for(var i=0; i<codesInfo.length; i++){
+                loadScript(codesInfo[i], function(){
+                    scriptLoaded --;
+                    if(scriptLoaded === 0){
+                        for(var j=0; j< codesInfo.length; j++){
+                            res.push({type:codesInfo[j].type, content:codesInfo[j].content, title:codesInfo[j].title});
                         }
-                    };
-                    hr.open("GET", script.src || script.href, true);
-                    hr.send();
-                }
-            })();
+                        onFinished(res);
+                    }
+                });
+            }
         }
-    }
+    };
 
-    loadScript(".exampleJS", "Javascript");
-    loadScript(".exampleCBS", "CBS");
-    loadScript(".exampleCSS", "CSS");
-});
+})(window);
 
-document.writeln('<div id="sourceTab" knot-debugger-ignore>'+
-    '<div id="codePageTemplate" knot-template-id="codePageTemplate">'+
-        '<pre><code></code></pre>'+
-    '</div>'+
-    '</div>');

@@ -1,0 +1,97 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <script src="https://code.jquery.com/jquery-2.1.1.min.js"></script>
+
+    <link rel="stylesheet" href="../pfTest.css">
+
+    <script type="text/javascript">
+        window.knotModel={};
+
+        function generateData(){
+            var res=  [];
+            for(var i=0; i<window.parent.calledByTestTarget.getItemNumber(); i++){
+                res.push({
+                    text: "To do item " + i,
+                    value:Math.floor( Math.random()*10000),
+                    isCompleted:false});
+            }
+            return res;
+        }
+
+        function runTest(callback){
+            var start = Date.now() ;
+            callback();
+            return Math.round((Date.now() -start));
+        }
+
+        var _isCompleted = false;
+        function changeValue(){
+            _isCompleted = !_isCompleted;
+            var arr = window.knotModel.dataList;
+
+            $("#jqueryList").children()
+                    .each(function(i, t){
+                        if(_isCompleted){
+                            $(t).addClass("completed");
+                        }
+                        else{
+                            $(t).removeClass("completed");
+                        }
+                        $(t).find("span").eq(1).text(Math.floor( Math.random()*10000));
+                    });
+        }
+
+        function testChangeValue(onFinish){
+            var setCount = 0;
+            var totalCost = 0;
+            var func = function(){
+                totalCost += runTest(changeValue);
+                setCount ++;
+                if(setCount < 10){
+                    setTimeout(func, 500);
+                }
+                else{
+                    onFinish(totalCost);
+                }
+            };
+            setTimeout(func, 500);
+        }
+
+        function doJQueryTest(v, onFinished) {
+            var cost = runTest(function(){
+                for (var i = 0; i < v.length; i++) {
+                    var n = $('<div class="toDoItem"><span></span><span></span></div>').appendTo("#jqueryList");
+                    n.children().eq(0).text(v[i].text);
+                    n.children().eq(1).text(v[i].value);
+                }
+            });
+            window.parent.calledByTestTarget.getCurrentTestResultObj().create = cost;
+            testChangeValue(function(totalCost){
+                window.parent.calledByTestTarget.getCurrentTestResultObj().setValue = totalCost;
+                cost = runTest(function(){
+                    $("#jqueryList").children().remove();
+//                for(var i = $("#jqueryList").children().length-1; i>=0; i--){
+//                    $("#jqueryList").children().eq(0).remove();
+//                }
+                });
+                window.parent.calledByTestTarget.getCurrentTestResultObj().remove = cost;
+                onFinished();
+            });
+        }
+
+        $(document).ready(function(){
+            setTimeout(function(){
+                doJQueryTest(generateData(), function(){
+                    window.parent.calledByTestTarget.notifyTestFinish();
+                })
+            }, 500);
+        });
+    </script>
+</head>
+<body>
+
+<div class="list" id="jqueryList"></div>
+
+</body>
+</html>

@@ -56,6 +56,7 @@
             "input.text":"value",
             "textarea":"value",
             "option":"text",
+            "span":"textContent",
             "*":"textContent"
         }
     };
@@ -166,7 +167,7 @@
         }
     }
 
-    function setSelectedData(target, value) {
+    function setSelectSelectedData(target, value) {
         for(var i=0; i<target.options.length; i++) {
             if(target.options[i].__knot && target.options[i].__knot.dataContext === value) {
                 target.selectedIndex = i;
@@ -176,16 +177,28 @@
         target.selectedIndex = -1;
     }
 
+    function getSelectSelectedData(target){
+        var selectedOption = target.options[target.selectedIndex];
+        if(selectedOption) {
+            return (selectedOption.__knot ? selectedOption.__knot.dataContext : undefined);
+        }
+        else {
+            return undefined;
+        }
+    }
+
     var AddonHTMLAPProvider={
         doesSupport: function (target, apName) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             //check whether target is html element
             if(target instanceof HTMLElement) {
                 if(target.tagName.toLowerCase() ==="select" &&
-                    (__private.Utility.startsWith(apName,"options") || apName === "selectedData" || apName === "value")) {
+                    (__private.Utility.startsWith(apName,"options") ||
+                     (apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData.")) ||
+                      apName === "value")) {
                     return true;
                 }
                 else if(apName === "class") {
@@ -200,17 +213,17 @@
         },
         getValue: function (target, apName) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
-            if(target.tagName.toLowerCase() ==="select" && apName === "selectedData") {
-                var selectedOption = target.options[target.selectedIndex];
-                if(selectedOption) {
-                    return (selectedOption.__knot ? selectedOption.__knot.dataContext : undefined);
+            if(target.tagName.toLowerCase() ==="select" &&
+                (apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData."))) {
+                if(apName === "selectedData"){
+                    return getSelectSelectedData(target);
                 }
-                else {
-                    return undefined;
+                else{
+                    return __private.Utility.getValueOnPath(getSelectSelectedData(target), apName.split(".").slice(1).join("."));
                 }
             }
 
@@ -231,7 +244,7 @@
         },
         setValue: function (target, apName, value, options) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
@@ -241,15 +254,21 @@
             else if(target.tagName.toLowerCase() ==="select" && apName === "value") {
                 for(var i=0; i<target.options.length; i++){
                     //use weak type equal here to make it more flexible
-                    if(target.options[i].value == value){
+                    if(target.options[i].value === value){
                         target.selectedIndex = i;
                         return;
                     }
                 }
                 target.selectedIndex = -1;
             }
-            else if(target.tagName.toLowerCase() ==="select" && apName === "selectedData") {
-                setSelectedData(target, value);
+            else if(target.tagName.toLowerCase() ==="select" &&
+                    (apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData."))) {
+                if(apName === "selectedData"){
+                    setSelectSelectedData(target, value);
+                }
+                else{
+                    __private.Utility.setValueOnPath(getSelectSelectedData(target), apName.split(".").slice(1).join("."));
+                }
             }
             else if(target.tagName.toLowerCase() ==="select" && __private.Utility.startsWith(apName,"options")) {
                 setSelectOptions(target, value, options);
@@ -260,30 +279,33 @@
         },
         doesSupportMonitoring: function (target, apName) {
             if(apName[0] === "#") {
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
-            return target.tagName.toLowerCase() ==="select" && (apName === "selectedData" || apName === "value");
+            return target && target.tagName.toLowerCase() ==="select" &&
+                    ((apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData.")) ||
+                     apName === "value");
         },
         monitor: function (target, apName, callback) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(target.tagName.toLowerCase() ==="select" &&
-                (apName === "selectedData" || apName === "value")) {
+                ((apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData.")) || apName === "value")) {
                 target.addEventListener("change", callback);
             }
         },
         stopMonitoring: function (target, apName, callback) {
             if(apName[0] === "#") {
-                target = document.querySelector(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
+                target = __private.HTMLAPHelper.queryElement(__private.HTMLAPHelper.getSelectorFromAPDescription(apName));
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
 
             if(target.tagName.toLowerCase() ==="select" &&
-                (apName === "selectedData" || apName === "value")) {
+                ((apName === "selectedData" || __private.Utility.startsWith(apName, "selectedData.")) || apName === "value")) {
                 target.removeEventListener("change", callback);
             }
         }

@@ -1,0 +1,90 @@
+<!doctype html>
+<html ng-app>
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.1.5/angular.min.js"></script>
+    <link rel="stylesheet" href="../pfTest.css">
+    <script>
+
+        function generateData(){
+            var res=  [];
+            for(var i=0; i<window.parent.calledByTestTarget.getItemNumber(); i++){
+            //for(var i=0; i<100; i++){
+                res.push({
+                    text: "To do item " + i,
+                    value:Math.floor( Math.random()*10000),
+                    isCompleted:false});
+            }
+            return res;
+        }
+
+
+
+
+        function TodoCtrl($scope, $timeout) {
+            function callTest(callback, onFinished){
+                var start = Date.now() ;
+                callback();
+                $timeout(function(){
+                    onFinished(Math.floor(Date.now()  - start));
+                }, 0);
+            }
+
+
+            callTest(function(){
+                $scope.todos = generateData();
+            }, function(cost){
+                window.parent.calledByTestTarget.getCurrentTestResultObj().create = cost;
+            });
+
+            $scope.removeAll = function() {
+                $scope.todos = [];
+            };
+
+            var _isCompleted = false;
+            function changeValue(){
+                _isCompleted = !_isCompleted;
+                for(var i=0; i<$scope.todos.length; i++){
+                    $scope.todos[i].isCompleted = _isCompleted;
+                    $scope.todos[i].value = Math.floor(Math.random()*10000);
+                }
+            }
+
+            function testChangeValue(){
+                var setCount = 0;
+                var totalCost = 0;
+                var func = function(){
+                    callTest(changeValue, function(cost){
+                        totalCost+=cost;
+                        setCount ++;
+
+                        if(setCount < 10){
+                            $timeout(func, 500);
+                        }
+                        else{
+                            window.parent.calledByTestTarget.getCurrentTestResultObj().setValue = totalCost;
+                            callTest(function(){
+                                $scope.removeAll();
+                            }, function(c){
+                                window.parent.calledByTestTarget.getCurrentTestResultObj().remove = c;
+                                window.parent.calledByTestTarget.notifyTestFinish();
+                            })
+
+                        }
+                    });
+                };
+                $timeout(func, 500);
+            }
+            testChangeValue();
+        }
+    </script>
+</head>
+<body>
+
+<div class="list" ng-controller="TodoCtrl">
+    <div ng-repeat="todo in todos" ng-class="{true:'toDoItem completed', false:'toDoItem'}[todo.isCompleted]">
+        <span>{{todo.text}}</span><span>{{todo.value}}</span>
+    </div>
+</div>
+
+</body>
+</html>

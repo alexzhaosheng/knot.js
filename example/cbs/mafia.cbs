@@ -11,14 +11,14 @@ body{
 }
 
 .treeNode{
-    => >div>.content{
-        content[template: @/mafiaSystem.nodeContentTemplateSelector]: *
+    -> >div>.content{
+        content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: *
     };
-    => .expander{
+    -> .expander{
         class: collapsed>{return value?"+fa-plus-circle -fa-minus-circle":"-fa-plus-circle +fa-minus-circle"};
          @click: @{this.collapsed = !this.collapsed;}
     };
-    =>.childrenList{
+    ->.childrenList{
         foreach[template:treeNode; @added: @/mafiaSystem.onTreeChildAdded ]: children;
     };
 }
@@ -41,7 +41,7 @@ body{
     text: title;
 }
 .people>div:first-of-type{
-    content[template: @/mafiaSystem.nodeContentTemplateSelector; @added:@/mafiaSystem.onTreeChildAdded]: leader;
+    content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector; @added:@/mafiaSystem.onTreeChildAdded]: leader;
 }
 .people .dropTarget{
     style.display: (leader & isInSystem) > { return value[1]? (value[0]?"none":"block"): "none"; }
@@ -53,31 +53,31 @@ body{
 
 
 .gangTemplate{
-    =>.businessCount{
+    ->.businessCount{
         text: businessCount
     };
-    =>.handsCount{
+    ->.handsCount{
         text: handsCount
     };
 }
 
 .whiteBusinessTemplate{
-    =>.income{
+    ->.income{
         text: income>@/mafiaSystem.pipes.toMoneyStr
     };
-    =>.landedMoney{
+    ->.landedMoney{
         text: landedMoney>@/mafiaSystem.pipes.toMoneyStr
     };
 }
 
 .blackBusinessTemplate{
-    =>.income{
+    ->.income{
         text: income>@/mafiaSystem.pipes.toMoneyStr
     };
-    => .caseNumber{
+    -> .caseNumber{
         text: caseNumber
     };
-    => .exposureLevel{
+    -> .exposureLevel{
         text: exposureLevel
     };
 }
@@ -118,13 +118,13 @@ body{
 }
 
 .manTemplate, .womanTemplate{
-    =>.intelligence{
+    ->.intelligence{
         dataContext: intelligence
     };
-    =>.skill{
+    ->.skill{
         dataContext: skill
     };
-    =>.loyalty{
+    ->.loyalty{
         dataContext: loyalty
     };
 }
@@ -147,17 +147,17 @@ body{
 }
 
 #editArea>div:first-of-type{
-    => >div:first-of-type{
+    -> >div:first-of-type{
         content[template:@/mafiaSystem.editorTemplateSelector] : selected
     };
-    => >.leaderArea{
+    -> >.leaderArea{
         style.display:selected>{return (!value|| value.isNew || value.sex)?"none":"block";};
-        => .leaderContainer{
-            content[template: @/mafiaSystem.nodeContentTemplateSelector;  @added:@/mafiaSystem.onTreeChildAdded]: selected.leader;
+        -> .leaderContainer{
+            content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector;  @added:@/mafiaSystem.onTreeChildAdded]: selected.leader;
         };
     };
 
-    => .dropTarget{
+    -> .dropTarget{
           style.display: (selected.leader & selected.sex & selected.isInSystem)>{
            if(value[2])
                 return value[1]?"none":(value[0]?"none":"block");
@@ -166,7 +166,7 @@ body{
           }
     };
 
-    => .buttonArea{
+    -> .buttonArea{
         style.display: selected.isNew>{return value?"block":"none";}
     };
 }
@@ -180,39 +180,39 @@ body{
 }
 
 .gangEditor .title{
-    =>input{
-    value>@mafiaSystem.pipes.checkTitle: title
+    ->input{
+    value>@/mafiaSystem.pipes.checkTitle: title
     };
-    => .errorMessage{
+    -> .errorMessage{
         text:!#(.gangEditor .title>input).value
     };
 }
 
 
 .whiteBusinessEditor {
-    =>.title{
-        =>input{
-            value>@mafiaSystem.pipes.checkTitle: title
+    ->.title{
+        ->input{
+            value>@/mafiaSystem.pipes.checkTitle: title
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.whiteBusinessEditor .title>input).value>{return value?value.message:"";}
         }
     };
 
-    =>.income{
-        =>input{
-            value>@mafiaSystem.pipes.checkNumber: income
+    ->.income{
+        ->input{
+            value>@/mafiaSystem.pipes.checkNumber: income
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.whiteBusinessEditor .income>input).value>{return value?value.message:"";}
         }
     };
 
-    =>.landedMoney{
-            =>input{
-                value>@mafiaSystem.pipes.checkNumber: landedMoney
+    ->.landedMoney{
+            ->input{
+                value>@/mafiaSystem.pipes.checkNumber: landedMoney
             };
-            =>.errorMessage{
+            ->.errorMessage{
                 text:!#(.whiteBusinessEditor .landedMoney>input).value>{return value?value.message:"";}
             }
         };
@@ -220,81 +220,81 @@ body{
 
 
 .blackBusinessEditor {
-    =>.title{
-        =>input{
-            value>@mafiaSystem.pipes.checkTitle: title
+    ->.title{
+        ->input{
+            value>@/mafiaSystem.pipes.checkTitle: title
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.blackBusinessEditor .title>input).value>{ return value?value.message:"";}
         }
     };
 
-    =>.income{
-        =>input{
-            value>@mafiaSystem.pipes.checkNumber: income
+    ->.income{
+        ->input{
+            value>@/mafiaSystem.pipes.checkNumber: income
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.blackBusinessEditor .income>input).value>{ return value?value.message:"";}
         }
     };
 
-    =>.caseNumber{
-            =>input{
-                value>@mafiaSystem.pipes.checkNumber: caseNumber
+    ->.caseNumber{
+            ->input{
+                value>@/mafiaSystem.pipes.checkNumber: caseNumber
             };
-            =>.errorMessage{
+            ->.errorMessage{
                 text:!#(.blackBusinessEditor .caseNumber>input).value>{ return value?value.message:"";}
             }
         };
 
-    =>.exposureLevel select{
+    ->.exposureLevel select{
         value:exposureLevel
     }
 }
 
 
 .manEditor{
-    =>.name{
-        =>input{
-            value>@mafiaSystem.pipes.checkName: name
+    ->.name{
+        ->input{
+            value>@/mafiaSystem.pipes.checkName: name
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.manEditor .name>input).value>{ return value?value.message:"";}
         };
     };
-    =>.intelligence select{
+    ->.intelligence select{
         selectedIndex:intelligence
     };
-    =>.skill select{
+    ->.skill select{
         selectedIndex:skill
     };
-    =>.loyalty select{
+    ->.loyalty select{
         selectedIndex:loyalty
     };
-    =>.strength select{
+    ->.strength select{
         selectedIndex:strength
     };
 }
 
 .womanEditor{
-    =>.name{
-        => input{
-            value>@mafiaSystem.pipes.checkName: name
+    ->.name{
+        -> input{
+            value>@/mafiaSystem.pipes.checkName: name
         };
-        =>.errorMessage{
+        ->.errorMessage{
             text:!#(.womanEditor .name>input).value>{ return value?value.message:"";}
         };
     };
-    =>.intelligence select{
+    ->.intelligence select{
         selectedIndex:intelligence
     };
-    =>.skill select{
+    ->.skill select{
         selectedIndex:skill
     };
-    =>.loyalty select{
+    ->.loyalty select{
         selectedIndex:loyalty
     };
-    =>.attraction select{
+    ->.attraction select{
         selectedIndex:attraction
     };
 }
@@ -303,8 +303,8 @@ body{
 #freeEntityList{
     foreach[ @added:@/mafiaSystem.onFreeEntityAdded ]: freeEntities;
 
-    => .contentContainer{
-        content[template: @/mafiaSystem.nodeContentTemplateSelector]: *;
+    -> .contentContainer{
+        content[templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: *;
     }
 }
 
@@ -315,13 +315,13 @@ body{
     text: inDragging.message
 }
 #dragDropVisual{
-    content [template: @/mafiaSystem.nodeContentTemplateSelector]: inDragging.data;
+    content [templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: inDragging.data;
     style.left: inDragging.pos.x> { return value + "px";};
     style.top: inDragging.pos.y> { return (value + 30) + "px";};
     style.display: inDragging > { return value? "inline-block":"none";}
 }
 
 #animationVisual{
-    content [template: @/mafiaSystem.nodeContentTemplateSelector]: inAnimation;
+    content [templateSelector: @/mafiaSystem.nodeContentTemplateSelector]: inAnimation;
     style.display: inAnimation > { return value? "inline-block":"none";}
 }

@@ -7,6 +7,9 @@
     //private scope of knot.js
     var __private = {};
 
+    //knot variants, can be accessed by Utility.getValueOnPath with prefix "$"
+    __private.KnotVariants = {};
+
     __private.Setting = {
         enablePropertyHook: true
     };

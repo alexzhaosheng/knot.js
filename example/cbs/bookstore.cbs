@@ -1,0 +1,63 @@
+
+/bookStoreModel{
+    selected <= ($hash.category & $hash.book & /bookStoreModel.categories) > @/bookStoreModel.getSelected;
+}
+
+
+body{
+    dataContext: /bookStoreModel;
+}
+#navMenu>ul{
+    foreach: categories;
+
+    -> >li{
+        text: name;
+        @click: @{
+                Knot.setKnotVariant("$hash.category", this.id);
+                Knot.setKnotVariant("$hash.book", null);
+            };
+        class: (/bookStoreModel.selected.category && *LEFT)>{return value[0]===value[1]?"+selected":"-selected";}
+    }
+}
+
+#booksList>ul{
+    dataContext: category;
+
+    foreach: items;
+
+    -> >li{
+        @click: @{Knot.setKnotVariant("$hash.book", this.id);};
+
+        -> img{
+            src: cover
+        };
+        -> div{
+            text: name
+        };
+    }
+}
+
+#bookDetails>div{
+    dataContext: book;
+
+    -> h2{
+        text: name
+    };
+
+    -> img{
+        src: cover
+    };
+
+    -> p{
+        innerHTML: intro
+    };
+
+    -> button{
+        @click: @{Knot.setKnotVariant("$hash.book", null);};
+    }
+}
+
+
+#contentContainer{
+    content[templateSelector: @/bookStoreModel.contentTemplateSelector]: selected
+}
