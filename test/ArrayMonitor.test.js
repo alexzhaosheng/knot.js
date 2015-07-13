@@ -107,5 +107,13 @@
 
         testArray.splice(1, 1);
         assert.equal(areArraysTheSame(), true, "removed and added is properly set");
+
+        testArray.setValueAt(2, "abc");
+        assert.equal(areArraysTheSame(), true, "setValueAt works");
+        assert.equal(testArray[2], "abc", "setValueAt works");
+
+        testArray.clear();
+        assert.equal(areArraysTheSame(), true, "clear works");
+        assert.equal(testArray.length, 0, "clear works");
     });
 })(window);

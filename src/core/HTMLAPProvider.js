@@ -141,9 +141,9 @@
 
         var raiseEvent = function(childNode, evt){
             if(options && options[evt]){
-                var f = __private.Utility.getValueOnPath(value, options[evt]);
+                var f = __private.Utility.getValueOnPath(target, options[evt]);
                 try{
-                    f.apply(target, [childNode, value]);
+                    f.apply(target, [childNode, __private.HTMLKnotBuilder.getOnNodeDataContext(value)]);
                 }
                 catch(err) {
                     __private.Log.warning("Raise " + evt + " event failed.", err);
@@ -226,7 +226,7 @@
 
         var raiseEvent = function(childNode, value, evt){
             if(options && options[evt]){
-                var f = __private.Utility.getValueOnPath(value, options[evt]);
+                var f = __private.Utility.getValueOnPath(node, options[evt]);
                 try{
                     f.apply(node, [childNode, value]);
                 }
@@ -243,7 +243,7 @@
                 var removed = additionalInfo.removed;
                 for(i=removed.length-1; i >= 0; i--){
                     n = node.children[removed[i]];
-                    raiseEvent(n, null, "@removing");
+                    raiseEvent(n, __private.HTMLKnotBuilder.getOnNodeDataContext(n), "@removing");
                     removeNodeCreatedFromTemplate(n);
                     raiseEvent(n, null, "@removed");
                 }
@@ -302,7 +302,7 @@
 
             for (i = node.children.length - 1; i >= values.length; i--) {
                 n = node.children[i];
-                raiseEvent(n, null, "@removing");
+                raiseEvent(n, __private.HTMLKnotBuilder.getOnNodeDataContext(n), "@removing");
                 removeNodeCreatedFromTemplate(n);
                 raiseEvent(n, null, "@removed");
             }

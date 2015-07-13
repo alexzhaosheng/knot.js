@@ -53,12 +53,19 @@
             return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
         },
 
+        //register the factory method for a component
         registerComponent: function(name, factory){
             return __private.HTMLKnotBuilder.registerComponent(name, factory);
         },
 
+        //get the component object on the HTML element (if there is)
         getComponentObject: function(node){
             return __private.HTMLKnotBuilder.getComponentObject(node);
+        },
+
+        //load the private package. The resource in package is accessed with tempalte
+        loadPrivatePackage: function(url){
+            return __private.CBSLoader.loadCBSPackage(url);
         }
     };
 

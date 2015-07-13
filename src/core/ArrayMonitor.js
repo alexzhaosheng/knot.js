@@ -31,6 +31,15 @@
     hookArrayMethod("sort");
     hookArrayMethod("reverse");
 
+    var _arrayVersion = 0;
+    function increaseArrayVersion(array){
+        array.__knot_arrayVersion = _arrayVersion++;
+
+        if(!isFinite(_arrayVersion)) {
+            _arrayVersion = 0;
+        }
+    }
+
     Array.prototype.notifyChanged = function (removedIndexes, addedIndexes) {
         if(this.__knot_attachedData) {
             var arrayChangedInfo = null;
@@ -40,6 +49,17 @@
             __private.DataObserver.notifyDataChanged(this, "*", arrayChangedInfo);
             __private.DataObserver.notifyDataChanged(this, "length", null, this.length, {property:"length"});
         }
+    };
+
+    Array.prototype.setValueAt = function(index, value){
+        this[index] = value;
+        if(this.__knot_attachedData) {
+            increaseArrayVersion(this);
+            __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:[index], added:[index]});
+        }
+    };
+    Array.prototype.clear = function(){
+        this.splice(0, this.length);
     };
 
 
@@ -52,12 +72,7 @@
             for(var i=0; i<arguments.length;i++){
                 added.push(oldLength + i);
             }
-            if(!this.__knot_arrayVersion){
-                this.__knot_arrayVersion = 1;
-            }
-            else{
-                this.__knot_arrayVersion++;
-            }
+            increaseArrayVersion(this);
             __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:[], added:added});
             __private.DataObserver.notifyDataChanged(this, "length", oldLength, this.length, {property:"length"});
         }
@@ -72,12 +87,7 @@
             for(var i=0; i<arguments.length;i++){
                 added.push(i);
             }
-            if(!this.__knot_arrayVersion){
-                this.__knot_arrayVersion = 1;
-            }
-            else{
-                this.__knot_arrayVersion++;
-            }
+            increaseArrayVersion(this);
             __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:[], added:added});
             __private.DataObserver.notifyDataChanged(this, "length", oldLength, this.length, {property:"length"});
         }
@@ -89,12 +99,7 @@
         var oldLength = this.length;
         var ret = _originalArrayMethods.pop.apply(this, arguments);
         if(this.__knot_attachedData) {
-            if(!this.__knot_arrayVersion){
-                this.__knot_arrayVersion = 1;
-            }
-            else{
-                this.__knot_arrayVersion++;
-            }
+            increaseArrayVersion(this);
             __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:[oldLength-1], added:[]});
             __private.DataObserver.notifyDataChanged(this, "length", oldLength, this.length, {property:"length"});
         }
@@ -105,12 +110,7 @@
         var oldLength = this.length;
         var ret = _originalArrayMethods.shift.apply(this, arguments);
         if(this.__knot_attachedData) {
-            if(!this.__knot_arrayVersion){
-                this.__knot_arrayVersion = 1;
-            }
-            else{
-                this.__knot_arrayVersion++;
-            }
+            increaseArrayVersion(this);
             __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:[0], added:[]});
             __private.DataObserver.notifyDataChanged(this, "length", oldLength, this.length, {property:"length"});
         }
@@ -129,12 +129,7 @@
             for(i=start; i<start+arguments.length-2; i++){
                 added.push(i);
             }
-            if(!this.__knot_arrayVersion){
-                this.__knot_arrayVersion = 1;
-            }
-            else{
-                this.__knot_arrayVersion++;
-            }
+            increaseArrayVersion(this);
             __private.DataObserver.notifyDataChanged(this, "*", null, null, {removed:removed, added:added});
             __private.DataObserver.notifyDataChanged(this, "length", oldLength, this.length, {property:"length"});
         }
