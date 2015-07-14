@@ -26,7 +26,10 @@ body{
     foreach: items;
 
     -> >li{
-        @click: @{Knot.setKnotVariant("$hash.book", this.id);};
+        @click: @{
+            Knot.setKnotVariant("$hash.category", bookStoreModel.selected.category.id);
+            Knot.setKnotVariant("$hash.book", this.id);
+        };
 
         -> img{
             src: cover

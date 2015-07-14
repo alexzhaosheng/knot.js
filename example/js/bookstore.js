@@ -26,6 +26,10 @@ window.bookStoreModel = {
                     }
                 }
             }
+            else{
+                //if no category is selected, select the last one
+                selected.category = categories[categories.length-1];
+            }
             return selected;
         }
     },

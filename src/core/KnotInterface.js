@@ -48,7 +48,7 @@
             return __private.Utility.getValueOnPath(data, path);
         },
 
-        //register a global symbol with name
+        //register a global symbol with name, the registered symbol can be accessed with __knot_global.[symbol name]
         registerNamedGlobalSymbol: function (name, value) {
             return __private.GlobalSymbolHelper.registerNamedSymbol(name, value);
         },
