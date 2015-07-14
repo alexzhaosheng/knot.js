@@ -55,14 +55,14 @@
 }
 
 
-#booksList li>img{
+#booksList li img{
     width: 60px;
     height: 80px;
     display: inline-block;
     vertical-align: middle;
 }
 
-#bookDetails >img{
+#bookDetails img{
     width: 150px;
     height: 200px;
 }
@@ -72,3 +72,4 @@
 #bookDetails button{
     padding: 5px 10px;
 }
+
