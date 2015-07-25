@@ -112,7 +112,10 @@ li{
     float: right;
 }
 
-
+#startMessage{
+    margin: 60px 20px;
+    text-align: center;
+}
 
 #tabPage .page-headerArea .header{
     min-width: 60px;

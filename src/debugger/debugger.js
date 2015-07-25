@@ -156,7 +156,7 @@ Knot.js debugger
             searchInNode(node.childrenInfo[i], keyword);
         }
     }
-    //highlight the target node while remove highlight from the other nodes
+    //highlight the target node while removing highlight from the other nodes
     function searchByNodeInTree(treeRoot, targetNode) {
         var found = false;
         for (var i = 0; i < treeRoot.childrenInfo.length; i++) {
@@ -184,6 +184,15 @@ Knot.js debugger
         catch (err){
             alert(err.toString());
         }
+    }
+
+    function searchBySelector(selector){
+        var nodes = global.opener.document.querySelectorAll(selector);
+        var res = [];
+        for(var i=0; i<nodes.length; i++){
+            res.push(generateDOMTree(nodes[i]));
+        }
+        debuggerModel.domTreeNodes = res;
     }
 
     //collapse node as many as possible to emphasis the highlighted ones
@@ -233,6 +242,10 @@ Knot.js debugger
         return null;
     }
     function getNodeInfo(node) {
+        if(!global.debuggerModel.domTreeNodes){
+            return null;
+        }
+
         for(var i=0; i<global.debuggerModel.domTreeNodes.length; i++) {
             var info = findNodeInTree(global.debuggerModel.domTreeNodes[i], node);
             if(info) {
@@ -280,11 +293,11 @@ Knot.js debugger
     }
 
     //get description tree for the DOM tree start from node
-    function generateDOMTree(node) {
+    function generateDOMTree(node, calledBySelf) {
         if(node.hasAttribute("knot-debugger-ignore")) {
             return;
         }
-        //when node is svg, there's no children. we don't support bind to svg at current stage
+        //when node is svg, there's no "children" property. we don't support bind to svg at current stage
         if(!node.children){
             return;
         }
@@ -294,7 +307,7 @@ Knot.js debugger
         };
 
         for(var i=0; i<node.children.length; i++) {
-            var info =generateDOMTree(node.children[i]);
+            var info =generateDOMTree(node.children[i], true);
             if(info) {
                 nodeInfo.childrenInfo.push(info);
                 info.parent = nodeInfo;
@@ -302,7 +315,15 @@ Knot.js debugger
         }
 
         if(!node.__knot && nodeInfo.childrenInfo.length === 0) {
-            return null;
+            if(!calledBySelf){
+                nodeInfo.noKnotSetting = true;
+                nodeInfo.description = getHTMLElementDescription(node);
+                nodeInfo.node = node;
+                return nodeInfo;
+            }
+            else{
+                return null;
+            }
         }
 
         if(node.__knot) {
@@ -480,10 +501,12 @@ Knot.js debugger
             collapseIrrelevantNodes(global.debuggerModel.domTreeNodes[0]);
         }
         else{
-            $("#searchText").val("");
+            $("#selectorTextInput").val("");
             expandAll(global.debuggerModel.domTreeNodes[0]);
         }
     }
+
+
 
     /////////////////////////////////////////////////////
     //initialize
@@ -504,13 +527,11 @@ Knot.js debugger
         $("#ownerWindowInfo").text(targetWindowTitle + " ["+ global.opener.location+"]");
         document.title = "Knot.js Debugger - " + targetWindowTitle;
 
-        $("#locateElementButton").click(function () {
+        $(".locateElementButton").click(function () {
             $("#fullWindowMessage").show().find("div").text("Use mouse left button to pick an element from the original page.");
             var downHandler = function (arg) {
                 var e = global.opener.document.elementFromPoint(arg.clientX, arg.clientY);
-                toggleFilter(false);
-                searchByNode(global.debuggerModel.domTreeNodes[0], e);
-                toggleFilter(true);
+                debuggerModel.domTreeNodes = [generateDOMTree(e)];
                 global.opener.removeEventListener("mousedown", downHandler, true);
                 global.opener.removeEventListener("mousemove", mouseMoveHandler);
                 arg.preventDefault();
@@ -518,7 +539,7 @@ Knot.js debugger
                 _mouseTip.remove();
                 global.opener.document.body.style.cursor = prevCursor;
             };
-            global.opener.addEventListener("mousedown",downHandler , true);
+            global.opener.addEventListener("mousedown", downHandler , true);
 
             var prevCursor = global.opener.document.body.style.cursor;
             global.opener.document.body.style.cursor = "crosshair";
@@ -535,25 +556,17 @@ Knot.js debugger
         });
 
         $("#searchButton").click(function () {
-            searchInNode(global.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
-            toggleFilter(true);
+            searchBySelector($("#selectorTextInput").val().trim());
         });
-        $("#searchText").keyup(function (e) {
+        $("#selectorTextInput").keyup(function (e) {
             if(e.which === 13) {
-                searchInNode(global.debuggerModel.domTreeNodes[0], $("#searchText").val().toLowerCase().trim());
-                toggleFilter(true);
+                searchBySelector($("#selectorTextInput").val().trim());
             }
         });
 
         $("#closeJsonViewer").click(function () {
             $("#jsonViewer").hide();
         });
-
-        $("#enableFilterButton").click(function () {
-            toggleFilter(!_isFilterEnabled);
-        });
-
-        global.debuggerModel.domTreeNodes = [generateDOMTree(global.opener.document.body)];
 
         //get cached logs
         var logs = global.opener.knotjsDebugger.getCachedLog();

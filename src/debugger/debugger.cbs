@@ -21,47 +21,52 @@ body{
     };
 }
 
-#domTree{
-    foreach: domTreeNodes
+
+#startMessage{
+    style.display: domTreeNodes >{return value? "none":"block";}
 }
 
-#domTree>li {
-    ->.expander>i{
-        @click:@{this.isExpanded = !this.isExpanded;};
-        class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
-    };
+#domTree{
+    foreach: domTreeNodes;
 
-    ->.nodeTitle{
-        text = description;
-        class: noKnotSetting>{return value?"+emptyNode":"";}
-    };
+    -> >li {
+           ->.expander>i{
+               @click:@{this.isExpanded = !this.isExpanded;};
+               class:isExpanded>{return value?"+fa-minus-circle -fa-plus-circle -iconButtonChecked":"-fa-minus-circle +fa-plus-circle +iconButtonChecked";}
+           };
 
-    ->.highlightMark{
-        style.display:isHighlighted>{return value?"inline-block":"none";}
-    };
+           ->.nodeTitle{
+               text = description;
+               class: noKnotSetting>{return value?"+emptyNode":"";}
+           };
 
-    ->.locateElementButton{
-        @click:@/debuggerModel.onLocateElement
-    };
+           ->.highlightMark{
+               style.display:isHighlighted>{return value?"inline-block":"none";}
+           };
 
-    ->.checkDataContextButton{
-        style.display:dataContext>{return value?"inline-block":"none"};
-        @click:@/debuggerModel.onShowDataContext
-    };
+           ->.locateElementButton{
+               @click:@/debuggerModel.onLocateElement
+           };
 
-    ->.knotList{
-        foreach :options;
-        style.display:options>{return (value&&value.length>0)?"block":"none";}
-    };
+           ->.checkDataContextButton{
+               style.display:dataContext>{return value?"inline-block":"none"};
+               @click:@/debuggerModel.onShowDataContext
+           };
 
-    ->.nodeChildren{
-        foreach[template:domTreeItem]: childrenInfo;
-        style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
-    };
+           ->.knotList{
+               foreach :options;
+               style.display:options>{return (value&&value.length>0)?"block":"none";}
+           };
 
-    ->.collapsibleContent{
-        style.display : isExpanded>{return value?"block":"none";}
-    };
+           ->.nodeChildren{
+               foreach[template:domTreeItem]: childrenInfo;
+               style.display:childrenInfo>{return (value&&value.length>0)?"block":"none";}
+           };
+
+           ->.collapsibleContent{
+               style.display : isExpanded>{return value?"block":"none";}
+           };
+    }
 }
 
 
@@ -126,6 +131,7 @@ body{
 .treeContainer{
     class: isKnotLogExpanded>{return value?"-expander-top-collapsed +expander-top-expanded":"+expander-top-collapsed -expander-top-expanded";}
 }
+
 #knotChangeLogExpander{
     class: isKnotLogExpanded>{return value?"-expander-bottom-collapsed +expander-bottom-expanded":"+expander-bottom-collapsed -expander-bottom-expanded";};
 

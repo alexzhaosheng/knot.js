@@ -50,10 +50,9 @@
         <div id="domViewer" class="pageContent selected">
             <div>
                 <div class="domViewerToolBar">
-                    <input id="searchText" type="text" placeholder="Filter">
-                    <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search in html node"></i>
-                    <i id="locateElementButton" class="iconButton fa fa-crosshairs" title="Locate this element on page"></i>
-                    <i id="enableFilterButton" class="iconButton fa fa-filter" title="Toggle automatically collapsing irrelevant nodes"></i>
+                    <input id="selectorTextInput" type="text" placeholder="CSS Selector">
+                    <i id="searchButton" class="iconButton fa fa-search" id="locateByMouseButton" title="Search by CSS selector"></i>
+                    <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i>
                     <div class="legend">
                         <ul>
                             <li><i class="type-indicator fa fa-share-alt"></i></i> <span class="nodeTitle">HTML Nodes</span> </li>
@@ -66,6 +65,9 @@
 
             </div>
             <div class="treeContainer expander-top-collapsed">
+
+                <div id="startMessage">Input CSS Selector or click on <i class="locateElementButton iconButton fa fa-crosshairs" title="Locate this element on page"></i> button to select an element for inspecting.</div>
+
                 <ul id="domTree">
                     <li knot-template-id="domTreeItem">
                         <div>
