@@ -370,12 +370,12 @@
 
     var _loadedCBSFiles = [];
     function loadFile(file){
-        _loadedCBSFiles.push(file);
         var deferred = new __private.Deferred();
         var hr = __private.Utility.getXHRS();
         hr.onreadystatechange = function () {
             if(hr.readyState === 4) {
                 if(hr.status === 200) {
+                    _loadedCBSFiles.push(file);
                     deferred.resolve(hr.responseText);
                 }
                 else{
