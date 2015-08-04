@@ -86,6 +86,9 @@
         var url = getBaseDir() + "debugger.html";
         var name =  window.location.href + window.location.pathname;
         _debugWindow = window.open(url, "knotDebugger_" + name, "width=700,height=700,resizable=yes,scrollbars=yes");
+        if (!_debugWindow) {
+            alert("Open Debugger window failed. Please check your popup block setting");
+        }
 
     }
     function startDebugger() {
@@ -94,11 +97,13 @@
             return;
         }
         showDebugWindow();
+        if (!_debugWindow)
+            return;
         updateDebugButtonVisibility();
         setCookie(getCookieName(), "1");
 
         _closingCheckIntervalHandler = setInterval(function () {
-            if(_debugWindow.closed) {
+            if(!_debugWindow || _debugWindow.closed) {
                 _shouldCacheDebugLog = true;
                 _debugWindow=  null;
                 updateDebugButtonVisibility();

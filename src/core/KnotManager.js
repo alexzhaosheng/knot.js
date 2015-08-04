@@ -214,6 +214,7 @@
                 }
             }
             catch (exception) {
+                __private.Log.warning("Exception happens when calling pipe function.", exception);
                 if(ap.errorAPProvider) {
                     ap.errorAPProvider.setValue(target, "!" + ap.description, exception, ap.options);
                     __private.Debugger.errorStatusChanged(target, ap, exception);
