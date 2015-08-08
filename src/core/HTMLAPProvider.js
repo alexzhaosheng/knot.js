@@ -548,7 +548,7 @@
                 apName = __private.HTMLAPHelper.getPropertyNameFromAPDescription(apName);
             }
             if(target) {
-                if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName] || !target.__knot_errorStatusInfo[apName].changedCallbacks)) {
+                if(!value && (!target.__knot_errorStatusInfo || !target.__knot_errorStatusInfo[apName])) {
                     return;
                 }
                 if(!target.__knot_errorStatusInfo) {
