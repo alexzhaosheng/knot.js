@@ -414,10 +414,19 @@
                 }
 
                 if(target) {
-                    target.addEventListener(apName.substr(1), function (e) {
-                        var dataContext = target.__knot.dataContext;
-                        value.apply(dataContext, [e, target]);
-                    });
+                    //make sure the event is not registered more than once
+                    var evtName = apName.substr(1);
+                    if (!target.__knot_eventInfo)
+                        target.__knot_eventInfo = {};
+                    if(!target.__knot_eventInfo[evtName])
+                        target.__knot_eventInfo[evtName] = [];
+                    if (target.__knot_eventInfo[evtName].indexOf(value) < 0) {
+                        target.addEventListener(evtName, function (e) {
+                            var dataContext = target.__knot.dataContext;
+                            value.apply(dataContext, [e, target]);
+                        });
+                        target.__knot_eventInfo[evtName].push(value);
+                    }
                 }
                 return;
             }
