@@ -141,7 +141,7 @@
 
         var raiseEvent = function(childNode, evt){
             if(options && options[evt]){
-                var f = __private.Utility.getValueOnPath(target, options[evt]);
+                var f = __private.Utility.getValueOnPath(value, options[evt]);
                 try{
                     f.apply(target, [childNode, __private.HTMLKnotBuilder.getOnNodeDataContext(value)]);
                 }
